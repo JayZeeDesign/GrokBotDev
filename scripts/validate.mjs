@@ -1,20 +1,405 @@
-import { existsSync } from 'node:fs';
+#!/usr/bin/env node
+// `npm run validate` — §8.5's content gate, enforcing the §5.6 integrity rules.
+//
+// Astro's content layer runs the canonical Zod schemas (src/content.config.ts) at build.
+// This script runs FIRST and standalone, and covers the two things Zod cannot:
+//   · cross-file rules (global slug uniqueness, URL dedupe, member resolution)
+//   · file-level rules (filename === slug, body contracts, raw-HTML rejection)
+// It also re-checks the field-level basics so a contributor gets a helpful message in one
+// second instead of a Zod stack trace after a full build.
+//
+// Every failure names the file, the rule (§5.6 #n / §8.5 check n) and, for vocabulary
+// misses, the closest canonical match.
 
-const required = [
-  'src/styles/tokens.css',
-  'src/styles/global.css',
-  'src/layouts/BaseLayout.astro',
-  'src/components/SiteHeader.astro',
-  'src/components/Footer.astro',
-  'src/components/MarkGlyph.astro',
-  'src/components/NavLink.astro',
-  'src/data/redirects.json',
-];
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
+import { parse as parseYaml } from 'yaml';
 
-const missing = required.filter((file) => !existsSync(file));
-if (missing.length) {
-  console.error(`validate: missing scaffold files: ${missing.join(', ')}`);
+// Default root is the live corpus. `--root scripts/fixtures` runs the same rules against
+// the deliberately-invalid golden fixtures (§11 M2.5) — every failure class must trip.
+const rootIndex = process.argv.indexOf('--root');
+const ROOT = rootIndex === -1 ? 'content' : process.argv[rootIndex + 1];
+
+const CONTENT_DIRS = {
+  plugin: `${ROOT}/plugins`,
+  'use-case': `${ROOT}/use-cases`,
+  collection: `${ROOT}/collections`,
+};
+
+const categories = JSON.parse(readFileSync('src/data/categories.json', 'utf8'));
+const integrations = JSON.parse(readFileSync('src/data/integrations.json', 'utf8'));
+
+const errors = [];
+const fail = (file, rule, message) => errors.push(`${file}\n    [${rule}] ${message}`);
+
+// ---------- helpers ----------
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
+const TWEET_RE = /^https:\/\/(x|twitter)\.com\/[A-Za-z0-9_]{1,15}\/status\/\d+$/;
+const NAMED_CHARACTER_RE = /^[^·]+ · .+$/u;
+
+/** §5.6 rule 3 normalization: lowercase scheme+host, strip trailing slash, drop query + fragment. */
+function normalizeUrl(url) {
+  try {
+    const parsed = new URL(url);
+    parsed.search = '';
+    parsed.hash = '';
+    const host = parsed.host.toLowerCase();
+    const path = parsed.pathname.replace(/\/+$/, '');
+    return `${parsed.protocol.toLowerCase()}//${host}${path}`;
+  } catch {
+    return String(url).toLowerCase();
+  }
+}
+
+function levenshtein(a, b) {
+  const rows = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 0; j <= b.length; j += 1) rows[0][j] = j;
+  for (let i = 1; i <= a.length; i += 1) {
+    for (let j = 1; j <= b.length; j += 1) {
+      rows[i][j] = Math.min(
+        rows[i - 1][j] + 1,
+        rows[i][j - 1] + 1,
+        rows[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+  }
+  return rows[a.length][b.length];
+}
+
+/** §5.5 — exact canonical match required; alias or near-miss produces a "did you mean". */
+function suggestIntegration(value) {
+  const lower = String(value).toLowerCase();
+  const byAlias = integrations.find((i) => (i.aliases ?? []).some((a) => a.toLowerCase() === lower));
+  if (byAlias) return byAlias.canonical_name;
+  let best = null;
+  let bestScore = Infinity;
+  for (const entry of integrations) {
+    const score = levenshtein(lower, entry.canonical_name.toLowerCase());
+    if (score < bestScore) {
+      bestScore = score;
+      best = entry.canonical_name;
+    }
+  }
+  return bestScore <= Math.max(2, Math.round(lower.length / 3)) ? best : null;
+}
+
+function splitFrontmatter(raw, file) {
+  if (!raw.startsWith('---')) {
+    fail(file, '§5.2', 'file does not start with a YAML frontmatter block');
+    return null;
+  }
+  const end = raw.indexOf('\n---', 3);
+  if (end === -1) {
+    fail(file, '§5.2', 'frontmatter block is never closed');
+    return null;
+  }
+  const yamlText = raw.slice(3, end);
+  const body = raw.slice(end + 4).replace(/^\r?\n/, '');
+  // Astro parses frontmatter with a YAML 1.1 loader, which turns an UNQUOTED ISO
+  // timestamp into a Date — and §5.2's schema is `z.string().datetime()`, so the build
+  // fails with a type error. This parser (yaml 2.x, YAML 1.2) would happily pass it, so
+  // catch the divergence here rather than letting it surface 20 seconds later.
+  for (const match of yamlText.matchAll(
+    /^\s*(added_at|updated_at|verified_at|posted_at):\s*(?!["'])(\d{4}-\d{2}-\d{2}T[^\s#]+)/gm
+  )) {
+    fail(
+      file,
+      '§5.2',
+      `\`${match[1]}\` must be QUOTED ("${match[2]}") — an unquoted timestamp is parsed as a YAML date and fails the string schema`
+    );
+  }
+  try {
+    return { data: parseYaml(yamlText) ?? {}, body };
+  } catch (error) {
+    fail(file, '§5.2', `frontmatter is not valid YAML: ${error.message}`);
+    return null;
+  }
+}
+
+// ---------- load ----------
+const entries = [];
+for (const [type, dir] of Object.entries(CONTENT_DIRS)) {
+  if (!existsSync(dir)) continue;
+  for (const name of readdirSync(dir)
+    .filter((f) => f.endsWith('.md'))
+    .sort()) {
+    const file = join(dir, name);
+    const parsed = splitFrontmatter(readFileSync(file, 'utf8'), file);
+    if (!parsed) continue;
+    entries.push({ type, file, name, data: parsed.data, body: parsed.body });
+  }
+}
+
+// ---------- per-entry checks ----------
+const seenSlugs = new Map();
+const projectUrls = new Map();
+const repoUrls = new Map();
+const sourceUrls = new Map();
+const tweetUrls = new Map();
+
+for (const entry of entries) {
+  const { file, data, body, type } = entry;
+  const d = data ?? {};
+
+  // §5.6 rule 1 — filename must equal slug
+  const expected = basename(entry.name, '.md');
+  if (d.slug !== expected) {
+    fail(file, '§5.6 #1', `filename must equal slug — file is "${expected}.md" but slug is "${d.slug}"`);
+  }
+  if (typeof d.slug !== 'string' || !SLUG_RE.test(d.slug ?? '')) {
+    fail(file, '§5.2', `slug "${d.slug}" is not kebab-case ([a-z0-9] joined by single hyphens)`);
+  }
+
+  // §5.6 rule 2 — one slug namespace across all three types
+  if (d.slug) {
+    if (seenSlugs.has(d.slug)) {
+      fail(file, '§5.6 #2', `duplicate slug "${d.slug}" — already used by ${seenSlugs.get(d.slug)}`);
+    } else {
+      seenSlugs.set(d.slug, file);
+    }
+  }
+
+  if (d.type && d.type !== type) {
+    fail(file, '§5.2', `type "${d.type}" does not match its directory (${CONTENT_DIRS[type]})`);
+  }
+
+  for (const field of ['name', 'tagline', 'category', 'subcategory', 'added_at', 'updated_at']) {
+    if (!d[field]) fail(file, '§5.2', `missing required field \`${field}\``);
+  }
+  if (typeof d.tagline === 'string' && (d.tagline.length < 10 || d.tagline.length > 90)) {
+    fail(file, '§5.2', `tagline must be 10–90 chars (is ${d.tagline.length})`);
+  }
+
+  // §5.6 rule 4 — category/subcategory pair validity
+  const category = categories.find((c) => c.slug === d.category);
+  if (!category) {
+    fail(file, '§5.6 #4', `unknown category "${d.category}" — see src/data/categories.json`);
+  } else if (!category.subcategories.some((s) => s.slug === d.subcategory)) {
+    const options = category.subcategories.map((s) => s.slug).join(', ');
+    fail(
+      file,
+      '§5.6 #4',
+      `subcategory "${d.subcategory}" is not valid inside "${d.category}" — valid: ${options}`
+    );
+  }
+
+  // §5.6 rule 7 — date sanity
+  for (const field of ['added_at', 'updated_at', 'verified_at']) {
+    if (d[field] && !ISO_RE.test(String(d[field]))) {
+      fail(file, '§5.6 #7', `\`${field}\` must be ISO 8601 UTC ending in Z (got "${d[field]}")`);
+    }
+  }
+  if (d.added_at && d.updated_at && String(d.updated_at) < String(d.added_at)) {
+    fail(file, '§5.6 #7', 'updated_at must be ≥ added_at');
+  }
+  if (d.added_at && d.verified_at && String(d.verified_at) < String(d.added_at)) {
+    fail(file, '§5.6 #7', 'verified_at must be ≥ added_at');
+  }
+
+  // §5.6 rule 8 + Addendum B4 — status semantics
+  const status = d.status ?? 'live';
+  if (!['live', 'needs-update', 'deprecated', 'demo'].includes(status)) {
+    fail(file, '§5.6 #8', `unknown status "${status}"`);
+  }
+  if (status === 'demo' && d.verified_at) {
+    fail(
+      file,
+      'Addendum B4',
+      'demo entries must not carry verified_at — nothing fictional ever carries a verification claim'
+    );
+  }
+  if (!['deprecated', 'demo'].includes(status) && !d.verified_at) {
+    fail(file, '§10.1', `verified_at is required for status "${status}" (verified model, CONTEXT)`);
+  }
+
+  // §5.5 — controlled integration vocabulary
+  const vocabField = type === 'plugin' ? 'works_with' : 'integrations';
+  const used = Array.isArray(d[vocabField]) ? d[vocabField] : [];
+  for (const value of used) {
+    if (!integrations.some((i) => i.canonical_name === value)) {
+      const hint = suggestIntegration(value);
+      fail(
+        file,
+        '§5.5',
+        `unknown integration "${value}"${hint ? ` — did you mean \`${hint}\`?` : ''} (must match a canonical_name exactly)`
+      );
+    }
+  }
+
+  // §8.5 check 7 — no raw HTML in bodies (the stored-XSS vector)
+  const rawHtml = body.match(/<\s*(script|iframe|style|form|object|embed|meta|link|base|svg)\b/i);
+  if (rawHtml) {
+    fail(file, '§8.5 check 7', `raw HTML <${rawHtml[1]}> in the body — markdown only (§5.3, §10.2)`);
+  }
+  const onAttr = body.match(/\son[a-z]+\s*=\s*["']/i);
+  if (onAttr) {
+    fail(file, '§8.5 check 7', `inline event handler "${onAttr[0].trim()}" in the body — markdown only`);
+  }
+  // §8.5 check 10 — images in bodies need alt text (§4.6)
+  if (/!\[\s*\]\(/.test(body)) fail(file, '§8.5 check 10', 'image with empty alt text in the body');
+
+  // §5.6 rule 3 — URL dedupe (per the documented normalization)
+  const track = (map, url, label) => {
+    if (!url) return;
+    const key = normalizeUrl(url);
+    if (map.has(key)) {
+      fail(file, '§5.6 #3', `duplicate ${label} "${url}" — already used by ${map.get(key)}`);
+    } else {
+      map.set(key, file);
+    }
+  };
+
+  if (type === 'plugin') {
+    if (!d.project_url) fail(file, '§5.2', 'plugins require `project_url`');
+    if (!d.author?.handle || !d.author?.url) {
+      fail(file, '§5.2', 'plugins require an `author` with handle + url');
+    }
+    if (!Array.isArray(d.install_steps) || d.install_steps.length < 1) {
+      fail(file, '§5.2', 'plugins require at least one `install_steps` entry');
+    }
+    track(projectUrls, d.project_url, 'project_url');
+    track(repoUrls, d.repo_url, 'repo_url');
+    if (body.trim().length < 400) {
+      fail(file, '§5.3', `plugin body (description) must be ≥400 chars (is ${body.trim().length})`);
+    }
+  }
+
+  if (type === 'use-case') {
+    if (typeof d.name === 'string' && !NAMED_CHARACTER_RE.test(d.name)) {
+      fail(file, '§5.2', `name must use "<Bot name> · <Role>" (got "${d.name}")`);
+    }
+    if (
+      typeof d.what_it_does !== 'string' ||
+      d.what_it_does.length < 80 ||
+      d.what_it_does.length > 300
+    ) {
+      fail(file, '§5.2', 'what_it_does must be 80–300 chars');
+    }
+    if (
+      typeof d.replicability !== 'string' ||
+      d.replicability.length < 40 ||
+      d.replicability.length > 300
+    ) {
+      fail(file, '§5.2', 'replicability must be 40–300 chars');
+    }
+    for (const field of ['schedule', 'autonomy', 'difficulty', 'setup_minutes']) {
+      if (d[field] === undefined) fail(file, '§5.2', `use cases require \`${field}\``);
+    }
+    const tweets = Array.isArray(d.source_tweets) ? d.source_tweets : [];
+    if (tweets.length > 5) fail(file, '§5.2', 'source_tweets is capped at 5');
+    for (const tweet of tweets) {
+      if (!TWEET_RE.test(tweet?.url ?? '')) {
+        fail(file, '§5.2', `source_tweets url "${tweet?.url}" is not an x.com/<handle>/status/<id> URL`);
+      }
+      if (
+        typeof tweet?.excerpt !== 'string' ||
+        tweet.excerpt.length < 20 ||
+        tweet.excerpt.length > 280
+      ) {
+        fail(file, '§5.6 #10', 'source_tweets excerpt must be a partial quote of 20–280 chars');
+      }
+      if (String(tweet?.author_handle ?? '').startsWith('@')) {
+        fail(file, '§5.2', `author_handle "${tweet.author_handle}" must not include the leading @`);
+      }
+      track(tweetUrls, tweet?.url, 'source_tweets url');
+    }
+
+    // §5.3 body contract
+    const required = ["## How it's set up", '## Prompt', "## Why it's cool"];
+    const positions = required.map((heading) => body.indexOf(heading));
+    required.forEach((heading, index) => {
+      if (positions[index] === -1) fail(file, '§5.3', `missing required body section \`${heading}\``);
+    });
+    if (positions.every((p) => p !== -1)) {
+      const ordered = positions.every((p, i) => i === 0 || p > positions[i - 1]);
+      if (!ordered) fail(file, '§5.3', 'body sections must appear in the documented order');
+
+      const sectionText = (index) => {
+        const start = positions[index] + required[index].length;
+        const end = index + 1 < positions.length ? positions[index + 1] : body.length;
+        return body.slice(start, end).trim();
+      };
+
+      const setup = sectionText(0);
+      if (setup.length < 300) {
+        fail(file, '§5.3', `"## How it's set up" must be ≥300 chars (is ${setup.length})`);
+      }
+
+      const promptSection = sectionText(1);
+      const fences = promptSection.match(/```text\n[\s\S]*?```/g) ?? [];
+      if (fences.length !== 1) {
+        fail(
+          file,
+          '§5.3',
+          `"## Prompt" must contain exactly one \`\`\`text fenced block (found ${fences.length})`
+        );
+      } else {
+        const promptBody = fences[0].replace(/^```text\n/, '').replace(/```$/, '').trim();
+        if (promptBody.length < 200) {
+          fail(file, '§5.3', `the prompt block must be ≥200 chars (is ${promptBody.length})`);
+        }
+      }
+
+      const why = sectionText(2).replace(/## Example output[\s\S]*$/, '').trim();
+      if (why.length < 150) {
+        fail(file, '§5.3', `"## Why it's cool" must be ≥150 chars (is ${why.length})`);
+      }
+    }
+  }
+
+  if (type === 'collection') {
+    const members = Array.isArray(d.members) ? d.members : [];
+    if (members.length < 2) fail(file, '§5.6 #9', 'collections need at least 2 members');
+    if (members.length > 10) fail(file, '§5.6 #9', 'collections are capped at 10 members');
+    const slugs = members.map((m) => m?.slug);
+    if (new Set(slugs).size !== slugs.length) fail(file, '§5.2', 'duplicate member slugs');
+    for (const member of members) {
+      if (
+        typeof member?.reason !== 'string' ||
+        member.reason.length < 20 ||
+        member.reason.length > 200
+      ) {
+        fail(file, '§5.2', `member "${member?.slug}" needs a reason of 20–200 chars`);
+      }
+    }
+    if (body.trim().length < 200) {
+      fail(file, '§5.3', `collection body (rationale) must be ≥200 chars (is ${body.trim().length})`);
+    }
+  }
+
+  track(sourceUrls, d.source_url, 'source_url');
+}
+
+// ---------- cross-file: §5.6 rule 9, member resolution ----------
+const byType = new Map(entries.map((e) => [e.data?.slug, e.type]));
+for (const entry of entries.filter((e) => e.type === 'collection')) {
+  for (const member of entry.data?.members ?? []) {
+    const memberType = byType.get(member?.slug);
+    if (!memberType) {
+      fail(entry.file, '§5.6 #9', `dangling member "${member?.slug}" — no plugin or use case has that slug`);
+    } else if (memberType === 'collection') {
+      fail(entry.file, '§5.6 #9', `member "${member.slug}" is a collection — collections never nest`);
+    }
+  }
+}
+
+// ---------- report ----------
+const counts = {
+  plugins: entries.filter((e) => e.type === 'plugin').length,
+  'use-cases': entries.filter((e) => e.type === 'use-case').length,
+  collections: entries.filter((e) => e.type === 'collection').length,
+};
+const demo = entries.filter((e) => (e.data?.status ?? 'live') === 'demo').length;
+
+console.log(
+  `validate: ${entries.length} entries — ${counts.plugins} plugins, ${counts['use-cases']} use cases, ${counts.collections} collections (${demo} demo)`
+);
+
+if (errors.length) {
+  console.error(`\nvalidate: ${errors.length} problem(s)\n`);
+  for (const error of errors) console.error(`  ${error}\n`);
   process.exit(1);
 }
 
-console.log('validate: M0 scaffold files present');
+console.log('validate: OK');

@@ -1,0 +1,37 @@
+---
+// M2 route stub — §11 M2.4 requires `dist/plugins/<slug>/index.html` for every seed.
+// The full §4.3.3 landing-page template (breadcrumbs, status side card, PromptBlock,
+// InstallModal trigger, related/appears-in, OG + schema.org) is M3's job.
+// `data-pagefind-body` belongs here per §4.2.8a: entry detail pages are indexed.
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Chip from '../../components/Chip.astro';
+import { isoToDate, setupLabel } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const plugins = await getCollection('plugins');
+  return plugins.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+---
+
+<BaseLayout title={`${d.name} — grokbot.dev`} description={d.tagline}>
+  <article class="container-page flex flex-col gap-6 py-16" data-pagefind-body>
+    <h1 class="display-track font-display text-3xl text-text md:text-4xl">{d.name}</h1>
+    <p class="text-lg text-text-muted">{d.tagline}</p>
+
+    <div class="flex flex-wrap items-center gap-2">
+      {d.verified_at && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
+      {d.setup_minutes && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)} />}
+      {/* No href yet: the /categories/ hubs are M3. The chip links there once they exist. */}
+      <Chip variant="category" label={d.category} />
+    </div>
+
+    <div class="prose-body flex flex-col gap-4 text-base text-text">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

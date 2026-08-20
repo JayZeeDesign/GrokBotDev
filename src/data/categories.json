@@ -1,1 +1,111 @@
-[]
+[
+  {
+    "slug": "work",
+    "label": "Work",
+    "subcategories": [
+      { "slug": "email", "label": "Email" },
+      { "slug": "meetings", "label": "Meetings" },
+      { "slug": "docs", "label": "Docs" },
+      { "slug": "scheduling", "label": "Scheduling" },
+      { "slug": "tasks", "label": "Tasks" },
+      { "slug": "research", "label": "Research" }
+    ]
+  },
+  {
+    "slug": "sales",
+    "label": "Sales",
+    "subcategories": [
+      { "slug": "prospecting", "label": "Prospecting" },
+      { "slug": "crm", "label": "CRM" },
+      { "slug": "outreach", "label": "Outreach" },
+      { "slug": "calls", "label": "Calls" },
+      { "slug": "pipeline", "label": "Pipeline" }
+    ]
+  },
+  {
+    "slug": "marketing",
+    "label": "Marketing",
+    "subcategories": [
+      { "slug": "seo", "label": "SEO" },
+      { "slug": "content", "label": "Content" },
+      { "slug": "social", "label": "Social" },
+      { "slug": "ads", "label": "Ads" },
+      { "slug": "analytics", "label": "Analytics" },
+      { "slug": "competitive-intel", "label": "Competitive Intel" }
+    ]
+  },
+  {
+    "slug": "engineering",
+    "label": "Engineering",
+    "subcategories": [
+      { "slug": "code-review", "label": "Code Review" },
+      { "slug": "ci-cd", "label": "CI/CD" },
+      { "slug": "issues", "label": "Issues" },
+      { "slug": "docs", "label": "Docs" },
+      { "slug": "agents-ops", "label": "Agents Ops" }
+    ]
+  },
+  {
+    "slug": "support",
+    "label": "Support",
+    "subcategories": [
+      { "slug": "triage", "label": "Triage" },
+      { "slug": "replies", "label": "Replies" },
+      { "slug": "knowledge-base", "label": "Knowledge Base" },
+      { "slug": "escalation", "label": "Escalation" }
+    ]
+  },
+  {
+    "slug": "finance-ops",
+    "label": "Finance & Ops",
+    "subcategories": [
+      { "slug": "bookkeeping", "label": "Bookkeeping" },
+      { "slug": "invoicing", "label": "Invoicing" },
+      { "slug": "reporting", "label": "Reporting" },
+      { "slug": "subscriptions", "label": "Subscriptions" },
+      { "slug": "compliance", "label": "Compliance" }
+    ]
+  },
+  {
+    "slug": "data",
+    "label": "Data",
+    "subcategories": [
+      { "slug": "scraping", "label": "Scraping" },
+      { "slug": "monitoring", "label": "Monitoring" },
+      { "slug": "alerts", "label": "Alerts" },
+      { "slug": "dashboards", "label": "Dashboards" },
+      { "slug": "enrichment", "label": "Enrichment" }
+    ]
+  },
+  {
+    "slug": "personal",
+    "label": "Personal",
+    "subcategories": [
+      { "slug": "home", "label": "Home" },
+      { "slug": "travel", "label": "Travel" },
+      { "slug": "health", "label": "Health" },
+      { "slug": "learning", "label": "Learning" },
+      { "slug": "family", "label": "Family" },
+      { "slug": "money", "label": "Money" }
+    ]
+  },
+  {
+    "slug": "trading-crypto",
+    "label": "Trading & Crypto",
+    "subcategories": [
+      { "slug": "markets", "label": "Markets" },
+      { "slug": "portfolio", "label": "Portfolio" },
+      { "slug": "alerts", "label": "Alerts" }
+    ]
+  },
+  {
+    "slug": "fun",
+    "label": "Fun",
+    "subcategories": [
+      { "slug": "creative", "label": "Creative" },
+      { "slug": "games", "label": "Games" },
+      { "slug": "roleplay", "label": "Roleplay" },
+      { "slug": "media", "label": "Media" }
+    ]
+  }
+]

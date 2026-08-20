@@ -154,3 +154,142 @@ orchestrator in the M1 report. (A4's hero sim would be an eighth when M3 lands i
 - **Regression checks:** M0.4 raw-colour grep returns nothing; `npm run build` exits 0;
   `check-links` → 0 broken internal links; `scripts/check-contrast.mjs` → every gated pair
   clears its §4.6 floor in both modes (one A10-PENDING row, by design).
+
+## 2026-08-20 — M2 content model + seed import
+
+### ⛔ ESCALATION (§12.8) — 24 of 26 use cases are HELD, not imported
+
+**The blocker, stated plainly: the seed corpus contains no prompts.** All 26 files in
+`seed-use-cases/` plus the three `candidates/wave-*.md` sweeps contain **zero fenced code
+blocks** (`grep -c '```'` → 0 on every file). They are 65–120-word research notes: source
+URL, author, engagement, a "WHAT" summary, receipts, category, verdict. Seed 001 is the one
+exception — it carries the verbatim thread.
+
+§5.3 requires every use case to ship `## How it's set up` (≥300 chars), `## Prompt` (exactly
+one fenced block, ≥200 chars) and `## Why it's cool` (≥150 chars). §11 M2.3 requires "real
+prompts … no lorem ipsum". Producing those for 24 entries means **writing prompts the named
+authors never published** and shipping them under `status: live` + `verified_at` + a dofollow
+author link + an embedded source post. That is the exact thing Addendum B4 exists to prevent
+("nothing fictional ever carries a verification claim") and it fails §10.1 item 1, which
+defines verification as having *read the complete prompt*.
+
+**Second, smaller blocker:** `x.com` is not fetchable from this environment (HTTP 402 on
+every status URL tried). So the §10.1 item-2 link re-resolution cannot be performed for any
+X-sourced entry, and no post text can be captured to quote. GitHub *is* fetchable, which is
+why the repo-backed entries below could be verified properly.
+
+This is a **product decision, not an executor call**: nothing in §4's entry template
+distinguishes "the author's published prompt" from "our reconstruction", so shipping
+reconstructions silently misleads on the one axis the site sells (receipts). Options for the
+operator, cheapest first:
+
+1. **Capture the prompts** — a Scout pass that opens each source post/thread and saves the
+   published prompt text, then import. Highest fidelity; needs X access this box does not have.
+2. **Ship reconstructions with a visible provenance line** — e.g. "prompt reconstructed by the
+   Curator from @handle's post" rendered next to the PromptBlock. Requires a §4 component/copy
+   change and a §10.1 amendment defining this class of entry. Honest, but it is new policy.
+3. **Import only repo-backed entries** (what M2 did) and let the rest land as the Scouts
+   capture them. Slowest to volume, zero trust cost.
+
+Nothing was guessed and nothing fictional was written. The 24 held entries are listed in
+`seed-use-cases/INDEX.md` and remain untouched.
+
+### Imported (8 entries — all real, all source-attributed, zero demo)
+
+| Type | Slug | Basis |
+|---|---|---|
+| plugin | `compound-engineering` | repo + project page verified |
+| plugin | `knowz-and-knowzcode` | repo + product page verified |
+| plugin | `discord-grok-bot-bridge` | repo verified; forum receipt |
+| plugin | `imessage-grok-bot` | repo verified |
+| plugin | `aaron-marketing-skills` | **swap-in** (see checklist) |
+| use-case | `grok-ship` | verbatim thread (seed 001) + public repo `GROK_SHIP.md` |
+| use-case | `firstmate` | public repo `GROK_BOT_FIRSTMATE.md` charter |
+| collection | `grok-ship-firstmate` | B4's designated pairing; both members exist |
+
+`collection-02-research-you-can-trust` is **held**: its members (`x-to-notion-research-bot`,
+`tiered-research-swarm`, `factored-digest`) are three of the 24 held use cases, and §5.6 rule
+9 makes a dangling member a build failure. It imports the moment those three land.
+
+### §10.1 read-level checklist — per-entry outcomes (run 2026-08-20, via live fetches)
+
+| Entry | 1 read | 2 links resolve | 3 no funneling | 4 no injection | 5 attribution | Verdict |
+|---|---|---|---|---|---|---|
+| `compound-engineering` | README read; Grok Bot section confirmed ("uses your Cursor account and plugin library") | both 200, real content | guide has newsletter CTAs but the listing's subject is the open plugin repo | none | EveryInc, matches repo owner | **PASS** |
+| `knowz-and-knowzcode` | README read; "Knowz + KnowzCode for Grok Bot and Cursor"; install path documented | both 200 | knowz.io is a real product, not a signup wall | none — README explicitly says "do not paste API keys in chat" | knowz-io | **PASS** |
+| `discord-grok-bot-bridge` | README read; Discord ↔ Grok Bot connector; token handling documented | 200 | open source, MIT, self-hosted | none — fail-closed callback auth, `.gitignore` excludes `.env` | FlyOverCoderKY | **PASS** (labelled advanced/unofficial in the body) |
+| `imessage-grok-bot` | README read; launchd helper, nonce + native macOS send dialog | both 200 | open source | none — structured JSON protocol, message content never parsed as instructions | jeffhuber | **PASS** |
+| `appeeky-aso-skills` | README read: targets "Cursor, Claude Code, or any Agent Skills-compatible AI assistant" — **does not name Grok Bot** | repo 200 | n/a | none found | Eronred/@imeronn mapping unconfirmed | **FAIL** — fails "repo README matches claims" + the uses-Grok≠runs-on-GrokBot rule. Its only Grok Bot tie was seed #018's X post, which cannot be opened (402). **Dropped.** |
+| `aaron-marketing-skills` | README read; names "xAI's **Grok Bot**" as a named-bot host and ships a Grok Bot setup pack (`grok/bot-cards.md`) | 200, 2.6k stars, Apache-2.0 | keyless by default; paid connectors opt-in | none | aaron-he-zhu | **PASS** — swapped in per the operator ruling |
+| `grok-ship` | full thread captured in seed 001 + `GROK_SHIP.md` fetched and read | repo 200; **X URL not re-resolvable (402)** | open repo | none | @kunchenguid, thread is the genuine origin | **PASS** (with the X caveat) |
+| `firstmate` | `GROK_BOT_FIRSTMATE.md` charter fetched and read | repo 200; **X URL not re-resolvable (402)** | open repo | none | @kunchenguid | **PASS** (with the X caveat) |
+
+`firstmate` ships with **no `source_tweets`**: its source post exists but its text was never
+captured, and inventing an excerpt would mean fabricating a quote attributed to a real
+person. Seed 002's own file says "TODO before publish: thread capture". The entry stands on
+the public repo with the author credited; add the tweet when the capture lands.
+
+### Post-launch re-verification (agent team)
+
+Smoke tests owed on every imported plugin — none has been run in a live Grok Bot account
+(this box has no Grok Bot / Cursor session). From `seed-plugins-collections/REVIEW.md`:
+
+1. `compound-engineering` — install in Cursor, open Grok Bot on the same account, confirm the plugin appears in the Bot's tools and run one small plan/review workflow.
+2. `knowz-and-knowzcode` — install both separately, run status/setup, confirm no key-paste path is required.
+3. `discord-grok-bot-bridge` — confirm the gateway is private, tokens never enter chat, and one Discord message round-trips in a private allowlisted server.
+4. `imessage-grok-bot` — latest release on supported macOS: confirm read-only triage, Full Disk Access path, allowlist behaviour and the native send confirmation.
+5. `aaron-marketing-skills` — run the projection script, install one bot card in Grok Bot, confirm an auditor gate fires on a deliberately weak draft.
+6. `grok-ship` / `firstmate` — re-open both source threads once X access exists; capture the Firstmate post text so `firstmate` can carry its `source_tweets` entry.
+
+### Deviations & decisions (M2)
+
+- **Timestamps must be QUOTED in frontmatter.** §5.3's skeleton shows them unquoted, but
+  Astro parses frontmatter with a YAML 1.1 loader, which turns an unquoted ISO timestamp into
+  a `Date` — and §5.2's schema is `z.string().datetime()`, so the build fails with a type
+  error. §5.2 is canonical and owns the schema, so the fix went into the content, not the
+  schema. `validate.mjs` now rejects unquoted timestamps directly, because the standalone
+  parser (yaml 2.x, YAML 1.2) reads them as strings and would otherwise pass a file the build
+  rejects. **§5.3's skeleton is stale on this point.**
+- **Status enum gains `demo`** (B4) plus a rule the addendum implies but never wrote: a demo
+  entry with `verified_at` is now a hard schema error, in both `content.config.ts` and
+  `validate.mjs`. Everything else in `content.config.ts` is §5.2 verbatim.
+- **Dependency justification (§12.5):** `yaml` moved from a transitive Astro dependency to an
+  explicit `devDependency`. Zero new installs — `validate.mjs` must parse frontmatter without
+  booting Astro, and relying on a hoisted transitive package is fragile.
+- **`--root` flag on `validate.mjs`** so the same rules run against `scripts/fixtures/`
+  (M2.5). Fixtures live outside `content/` and are never loaded by Astro.
+- **M2 route stubs for the three entry types** (`src/pages/{plugins,use-cases,collections}/[slug].astro`)
+  — M2.4 requires `dist/<lane>/<slug>/index.html` to exist, which needs a route. These are
+  deliberately minimal (h1, tagline, chips, body) and carry `data-pagefind-body` per §4.2.8a.
+  **M3 replaces them with the full §4.3.3 / §4.3.5 / §4.3.7 templates.** Their category chip
+  renders without an href because the `/categories/` hubs do not exist until M3.
+- **§5.8's fictional names ship nowhere**: `grep -ril "mail-sorter\|r2-chief-of-staff\|lando"
+  content/` returns nothing. The only place those names still appear is the M1 dev-only
+  component gallery, which never reaches production.
+- **Carry-over still standing:** M0's route stubs carry `data-pagefind-body` although §4.2.8a
+  limits it to entry detail pages + `/plugin-builder/`. M3.7 asserts the indexed-page count,
+  so M3 must strip it from the non-entry pages. Current index: 22 pages.
+
+### M2 exit criteria — evidence (2026-08-20)
+
+- **M2.1 — schemas + vocabularies.** `src/content.config.ts` implements §5.2 verbatim (+ the
+  B4 `demo` amendment). `src/data/categories.json` is §5.4's tree verbatim: 10 categories,
+  49 subcategories. `src/data/integrations.json` carries all 24 §5.5 canonical names with
+  aliases, urls and auth_types.
+- **M2.2 — `npm run validate` exits 0** on the corpus: `validate: 8 entries — 5 plugins,
+  2 use cases, 1 collections (0 demo)` → `validate: OK`.
+- **M2.3 — entry count: 8, not 12.** Amended per the live-manifest rule and the escalation
+  above: 5 plugins (target met, one swap) + 2 use cases + 1 collection. Expected under the
+  manifest was 26 + 5 + 2 = 33; **25 are held** (24 use cases + 1 collection). Every imported
+  entry has all required §5 fields populated with real, source-attributed content.
+- **M2.4 — `npm run build` emits an entry page per seed.** All 8 exist:
+  `dist/plugins/{aaron-marketing-skills,compound-engineering,discord-grok-bot-bridge,imessage-grok-bot,knowz-and-knowzcode}/index.html`,
+  `dist/use-cases/{firstmate,grok-ship}/index.html`, `dist/collections/grok-ship-firstmate/index.html`.
+- **M2.5 — negative fixtures.** `node scripts/validate.mjs --root scripts/fixtures` exits **1**
+  with 6 problems across all four required failure classes: bad slug (both the kebab-case and
+  filename rules), unknown integration (**closest-match suggestions visible** — "did you mean
+  `GitHub`?" for `Github`, "did you mean `Google Calendar`?" for the alias `gcal`), duplicate
+  `project_url` (caught through trailing-slash + query + fragment + case normalization), and
+  raw `<script>` HTML in a body (§8.5 check 7).
+- **Also green:** `npx astro check` → 0 errors, 0 warnings; `npm run build` → exit 0 (validate,
+  contrast, links and audit-scripts gates all pass); zero `demo` entries.

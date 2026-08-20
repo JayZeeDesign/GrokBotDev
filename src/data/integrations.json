@@ -1,1 +1,146 @@
-[]
+[
+  {
+    "canonical_name": "Slack",
+    "aliases": ["slack.com", "slack workspace"],
+    "url": "https://slack.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Gmail",
+    "aliases": ["google mail", "gmail.com", "google email"],
+    "url": "https://mail.google.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Notion",
+    "aliases": ["notion.so", "notion database"],
+    "url": "https://notion.so",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "GitHub",
+    "aliases": ["github.com", "gh", "git hub"],
+    "url": "https://github.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Google Calendar",
+    "aliases": ["gcal", "google cal", "calendar"],
+    "url": "https://calendar.google.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Google Sheets",
+    "aliases": ["gsheets", "google spreadsheet", "sheets"],
+    "url": "https://sheets.google.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Google Docs",
+    "aliases": ["gdocs", "docs", "google doc"],
+    "url": "https://docs.google.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Google Drive",
+    "aliases": ["gdrive", "drive"],
+    "url": "https://drive.google.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Salesforce",
+    "aliases": ["sfdc", "salesforce.com"],
+    "url": "https://salesforce.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "HubSpot",
+    "aliases": ["hub spot", "hubspot crm"],
+    "url": "https://hubspot.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "X",
+    "aliases": ["twitter", "x.com", "twitter.com"],
+    "url": "https://x.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Linear",
+    "aliases": ["linear.app"],
+    "url": "https://linear.app",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Jira",
+    "aliases": ["atlassian jira", "jira cloud"],
+    "url": "https://atlassian.com/software/jira",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Stripe",
+    "aliases": ["stripe.com"],
+    "url": "https://stripe.com",
+    "auth_type": "api-key"
+  },
+  {
+    "canonical_name": "Shopify",
+    "aliases": ["shopify.com", "shopify store"],
+    "url": "https://shopify.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Airtable",
+    "aliases": ["air table", "airtable.com"],
+    "url": "https://airtable.com",
+    "auth_type": "api-key"
+  },
+  {
+    "canonical_name": "Discord",
+    "aliases": ["discord.com", "discord server"],
+    "url": "https://discord.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Telegram",
+    "aliases": ["telegram.org", "telegram bot"],
+    "url": "https://telegram.org",
+    "auth_type": "api-key"
+  },
+  {
+    "canonical_name": "WhatsApp",
+    "aliases": ["whats app", "whatsapp business"],
+    "url": "https://whatsapp.com",
+    "auth_type": "api-key"
+  },
+  {
+    "canonical_name": "Zapier",
+    "aliases": ["zapier.com", "zaps"],
+    "url": "https://zapier.com",
+    "auth_type": "api-key"
+  },
+  {
+    "canonical_name": "Outlook",
+    "aliases": ["microsoft outlook", "outlook.com", "office 365 mail"],
+    "url": "https://outlook.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Trello",
+    "aliases": ["trello.com", "trello board"],
+    "url": "https://trello.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "Figma",
+    "aliases": ["figma.com"],
+    "url": "https://figma.com",
+    "auth_type": "oauth"
+  },
+  {
+    "canonical_name": "QuickBooks",
+    "aliases": ["quick books", "qbo", "intuit quickbooks"],
+    "url": "https://quickbooks.intuit.com",
+    "auth_type": "oauth"
+  }
+]
