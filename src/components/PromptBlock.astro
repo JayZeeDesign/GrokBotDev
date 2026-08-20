@@ -1,0 +1,71 @@
+---
+// §4.2.13 PromptBlock — mono prompt + copy + the paste-into-Grok microhint.
+// Never syntax-highlighted: prompts are prose, not code (§4.2.13).
+// Copy CP-024 (KEEP): microhint `then paste it into Grok`. The canonical CTA sentence
+// itself (CP-023/CP-112, FENCED) is page copy placed under the block, not this component.
+import CopyButton from './CopyButton.astro';
+
+interface Props {
+  /** Raw prompt text from the entry's `prompt` field (§05). */
+  prompt: string;
+  label?: string;
+  /** Default unclamped; index previews pass 12 → fade mask + `view full prompt`. */
+  maxLines?: number;
+  /** Target for the `view full prompt` link when clamped. */
+  viewFullHref?: string;
+  copyLabel?: string;
+  class?: string;
+}
+
+const {
+  prompt,
+  label = 'prompt',
+  maxLines,
+  viewFullHref,
+  copyLabel = 'copy',
+  class: className = '',
+} = Astro.props;
+
+const clamped = typeof maxLines === 'number' && maxLines > 0;
+---
+
+<div
+  class:list={['rounded-sm border border-border bg-surface-raised', className]}
+  data-copy-source-root
+>
+  <div class="flex items-center justify-between gap-4 border-b border-border px-4 py-2">
+    <span class="font-mono text-xs lowercase text-text-muted">{label}</span>
+    <CopyButton text={prompt} label={copyLabel} size="sm" />
+  </div>
+
+  <div
+    class:list={['prompt-body', clamped && 'prompt-body--clamped']}
+    style={clamped ? `--prompt-max-lines:${maxLines}` : undefined}
+  >
+    <pre class="m-0 p-4 font-mono text-sm whitespace-pre-wrap text-text select-all"><code>{prompt}</code></pre>
+  </div>
+
+  <div class="flex items-center justify-between gap-4 px-4 py-2">
+    <span class="font-mono text-xs lowercase text-text-muted">then paste it into Grok</span>
+    {
+      clamped && viewFullHref && (
+        <a
+          href={viewFullHref}
+          class="font-mono text-xs lowercase text-text-muted underline underline-offset-4 hover:text-accent-text"
+        >
+          view full prompt
+        </a>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .prompt-body--clamped {
+    position: relative;
+    max-height: calc(var(--prompt-max-lines, 12) * 1.25rem + 32px);
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  }
+</style>

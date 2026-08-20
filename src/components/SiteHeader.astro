@@ -1,39 +1,66 @@
 ---
+// §4.2.2 SiteHeader — global header. Sticky is OFF (static, scrolls away), 1px bottom
+// border, background --color-bg (not surface). NO Stats link in the header: Stats lives
+// in the footer only (§4.2.4, §9.9).
+// Nav: plugins · use cases · collections · builder bot · wall — B2 adds /wall/ to the
+// header nav (mono, lowercase). Right cluster: SearchInput link-mode, the /agent door
+// (leading ▪ at 8px — the one place "agent" appears in the UI), and the one solid
+// Button → /submit/.
+// §4.5 nav collapse — NO JS, NO hamburger: the right cluster wraps below md and the
+// search input collapses to a `search` link. Every nav item stays visible at every width.
 import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
+import SearchInput from './SearchInput.astro';
+import Button from './Button.astro';
 
 interface Props {
   currentPath: string;
 }
 
 const { currentPath } = Astro.props;
-const isCurrent = (href: string) => href === '/' ? currentPath === '/' : currentPath.startsWith(href);
-const centerNav = [
+const isCurrent = (href: string) =>
+  href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+
+const nav = [
   { href: '/plugins/', label: 'plugins' },
   { href: '/use-cases/', label: 'use cases' },
   { href: '/collections/', label: 'collections' },
+  { href: '/plugin-builder/', label: 'builder bot' },
   { href: '/wall/', label: 'wall' },
-  { href: '/contribute/', label: 'contribute' },
 ];
 ---
 
-<header class="border-b border-border bg-bg">
+<header class="border-b border-border bg-bg" data-pagefind-ignore>
   <div class="container-page flex min-h-16 flex-wrap items-center gap-x-8 gap-y-4 py-4">
     <a href="/" class="flex items-center gap-3" aria-label="grokbot.dev home">
-      <MarkGlyph size={18} />
-      <span class="display-track font-display text-sm font-semibold text-text">grokbot.dev</span>
+      <MarkGlyph size={18} class="text-accent" />
+      <span class="display-track font-display text-sm font-semibold lowercase text-text">
+        grokbot.dev
+      </span>
     </a>
 
-    <nav class="flex flex-1 flex-wrap items-center gap-x-5 gap-y-2" aria-label="primary">
-      {centerNav.map((item) => (
-        <NavLink href={item.href} label={item.label} current={isCurrent(item.href)} />
-      ))}
+    <nav class="flex flex-1 flex-wrap items-center gap-x-6 gap-y-2" aria-label="main">
+      {nav.map((item) => <NavLink href={item.href} label={item.label} current={isCurrent(item.href)} />)}
     </nav>
 
-    <nav class="flex items-center gap-x-5" aria-label="utility">
-      <NavLink href="/agent/" label="▪ agent" current={isCurrent('/agent/')} />
-      <NavLink href="https://github.com/ZeroPointRepo/GrokBotDev" label="github" external />
-      <NavLink href="/search/" label="search" current={isCurrent('/search/')} />
-    </nav>
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+      <SearchInput mode="link" class="hidden md:flex" />
+      <NavLink href="/search/" label="search" current={isCurrent('/search/')} class="md:hidden" />
+
+      <span class="inline-flex items-center gap-1">
+        <span aria-hidden="true" class="agent-glyph text-accent">▪</span>
+        <NavLink href="/agent/" label="/agent" current={isCurrent('/agent/')} />
+      </span>
+
+      <Button href="/submit/" variant="solid" size="sm" label="submit" />
+    </div>
   </div>
 </header>
+
+<style>
+  /* §4.2.2 — the machine door is marked with an 8px ▪ glyph. */
+  .agent-glyph {
+    font-size: 8px;
+    line-height: 1;
+  }
+</style>

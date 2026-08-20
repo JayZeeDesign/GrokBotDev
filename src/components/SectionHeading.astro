@@ -1,0 +1,34 @@
+---
+// §4.2.6 SectionHeading — h2/h3 with an optional right-aligned action link.
+// Never renders h1: h1 belongs to page templates (§4.6 heading hierarchy).
+
+interface Props {
+  title: string;
+  level?: 2 | 3;
+  action?: { label: string; href: string };
+  id?: string;
+  /** `default` = --text-2xl (h2) · `sub` = --text-xl (h3). */
+  variant?: 'default' | 'sub';
+  class?: string;
+}
+
+const { title, level, action, id, variant = 'default', class: className = '' } = Astro.props;
+
+const resolvedLevel = level ?? (variant === 'sub' ? 3 : 2);
+const Tag = resolvedLevel === 3 ? 'h3' : 'h2';
+const sizing = variant === 'sub' ? 'text-xl' : 'text-2xl';
+---
+
+<div class:list={['flex flex-wrap items-baseline justify-between gap-4', className]}>
+  <Tag id={id} class:list={['font-display text-text display-track', sizing]}>{title}</Tag>
+  {
+    action && (
+      <a
+        href={action.href}
+        class="font-mono text-sm lowercase text-text-muted hover:text-accent-text"
+      >
+        {action.label}
+      </a>
+    )
+  }
+</div>

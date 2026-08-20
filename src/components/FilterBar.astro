@@ -1,0 +1,133 @@
+---
+// §4.2.9 FilterBar — server-rendered filter menus. ZERO JS state: every option is a
+// link to a §06 hub/facet URL and selection state comes from the current URL.
+// SANCTIONED ISLAND #6 is the *enhancement only*: close sibling <details> on toggle
+// (one open menu at a time) and close on Escape, returning focus to the <summary>.
+// With JS off the menus still open/close natively and may overlap — acceptable, since
+// every option is also reachable from the hub cross-links (§6.10).
+import Chip from './Chip.astro';
+import { monoLabel } from '../lib/format';
+import type { FacetOption } from '../lib/types';
+
+interface Props {
+  facets: Array<'category' | 'integration' | 'type'>;
+  options: {
+    categories?: FacetOption[];
+    integrations?: FacetOption[];
+    types?: FacetOption[];
+  };
+  clearHref: string;
+  class?: string;
+}
+
+const { facets, options, clearHref, class: className = '' } = Astro.props;
+
+const byFacet = {
+  category: options.categories ?? [],
+  integration: options.integrations ?? [],
+  type: options.types ?? [],
+};
+
+const active = facets
+  .map((facet) => ({ facet, option: byFacet[facet].find((entry) => entry.current) }))
+  .filter((row): row is { facet: 'category' | 'integration' | 'type'; option: FacetOption } =>
+    Boolean(row.option)
+  );
+---
+
+<div class:list={['flex flex-col gap-3', className]} data-filter-bar data-pagefind-ignore>
+  <div class="flex flex-wrap items-center gap-3">
+    {
+      facets.map((facet) => {
+        const list = byFacet[facet];
+        const current = list.find((entry) => entry.current);
+        return (
+          <details class="filterMenu relative" data-filter-menu>
+            <summary class="inline-flex min-h-6 cursor-pointer list-none items-center gap-2 rounded-sm border border-border-interactive px-3 py-1 font-mono text-sm lowercase text-text-muted hover:text-text">
+              {current ? (
+                <span class="text-accent-text">
+                  {facet}: {monoLabel(current.label)}
+                </span>
+              ) : (
+                <span>{facet}</span>
+              )}
+              <span aria-hidden="true">▾</span>
+            </summary>
+            <ul class="filterMenu__panel absolute z-20 mt-2 min-w-48 rounded-sm border border-border bg-surface-raised p-2">
+              {list.map((option) => (
+                <li>
+                  <a
+                    href={option.href}
+                    aria-current={option.current ? 'true' : undefined}
+                    class:list={[
+                      'flex min-h-6 items-center justify-between gap-4 rounded-sm px-2 py-1 font-mono text-sm lowercase',
+                      option.current ? 'text-accent-text' : 'text-text hover:text-accent-text',
+                    ]}
+                  >
+                    <span>
+                      {option.current && <span aria-hidden="true">▪ </span>}
+                      {monoLabel(option.label)}
+                    </span>
+                    <span class="text-text-muted">{option.count}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </details>
+        );
+      })
+    }
+
+    <a
+      href={clearHref}
+      class="inline-flex min-h-6 items-center px-2 font-mono text-sm lowercase text-text-muted hover:text-accent-text"
+    >
+      clear
+    </a>
+  </div>
+
+  {
+    active.length > 0 && (
+      <div class="flex flex-wrap items-center gap-2">
+        {active.map((row) => (
+          <Chip variant={row.facet} label={row.option.label} removeHref={clearHref} />
+        ))}
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .filterMenu > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .filterMenu__panel {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+</style>
+
+<script>
+  // Enhancement: one open menu at a time + Escape closes and restores focus.
+  document.querySelectorAll<HTMLElement>('[data-filter-bar]').forEach((bar) => {
+    const menus = Array.from(bar.querySelectorAll<HTMLDetailsElement>('[data-filter-menu]'));
+
+    menus.forEach((menu) => {
+      menu.addEventListener('toggle', () => {
+        if (!menu.open) return;
+        menus.forEach((sibling) => {
+          if (sibling !== menu) sibling.open = false;
+        });
+      });
+    });
+
+    bar.addEventListener('keydown', (event) => {
+      if ((event as KeyboardEvent).key !== 'Escape') return;
+      const open = menus.find((menu) => menu.open);
+      if (!open) return;
+      open.open = false;
+      open.querySelector('summary')?.focus();
+    });
+  });
+</script>

@@ -1,29 +1,198 @@
 ---
+// §4.2.1 MarkGlyph — Addendum A3 (BINDING) supersedes §4.1.5's "filled square".
+// Mark A "The Index, evolved": a 3x3 dot grid whose top-left + top-centre cells are
+// ~20deg-tilted capsules (slash eyes) and whose bottom-centre cell is the accent dot.
+// A3 hard rules honoured here: never ship the plain 3x3 (the tilt + accent dot ARE the
+// logo) and no circle silhouette is ever used as the mark. The mark is a SYSTEM —
+// one component, one `variant` prop.
+// Future identity = swap token values (tokens.css) + replace the SVG below (§4.1.5).
+
 interface Props {
+  /** A3 variant system. `mark` = the bare glyph every §4 wireframe calls "MarkGlyph". */
+  variant?: 'mark' | 'logo' | 'favicon' | 'skeleton' | 'divider' | 'status';
+  /** Glyph size in px (§4.2.1 default 12; lockup/tile variants scale from it). */
   size?: number;
+  /**
+   * A3 `status`: pulse-during-sweep is a POST-LAUNCH flag — the prop is built and
+   * it SHIPS OFF. Nothing in the site may pass `pulse` until the flag is lifted.
+   */
+  pulse?: boolean;
+  /** Accessible text for the non-decorative variants (`logo`, `favicon`, `status`). */
+  label?: string;
   class?: string;
 }
 
-const { size = 18, class: className = '' } = Astro.props;
-const style = `inline-size: ${size}px; block-size: ${size}px;`;
+const {
+  variant = 'mark',
+  size = 12,
+  pulse = false,
+  label,
+  class: className = '',
+} = Astro.props;
+
+const WORDMARK = 'grokbot.dev';
+
+/** The one geometry, shared by every variant (A3: one mark, one system). */
+function grid(opts: { pulse?: boolean; skeleton?: boolean } = {}): string {
+  const cell = (index: number) => (opts.skeleton ? ` style="--cell:${index}"` : '');
+  const accentClass = `mark-accent fill-accent${opts.pulse ? ' mark-accent--pulse' : ''}`;
+  return [
+    '<g class="fill-current">',
+    `<rect x="6" y="5" width="7" height="10" rx="3.5" transform="rotate(-20 9.5 10)"${cell(0)} />`,
+    `<rect x="14.5" y="5" width="7" height="10" rx="3.5" transform="rotate(-20 18 10)"${cell(1)} />`,
+    `<circle cx="27" cy="10" r="3.25"${cell(2)} />`,
+    `<circle cx="9.5" cy="18" r="3.25"${cell(3)} />`,
+    `<circle cx="18" cy="18" r="3.25"${cell(4)} />`,
+    `<circle cx="27" cy="18" r="3.25"${cell(5)} />`,
+    `<circle cx="9.5" cy="27" r="3.25"${cell(6)} />`,
+    `<circle cx="27" cy="27" r="3.25"${cell(8)} />`,
+    '</g>',
+    `<circle class="${accentClass}" cx="18" cy="27" r="3.25"${cell(7)} />`,
+  ].join('');
+}
+
+const glyphPx = variant === 'logo' ? Math.round(size * 1.4) : size;
+const glyphStyle = `inline-size:${glyphPx}px;block-size:${glyphPx}px;`;
+const tilePx = Math.round(size * 1.75);
 ---
 
-<svg
-  viewBox="0 0 36 36"
-  aria-hidden="true"
-  role="presentation"
-  class:list={["shrink-0 text-text", className]}
-  style={style}
->
-  <g class="fill-current">
-    <rect x="6" y="5" width="7" height="10" rx="3.5" transform="rotate(-20 9.5 10)" />
-    <rect x="14.5" y="5" width="7" height="10" rx="3.5" transform="rotate(-20 18 10)" />
-    <circle cx="27" cy="10" r="3.25" />
-    <circle cx="9.5" cy="18" r="3.25" />
-    <circle cx="18" cy="18" r="3.25" />
-    <circle cx="27" cy="18" r="3.25" />
-    <circle cx="9.5" cy="27" r="3.25" />
-    <circle cx="27" cy="27" r="3.25" />
-  </g>
-  <circle class="fill-accent" cx="18" cy="27" r="3.25" />
-</svg>
+{
+  variant === 'logo' && (
+    <span class:list={['inline-flex items-center gap-2', className]}>
+      <svg
+        viewBox="0 0 36 36"
+        class="mark-grid shrink-0 text-text"
+        style={glyphStyle}
+        aria-hidden="true"
+        role="presentation"
+        set:html={grid()}
+      />
+      <span class="display-track font-display text-sm font-semibold lowercase text-text">
+        {label ?? WORDMARK}
+      </span>
+    </span>
+  )
+}
+
+{
+  variant === 'favicon' && (
+    <span
+      class:list={[
+        'inline-flex items-center justify-center rounded-sm border border-border bg-surface',
+        className,
+      ]}
+      style={`inline-size:${tilePx}px;block-size:${tilePx}px;`}
+    >
+      <svg
+        viewBox="0 0 36 36"
+        class="mark-grid text-text"
+        style={glyphStyle}
+        aria-hidden={label ? undefined : 'true'}
+        role={label ? 'img' : 'presentation'}
+        aria-label={label}
+        set:html={grid()}
+      />
+    </span>
+  )
+}
+
+{
+  variant === 'divider' && (
+    <span class:list={['flex w-full items-center gap-4', className]} aria-hidden="true">
+      <span class="h-px flex-1 bg-border" />
+      <svg
+        viewBox="0 0 36 36"
+        class="mark-grid shrink-0 text-text-muted"
+        style={glyphStyle}
+        set:html={grid()}
+      />
+      <span class="h-px flex-1 bg-border" />
+    </span>
+  )
+}
+
+{
+  variant === 'status' && (
+    <span class:list={['inline-flex items-center gap-2', className]}>
+      <svg
+        viewBox="0 0 36 36"
+        class="mark-grid shrink-0 text-text-muted"
+        style={glyphStyle}
+        aria-hidden="true"
+        role="presentation"
+        set:html={grid({ pulse })}
+      />
+      {label && <span class="font-mono text-xs lowercase text-text-muted">{label}</span>}
+    </span>
+  )
+}
+
+{
+  variant === 'skeleton' && (
+    <svg
+      viewBox="0 0 36 36"
+      class:list={['mark-grid mark-grid--skeleton shrink-0 text-text-muted', className]}
+      style={glyphStyle}
+      aria-hidden="true"
+      role="presentation"
+      set:html={grid({ skeleton: true })}
+    />
+  )
+}
+
+{
+  variant === 'mark' && (
+    <svg
+      viewBox="0 0 36 36"
+      class:list={['mark-grid shrink-0', className]}
+      style={glyphStyle}
+      aria-hidden={label ? undefined : 'true'}
+      role={label ? 'img' : 'presentation'}
+      aria-label={label}
+      set:html={grid()}
+    />
+  )
+}
+
+<style is:global>
+  /* A3 `skeleton` — the grid fills dot-by-dot as a loading state. */
+  .mark-grid--skeleton :is(rect, circle) {
+    opacity: 0.25;
+    animation: mark-fill 1.2s linear infinite;
+    animation-delay: calc(var(--cell, 0) * 0.09s);
+  }
+
+  @keyframes mark-fill {
+    0%,
+    60% {
+      opacity: 0.25;
+    }
+    30% {
+      opacity: 1;
+    }
+  }
+
+  /* A3 `status` — pulse-during-sweep, post-launch flag; ships off. */
+  .mark-accent--pulse {
+    animation: mark-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes mark-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  /* §4.4 rule 6 — reduced motion kills both (global.css enforces this sitewide too). */
+  @media (prefers-reduced-motion: reduce) {
+    .mark-grid--skeleton :is(rect, circle),
+    .mark-accent--pulse {
+      animation: none;
+      opacity: 1;
+    }
+  }
+</style>

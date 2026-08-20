@@ -24,9 +24,11 @@
     text-decoration: none;
   }
 
+  /* §4.6 focus — never `outline: none`, never on `:focus` alone. */
   :focus-visible {
-    outline: var(--border-width) solid var(--color-focus);
-    outline-offset: 4px;
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
   }
 }
 
@@ -70,6 +72,33 @@
 
   .skip-link:focus {
     transform: translateY(0);
+  }
+
+  /* §4.2.10 stretched link — one accessible name per card. Global (not scoped) so the
+     §4.2.8 Pagefind island can render EntryCard-equivalent markup on /search/. */
+  .entry-card__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .clamp-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+}
+
+/* §4.4 rule 6 — the one global reduced-motion rule. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
   }
 }
 

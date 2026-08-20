@@ -1,21 +1,39 @@
 ---
+// §4.2.3 NavLink — header/footer link with current-page state.
+// Default muted → hover text → current = text + aria-current="page" + a 1px accent
+// underline at offset 4px. Focus is the global §4.6 ring; nav links are never
+// underlined outside the current state (§4.4 rule 4).
+
 interface Props {
   href: string;
   label: string;
   current?: boolean;
+  /** Adds rel="noopener" and the ↗ suffix glyph. */
   external?: boolean;
   variant?: 'header' | 'footer';
+  class?: string;
 }
 
-const { href, label, current = false, external = false, variant = 'header' } = Astro.props;
-const classes = variant === 'footer'
-  ? 'font-mono text-xs text-text-muted hover:text-text underline-offset-4 focus-visible:text-text'
-  : 'font-mono text-sm text-text-muted hover:text-text underline-offset-4 focus-visible:text-text';
+const {
+  href,
+  label,
+  current = false,
+  external = false,
+  variant = 'header',
+  class: className = '',
+} = Astro.props;
+
+const size = variant === 'footer' ? 'text-xs' : 'text-sm';
 ---
 
 <a
   href={href}
-  class:list={[classes, current && 'text-text decoration-accent underline']}
+  class:list={[
+    'font-mono lowercase text-text-muted transition-colors duration-150 hover:text-text',
+    size,
+    current && 'text-text underline decoration-accent decoration-1 underline-offset-4',
+    className,
+  ]}
   aria-current={current ? 'page' : undefined}
   target={external ? '_blank' : undefined}
   rel={external ? 'noopener' : undefined}

@@ -1,0 +1,36 @@
+---
+// §4.2.5 Breadcrumbs — mono trail + the BreadcrumbList data hook.
+// The canonical trail and the exact crumb set are owned by §06.10; this component
+// renders whatever `items` the page passes. Markup for the schema.org BreadcrumbList
+// is emitted by §06's SEO layer from the same array.
+import type { BreadcrumbItem } from '../lib/types';
+
+interface Props {
+  /** Last item = current page, no href (§4.2.5). */
+  items: BreadcrumbItem[];
+  class?: string;
+}
+
+const { items, class: className = '' } = Astro.props;
+---
+
+<nav aria-label="breadcrumb" class:list={['font-mono text-xs', className]} data-pagefind-ignore>
+  <ol class="flex flex-wrap items-center gap-2 text-text-muted">
+    {
+      items.map((item, index) => (
+        <li class="flex items-center gap-2">
+          {index > 0 && <span aria-hidden="true">/</span>}
+          {item.href ? (
+            <a href={item.href} class="hover:text-text">
+              {item.label}
+            </a>
+          ) : (
+            <span class="text-text" aria-current="page">
+              {item.label}
+            </span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>

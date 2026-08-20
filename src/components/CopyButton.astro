@@ -1,0 +1,156 @@
+---
+// §4.2.14 CopyButton — SANCTIONED ISLAND #2.
+// The exact string travels in a `data-copy` attribute on a sibling <template> so HTML
+// escaping can never mangle it (§4.2.14). No-JS fallback: the button ships `hidden` and
+// the script removes the attribute on init — the <pre> beside it stays selectable.
+// Copy CP-069 (KEEP, bundle): `copy` · `copied ▪` · `press ctrl+c` · SR
+// `prompt copied to clipboard`.
+
+interface Props {
+  text: string;
+  label?: string;
+  size?: 'sm' | 'md';
+  class?: string;
+}
+
+const { text, label = 'copy', size = 'sm', class: className = '' } = Astro.props;
+---
+
+<span class:list={['copy-button inline-flex items-center', className]} data-copy-root>
+  <template data-copy={text}></template>
+  <button
+    type="button"
+    hidden
+    data-copy-trigger
+    data-state="idle"
+    data-label={label}
+    class:list={['copy-button__btn', size === 'md' ? 'copy-button__btn--md' : 'copy-button__btn--sm']}
+  >
+    <span data-copy-label>{label}</span>
+  </button>
+  <span class="sr-only" role="status" aria-live="polite" data-copy-live></span>
+</span>
+
+<style>
+  .copy-button__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 24px;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    text-transform: none;
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+
+  .copy-button__btn--sm {
+    padding: 6px 12px;
+    font-size: var(--text-xs);
+  }
+
+  .copy-button__btn--md {
+    padding: 8px 16px;
+    font-size: var(--text-sm);
+  }
+
+  .copy-button__btn:hover {
+    border-color: var(--color-accent);
+  }
+
+  .copy-button__btn[data-state='copied'] {
+    border-color: var(--color-accent);
+    background: var(--color-accent-tint);
+    color: var(--color-accent-text);
+  }
+
+  .copy-button__btn[data-state='error'] {
+    border-color: var(--color-border-strong);
+    color: var(--color-text-muted);
+  }
+</style>
+
+<script>
+  // Island: idle → copied (2000ms revert) → idle; error → `press ctrl+c` + select source.
+  const REVERT_MS = 2000;
+
+  function announce(root: HTMLElement, message: string) {
+    const live = root.querySelector<HTMLElement>('[data-copy-live]');
+    if (live) live.textContent = message;
+  }
+
+  function selectSource(root: HTMLElement) {
+    const block = root.closest('[data-copy-source-root]')?.querySelector('pre');
+    if (!block) return;
+    const range = document.createRange();
+    range.selectNodeContents(block);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+
+  function legacyCopy(value: string): boolean {
+    const scratch = document.createElement('textarea');
+    scratch.value = value;
+    scratch.setAttribute('readonly', '');
+    scratch.style.position = 'fixed';
+    scratch.style.opacity = '0';
+    document.body.appendChild(scratch);
+    scratch.select();
+    let ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch {
+      ok = false;
+    }
+    document.body.removeChild(scratch);
+    return ok;
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-copy-root]').forEach((root) => {
+    const button = root.querySelector<HTMLButtonElement>('[data-copy-trigger]');
+    const source = root.querySelector<HTMLTemplateElement>('[data-copy]');
+    const labelEl = root.querySelector<HTMLElement>('[data-copy-label]');
+    if (!button || !source || !labelEl) return;
+
+    const idleLabel = button.dataset.label ?? 'copy';
+    button.removeAttribute('hidden');
+
+    let timer: number | undefined;
+
+    button.addEventListener('click', async () => {
+      const value = source.getAttribute('data-copy') ?? '';
+      let ok = false;
+      try {
+        await navigator.clipboard.writeText(value);
+        ok = true;
+      } catch {
+        ok = legacyCopy(value);
+      }
+
+      window.clearTimeout(timer);
+      if (ok) {
+        button.dataset.state = 'copied';
+        labelEl.textContent = 'copied ▪';
+        announce(root, 'prompt copied to clipboard');
+        timer = window.setTimeout(() => {
+          button.dataset.state = 'idle';
+          labelEl.textContent = idleLabel;
+          announce(root, '');
+        }, REVERT_MS);
+      } else {
+        button.dataset.state = 'error';
+        labelEl.textContent = 'press ctrl+c';
+        selectSource(root);
+        announce(root, 'copy failed — press ctrl+c to copy the selected text');
+      }
+    });
+  });
+</script>

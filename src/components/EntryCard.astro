@@ -1,0 +1,132 @@
+---
+// §4.2.10 EntryCard — card for plugin / use-case / collection.
+// Stretched-link pattern: ONE link name per card = the entry title (§4.6). Secondary
+// chip links sit above it (z-10) and stay independently clickable/focusable.
+// `deprecated` entries never render in cards — excluded at query time (§5.6 rule 8);
+// the guard below is a belt-and-braces backstop.
+import Chip from './Chip.astro';
+import FeaturedTag from './FeaturedTag.astro';
+import { entryUrl, isoToDate, memberSummary, setupLabel, splitNamedCharacter } from '../lib/format';
+import type { CollectionEntry, Entry, PluginEntry, UseCaseEntry } from '../lib/types';
+
+interface Props {
+  entry: Entry;
+  variant: 'plugin' | 'use-case' | 'collection';
+  featured?: boolean;
+  headingLevel?: 2 | 3;
+  /**
+   * Collection variant only: member type counts resolved by the page (members carry
+   * slugs, §5.2). Falls back to a plain member count when the page cannot resolve them.
+   */
+  memberCounts?: { plugins: number; useCases: number };
+  /** Category hubs render a type chip on every card (§4.3.12 region 5). */
+  showType?: boolean;
+  class?: string;
+}
+
+const {
+  entry,
+  variant,
+  featured = false,
+  headingLevel = 3,
+  memberCounts,
+  showType = false,
+  class: className = '',
+} = Astro.props;
+
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+const href = entryUrl(entry.type, entry.slug);
+const isFeatured = featured || entry.featured;
+const needsUpdate = entry.status === 'needs-update';
+const verified = entry.status !== 'deprecated' && Boolean(entry.verifiedAt);
+
+const plugin = variant === 'plugin' ? (entry as PluginEntry) : null;
+const useCase = variant === 'use-case' ? (entry as UseCaseEntry) : null;
+const collection = variant === 'collection' ? (entry as CollectionEntry) : null;
+
+const pluginIntegrations = plugin?.worksWith ?? [];
+const useCaseIntegrations = useCase?.integrations ?? [];
+const overflow = Math.max(0, pluginIntegrations.length - 3);
+const named = useCase ? splitNamedCharacter(useCase.name) : null;
+const scouted = (useCase?.sourceTweets?.length ?? 0) > 0;
+const typeLabel = entry.type === 'use-case' ? 'use case' : entry.type;
+---
+
+{
+  entry.status !== 'deprecated' && (
+    <article
+      class:list={[
+        'entry-card relative flex flex-col gap-3 rounded-sm border border-border bg-surface p-4 transition-[background-color,border-color] duration-150 hover:border-border-strong hover:bg-surface-raised',
+        needsUpdate && 'border-l-2 border-l-warn',
+        className,
+      ]}
+      data-entry-type={entry.type}
+    >
+      {isFeatured && <FeaturedTag />}
+
+      <Heading class="font-sans text-lg font-medium text-text">
+        <a href={href} class="entry-card__link">
+          {named ? (
+            <>
+              <span class="font-mono">{named.character}</span>
+              <span aria-hidden="true" class="text-text-muted">
+                {' · '}
+              </span>
+              <span>{named.role}</span>
+            </>
+          ) : (
+            entry.name
+          )}
+        </a>
+      </Heading>
+
+      {collection && (
+        <p class="font-mono text-sm text-text-muted">
+          {memberCounts
+            ? memberSummary(memberCounts)
+            : `${collection.members.length} entries`}
+        </p>
+      )}
+
+      <p class="clamp-2 text-base text-text-muted">
+        {useCase ? useCase.tagline : entry.tagline}
+      </p>
+
+      <div class="relative z-10 flex flex-wrap items-center gap-2">
+        {verified && entry.verifiedAt && <Chip variant="verified" date={isoToDate(entry.verifiedAt)} />}
+        {needsUpdate && (
+          <span class="inline-flex items-center rounded-sm px-2 py-0.5 font-mono text-xs lowercase text-warn">
+            needs update
+          </span>
+        )}
+        {plugin?.setupMinutes && <Chip variant="setup-time" label={setupLabel(plugin.setupMinutes)} />}
+        {useCase && <Chip variant="setup-time" label={setupLabel(useCase.setupMinutes)} />}
+        {showType && <Chip variant="type" label={typeLabel} entryType={entry.type} />}
+        <Chip variant="category" label={entry.category} href={`/categories/${entry.category}/`} />
+        {useCase &&
+          useCaseIntegrations
+            .slice(0, 2)
+            .map((tool) => <Chip variant="integration" label={tool} href={`/integrations/${tool.toLowerCase().replaceAll(' ', '-')}/`} />)}
+        {scouted && useCase && (
+          <Chip variant="scouted" label="scouted on x" href={useCase.sourceTweets[0].url} />
+        )}
+      </div>
+
+      {plugin && pluginIntegrations.length > 0 && (
+        <div class="relative z-10 flex flex-wrap items-center gap-2">
+          {pluginIntegrations.slice(0, 3).map((tool) => (
+            <Chip
+              variant="integration"
+              label={tool}
+              href={`/integrations/${tool.toLowerCase().replaceAll(' ', '-')}/`}
+            />
+          ))}
+          {overflow > 0 && <span class="font-mono text-xs text-text-muted">+{overflow}</span>}
+        </div>
+      )}
+    </article>
+  )
+}
+
+{/* `.entry-card__link` (stretched link) and `.clamp-2` live in global.css so the
+    §4.2.8 Pagefind island can reuse EntryCard-equivalent markup on /search/. */}

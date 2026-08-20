@@ -1,0 +1,174 @@
+---
+// §4.2.8 SearchInput — `link` mode is zero-JS; `page` mode is SANCTIONED ISLAND #5.
+// link  : a plain GET form to /search/?q=… (header, home hero, index pages).
+// page  : the Pagefind island, ONLY on /search/. Loads /pagefind/pagefind.js on first
+//         focus/input, reads ?q= on load, renders results with EntryCard-equivalent
+//         markup built from the §4.2.8a `data-pagefind-meta` attributes — custom UI,
+//         never Pagefind's default UI/CSS.
+// Copy: CP-006 placeholder (KEEP) · CP-063 `searching…` (KEEP) · CP-064 no-JS notice (KEEP).
+import Button from './Button.astro';
+import Callout from './Callout.astro';
+import { CP_063_SEARCH_LOADING, CP_064_SEARCH_NOJS } from '../lib/copy';
+
+interface Props {
+  mode: 'link' | 'page';
+  placeholder?: string;
+  initialQuery?: string;
+  /** link mode: extra GET params, e.g. `{ type: 'plugin' }` on /plugins/ (§4.3.2). */
+  hiddenFields?: Record<string, string>;
+  class?: string;
+}
+
+const {
+  mode,
+  placeholder = 'search plugins, use cases…',
+  initialQuery = '',
+  hiddenFields = {},
+  class: className = '',
+} = Astro.props;
+
+const inputId = mode === 'page' ? 'search-page-q' : `search-link-q-${Object.keys(hiddenFields).join('-') || 'all'}`;
+---
+
+<div class:list={['flex flex-col gap-4', className]} data-pagefind-ignore>
+  <form
+    role="search"
+    action="/search/"
+    method="get"
+    class="flex flex-wrap items-center gap-2"
+    data-search-form={mode}
+  >
+    <label class="sr-only" for={inputId}>search grokbot.dev</label>
+    <input
+      id={inputId}
+      type="search"
+      name="q"
+      value={initialQuery}
+      placeholder={placeholder}
+      class="min-h-6 flex-1 rounded-sm border border-border-interactive bg-surface px-3 py-2 font-mono text-sm text-text placeholder:text-text-muted"
+      data-search-input
+    />
+    {Object.entries(hiddenFields).map(([name, value]) => <input type="hidden" name={name} value={value} />)}
+    {mode === 'page' && <Button variant="outline" type="submit" label="search" />}
+  </form>
+
+  {
+    mode === 'page' && (
+      <>
+        <p class="hidden font-mono text-sm text-text-muted" aria-live="polite" data-search-status>
+          {CP_063_SEARCH_LOADING}
+        </p>
+        <div
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6"
+          data-search-results
+        />
+        <noscript>
+          <Callout variant="info" title="search needs javascript">
+            {CP_064_SEARCH_NOJS}
+            <span class="mt-2 flex flex-wrap gap-4 font-mono text-sm">
+              <a href="/plugins/" class="underline underline-offset-4">/plugins/</a>
+              <a href="/categories/" class="underline underline-offset-4">/categories/</a>
+            </span>
+          </Callout>
+        </noscript>
+      </>
+    )
+  }
+</div>
+
+<script>
+  // Pagefind island — page mode only. Nothing loads until the user focuses or types.
+  interface PagefindResultData {
+    url: string;
+    meta: Record<string, string>;
+    excerpt: string;
+  }
+  interface PagefindApi {
+    search: (query: string) => Promise<{ results: Array<{ data: () => Promise<PagefindResultData> }> }>;
+    options?: (opts: Record<string, unknown>) => Promise<void>;
+  }
+
+  const form = document.querySelector<HTMLFormElement>('[data-search-form="page"]');
+  if (form) {
+    const input = form.querySelector<HTMLInputElement>('[data-search-input]');
+    const root = form.parentElement;
+    const status = root?.querySelector<HTMLElement>('[data-search-status]');
+    const results = root?.querySelector<HTMLElement>('[data-search-results]');
+
+    if (input && status && results) {
+      let pagefind: PagefindApi | null = null;
+      let loading: Promise<PagefindApi> | null = null;
+
+      const loadPagefind = (): Promise<PagefindApi> => {
+        if (!loading) {
+          const path = '/pagefind/pagefind.js';
+          loading = import(/* @vite-ignore */ path) as Promise<PagefindApi>;
+        }
+        return loading;
+      };
+
+      const escapeHtml = (value: string) =>
+        value.replace(/[&<>"']/g, (char) =>
+          char === '&' ? '&amp;' : char === '<' ? '&lt;' : char === '>' ? '&gt;' : char === '"' ? '&quot;' : '&#39;'
+        );
+
+      const card = (data: PagefindResultData) => {
+        const meta = data.meta ?? {};
+        const name = escapeHtml(meta.name ?? 'untitled');
+        const tagline = escapeHtml(meta.tagline ?? '');
+        const type = escapeHtml((meta.type ?? '').toLowerCase());
+        const setup = meta.setup_minutes ? `~${escapeHtml(meta.setup_minutes)} min setup` : '';
+        const verified = meta.verified_at ? `✓ verified ${escapeHtml(meta.verified_at.slice(0, 10))}` : '';
+        const url = escapeHtml(meta.url ?? data.url);
+        return `<article class="entry-card relative flex flex-col gap-3 rounded-sm border border-border bg-surface p-4">
+  <h2 class="font-sans text-lg font-medium text-text"><a class="entry-card__link" href="${url}">${name}</a></h2>
+  <p class="clamp-2 text-base text-text-muted">${tagline}</p>
+  <div class="relative z-10 flex flex-wrap items-center gap-2 font-mono text-xs lowercase text-text-muted">
+    ${verified ? `<span class="rounded-sm border border-accent bg-accent-tint px-2 py-0.5 text-accent-text">${verified}</span>` : ''}
+    ${setup ? `<span class="px-2 py-0.5">${setup}</span>` : ''}
+    ${type ? `<span class="rounded-sm border border-border-interactive px-2 py-1">${type}</span>` : ''}
+  </div>
+</article>`;
+      };
+
+      const empty = (query: string) => `<div class="col-span-full flex flex-col items-center gap-4 p-12 text-center">
+  <p class="font-display text-xl text-text">no results</p>
+  <p class="text-base text-text-muted">nothing found for '${escapeHtml(query)}' — try fewer words, or browse all plugins</p>
+  <a class="inline-flex min-h-6 items-center rounded-sm border border-border-interactive px-4 py-2 font-mono text-sm lowercase text-text" href="/plugins/">browse plugins</a>
+</div>`;
+
+      const run = async (query: string) => {
+        if (!query.trim()) {
+          results.innerHTML = '';
+          status.classList.add('hidden');
+          return;
+        }
+        status.classList.remove('hidden');
+        pagefind = pagefind ?? (await loadPagefind());
+        const search = await pagefind.search(query);
+        const data = await Promise.all(search.results.slice(0, 30).map((result) => result.data()));
+        results.innerHTML = data.length ? data.map(card).join('') : empty(query);
+        status.classList.add('hidden');
+      };
+
+      input.addEventListener('focus', () => void loadPagefind(), { once: true });
+
+      let debounce: number | undefined;
+      input.addEventListener('input', () => {
+        window.clearTimeout(debounce);
+        debounce = window.setTimeout(() => void run(input.value), 180);
+      });
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        void run(input.value);
+      });
+
+      const initial = new URLSearchParams(window.location.search).get('q');
+      if (initial) {
+        input.value = initial;
+        void run(initial);
+      }
+    }
+  }
+</script>

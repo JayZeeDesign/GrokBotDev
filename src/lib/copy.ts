@@ -1,0 +1,79 @@
+// Copy pack v1.1 (ADDENDUM C, BINDING) — the M1 slice.
+// C4: "M1 (components): chrome strings (nav, buttons, chips, empty states, status
+// messages) from pack §§2, 11, 13." Every string below is the pack's AFTER, verbatim.
+// CP keys are immutable (pack §0.1) — cite them in commits, never renumber them.
+//
+// Hazards honoured (pack §18, BINDING):
+//   · CP-032 renames the RENDERED LABEL only. The frontmatter/API field stays
+//     `replicability` (§5.2 Zod, §5.3, §5.6, §5.7, §7.1.3) — no blind find-replace.
+//   · CP-002 / CP-054 are multi-site strings owned by M3 pages, not by components.
+//   · FENCED strings (CP-110, CP-112, CP-113, CP-114) are reproduced byte-for-byte.
+
+/** §2 — Newsletter (global component). */
+export const CP_014_NEWSLETTER_HEADING = "the week's best, in one email";
+export const CP_015_NEWSLETTER_SUBCOPY =
+  "new plugins, use cases and collections. one email a week. that's it.";
+export const CP_016_NEWSLETTER_SUBMITTING = 'subscribing…';
+export const CP_016_NEWSLETTER_SUCCESS = "▪ you're on the list";
+export const CP_017_NEWSLETTER_ERROR = 'signup is down — email hello@grokbot.dev';
+
+/** §4 / §6 — prompt + embed chrome (KEEP rows: do not reword). */
+export const CP_024_PROMPT_MICROHINT = 'then paste it into Grok';
+export const CP_034_TWEET_LOAD_LABEL = 'load tweet from x';
+export const CP_026_RELATED_HEADING = 'related';
+export const CP_026_APPEARS_IN_HEADING = 'appears in';
+
+/** §8 — the agent contract block (CP-043 is the pack's best microcopy row: KEEP). */
+export const CP_044_CONTRACT_LABEL = 'grokbot.dev agent contract · v1';
+export const CP_043_CONTRACT_MICROHINT = 'paste this into your grok bot — it figures out the rest';
+
+/** §11 — search, empty states, status messages, 404. */
+export const CP_063_SEARCH_LOADING = 'searching…';
+export const CP_064_SEARCH_NOJS = 'search needs JavaScript — browse /plugins/ or /categories/ instead';
+export const CP_065_EMPTY_SEARCH = "nothing found for '{q}' — try fewer words, or browse all plugins";
+export const CP_066_EMPTY_HUB = 'nothing here yet — the Scouts are on it. submit one and be first.';
+export const CP_067_CALLOUT_NEEDS_UPDATE =
+  'nobody has checked this since {verified_at}. it might be out of date.';
+export const CP_068_CALLOUT_DEPRECATED =
+  "this one's been retired. it's here for the record — it may not work any more.";
+export const CP_069_COPY_IDLE = 'copy';
+export const CP_069_COPY_COPIED = 'copied ▪';
+export const CP_069_COPY_ERROR = 'press ctrl+c';
+export const CP_069_COPY_ANNOUNCE = 'prompt copied to clipboard';
+export const CP_070_404_HEADING = '404 — not found';
+export const CP_071_404_BODY =
+  "this page doesn't exist. the bots have been notified. (they haven't. it's a static site.)";
+
+/** §13.3 — /wall/ (Addendum B2 added the route; these strings were never written). */
+export const CP_099_WALL_LINK_CHIP = '→ posted on grokbot.dev: {entry_name}';
+export const CP_100_WALL_BACKLINK = 'see it on the wall →';
+export const CP_101_WALL_EMPTY =
+  'nothing on the wall yet. post what you built with your Grok Bot — the Scouts will find you.';
+
+/** §13.4 — InstallModal (Addendum B3 named the sections; the strings were never written). */
+export const CP_102_INSTALL_TITLE = 'plug your Grok Bot in';
+export const CP_103_INSTALL_SECTION1 = 'install this';
+export const CP_104_INSTALL_SECTION2 = 'keep getting new ones';
+export const CP_105_INSTALL_SECTION2_BODY =
+  "pick how often, copy the prompt, paste it into Grok. that's the whole setup.";
+export const CP_106_INSTALL_SCHEDULES = ['hourly', 'daily', 'every 2 days', 'weekly'] as const;
+export const CP_107_INSTALL_AGENT_LINK = 'the full contract, if your Bot wants it →';
+export const CP_108_INSTALL_BROWSE_LINK = "browse what it'll find you";
+export const CP_109_INSTALL_TRIGGER = 'install in grok bot';
+
+/** §14 — FENCED. Verbatim at every placement, in this pass and every future one. */
+export const CP_110_DISCLAIMER =
+  'GrokBot.dev is an independent community project — not affiliated with xAI.';
+export const CP_112_CTA_SENTENCE = 'Copy the prompt and paste it into Grok';
+export const CP_113_HOME_H1 = 'Everything your Grok Bot could be doing';
+export const CP_114_RETRIEVAL_PHRASE = 'ready-to-use Grok Bot prompts';
+
+/** CP-032 — the RENDERED label for the use-case `replicability` field. Field name unchanged. */
+export const CP_032_REPLICABILITY_LABEL = 'what you need';
+
+/** Interpolate `{token}` placeholders in a pack string without editorialising it. */
+export function fillCopy(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? values[key] : match
+  );
+}

@@ -1,0 +1,37 @@
+---
+// Addendum B2 — `WallCard`: one item on /wall/. Operator, verbatim: "we need to have
+// Wall of Posts! and then we'll tag people who post them and say their idea is posted
+// on GrokBot.dev!"
+// Integrity rule (B2): a wall item exists ONLY where a live entry has a real
+// `source_tweets[]` post. No fabrication, no placeholders. `status: demo` is excluded —
+// the page owns that filter; this component only renders what it is handed.
+// Reuses the §10.3 click-to-load consent model via TweetEmbed (zero requests pre-click).
+// Copy CP-099 (KEEP, B2 verbatim): `→ posted on grokbot.dev: {entry_name}`.
+import TweetEmbed from './TweetEmbed.astro';
+import { CP_099_WALL_LINK_CHIP, fillCopy } from '../lib/copy';
+import type { SourceTweet } from '../lib/types';
+
+interface Props {
+  tweet: SourceTweet;
+  entryName: string;
+  entryHref: string;
+  class?: string;
+}
+
+const { tweet, entryName, entryHref, class: className = '' } = Astro.props;
+---
+
+<article class:list={['flex flex-col gap-3', className]}>
+  <TweetEmbed
+    tweetUrl={tweet.url}
+    authorHandle={tweet.authorHandle}
+    excerpt={tweet.excerpt}
+    postedAt={tweet.postedAt}
+  />
+  <a
+    href={entryHref}
+    class="inline-flex min-h-6 items-center self-start rounded-sm border border-border-interactive px-2 py-1 font-mono text-xs text-text hover:border-accent hover:text-accent-text"
+  >
+    {fillCopy(CP_099_WALL_LINK_CHIP, { entry_name: entryName })}
+  </a>
+</article>

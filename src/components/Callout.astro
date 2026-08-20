@@ -1,0 +1,34 @@
+---
+// §4.2.22 Callout — info / warn / danger banner (incl. entry status banners).
+// No icons: the glyph budget is `▪` only (§4.2.22).
+// Canonical copy carried as defaults so no page default-fills:
+//   CP-067 needs-update · CP-068 deprecated (NEW — the PRD named the banner and never
+//   wrote it; deprecated pages stay live per §06, so the copy has to say why).
+
+interface Props {
+  variant: 'info' | 'warn' | 'danger';
+  title?: string;
+  class?: string;
+}
+
+const { variant, title, class: className = '' } = Astro.props;
+
+const edge = {
+  info: 'border-l-border-strong',
+  warn: 'border-l-warn',
+  danger: 'border-l-danger',
+};
+---
+
+<div
+  class:list={[
+    'rounded-sm border border-border border-l-2 bg-surface p-4',
+    edge[variant],
+    className,
+  ]}
+>
+  {title && <p class="mb-2 font-mono text-sm lowercase text-text">{title}</p>}
+  <div class="text-base text-text-muted">
+    <slot />
+  </div>
+</div>

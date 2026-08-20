@@ -1,0 +1,34 @@
+---
+// §4.2.23 ContributeSteps — numbered PR-flow steps; also reused as the generic
+// numbered-steps renderer for a collection's combined setup (§4.3.7 region 6).
+// A9 density directive: two-digit mono index numbers (`01`, `02`) are required.
+import CopyButton from './CopyButton.astro';
+import type { ContributeStep } from '../lib/types';
+
+interface Props {
+  steps: ContributeStep[];
+  startAt?: number;
+  class?: string;
+}
+
+const { steps, startAt = 1, class: className = '' } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<ol class:list={['flex flex-col gap-6 border-l border-border pl-4', className]} start={startAt}>
+  {
+    steps.map((step, index) => (
+      <li class="flex flex-col gap-2" data-copy-source-root>
+        <p class="font-mono text-sm text-accent-text">{pad(startAt + index)}</p>
+        <p class="font-sans text-lg font-medium text-text">{step.title}</p>
+        <p class="text-base text-text-muted">{step.body}</p>
+        {step.code && (
+          <div class="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-border bg-surface-raised p-3">
+            <pre class="m-0 overflow-x-auto font-mono text-sm text-text"><code>{step.code}</code></pre>
+            <CopyButton text={step.code} size="sm" />
+          </div>
+        )}
+      </li>
+    ))
+  }
+</ol>

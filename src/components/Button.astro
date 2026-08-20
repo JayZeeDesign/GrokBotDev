@@ -1,0 +1,87 @@
+---
+// §4.2.7 Button — link-or-button in solid / outline / ghost.
+// `solid` = accent fill: max ONE per view region (§4.2.7) and, under A1's accent laws,
+// the one amber element in the viewport.
+
+interface Props {
+  /** With `href` renders <a>; without it renders <button>. */
+  href?: string;
+  label?: string;
+  type?: 'button' | 'submit';
+  variant?: 'solid' | 'outline' | 'ghost';
+  size?: 'sm' | 'md';
+  external?: boolean;
+  disabled?: boolean;
+  id?: string;
+  class?: string;
+  /** Escape hatch for island wiring (data-* / aria-* only). */
+  attrs?: Record<string, string | boolean | undefined>;
+}
+
+const {
+  href,
+  label,
+  type = 'submit',
+  variant = 'outline',
+  size = 'md',
+  external = false,
+  disabled = false,
+  id,
+  class: className = '',
+  attrs = {},
+} = Astro.props;
+
+const base =
+  'inline-flex items-center justify-center gap-2 rounded-sm font-mono lowercase transition-[color,border-color,background-color] duration-150 btn-active';
+const sizes = {
+  // §4.2.7: md = 14px mono, 8x16 padding; sm = 12px mono, 6x12 padding, min-height 24px
+  md: 'text-sm px-4 py-2 min-h-6',
+  sm: 'text-xs px-3 py-1.5 min-h-6',
+};
+const variants = {
+  solid: 'bg-accent text-accent-contrast border border-accent hover:brightness-90',
+  outline: 'border border-border-interactive text-text hover:border-accent',
+  ghost: 'border border-transparent text-text-muted hover:text-text',
+};
+const classes = [
+  base,
+  sizes[size],
+  variants[variant],
+  disabled && 'opacity-50 cursor-not-allowed',
+  className,
+];
+---
+
+{
+  href ? (
+    <a
+      id={id}
+      href={href}
+      class:list={classes}
+      aria-disabled={disabled ? 'true' : undefined}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener' : undefined}
+      {...attrs}
+    >
+      <slot>{label}</slot>
+      {external && <span aria-hidden="true">↗</span>}
+    </a>
+  ) : (
+    <button id={id} type={type} class:list={classes} disabled={disabled} {...attrs}>
+      <slot>{label}</slot>
+    </button>
+  )
+}
+
+<style is:global>
+  /* §4.2.7 active state — removed under reduced motion (§4.4 rule 6). */
+  .btn-active:active {
+    transform: translateY(1px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-active:active {
+      transform: none;
+    }
+  }
+</style>

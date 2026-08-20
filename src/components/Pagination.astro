@@ -1,0 +1,75 @@
+---
+// §4.2.19 Pagination — static prev/next + a windowed set of numbered pages.
+// Every target is ≥24x24 CSS px with an 8px gap (WCAG 2.2 SC 2.5.8).
+import type { PageInfo } from '../lib/types';
+
+interface Props {
+  page: PageInfo;
+  class?: string;
+}
+
+const { page, class: className = '' } = Astro.props;
+
+// Window: first, current±1, last, with `…` gaps.
+function windowed(current: number, total: number): Array<number | '…'> {
+  const keep = new Set<number>([1, total, current - 1, current, current + 1]);
+  const pages = [...keep].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
+  const out: Array<number | '…'> = [];
+  let previous = 0;
+  for (const n of pages) {
+    if (previous && n - previous > 1) out.push('…');
+    out.push(n);
+    previous = n;
+  }
+  return out;
+}
+
+const pageUrl = (n: number) => (n === 1 ? page.baseUrl : `${page.baseUrl}${n}/`);
+const items = windowed(page.current, page.total);
+const cell =
+  'inline-flex min-h-6 min-w-6 items-center justify-center rounded-sm px-2 font-mono text-sm';
+---
+
+<nav aria-label="pagination" class:list={['flex flex-wrap items-center gap-2', className]}>
+  {
+    page.prevUrl ? (
+      <a href={page.prevUrl} class:list={[cell, 'text-text hover:text-accent-text']} rel="prev">
+        ← prev
+      </a>
+    ) : (
+      <span class:list={[cell, 'text-text-muted']} aria-hidden="true">
+        ← prev
+      </span>
+    )
+  }
+
+  {
+    items.map((item) =>
+      item === '…' ? (
+        <span class:list={[cell, 'text-text-muted']} aria-hidden="true">
+          …
+        </span>
+      ) : item === page.current ? (
+        <span class:list={[cell, 'text-accent-text']} aria-current="page">
+          {item}
+        </span>
+      ) : (
+        <a href={pageUrl(item)} class:list={[cell, 'text-text hover:text-accent-text']}>
+          {item}
+        </a>
+      )
+    )
+  }
+
+  {
+    page.nextUrl ? (
+      <a href={page.nextUrl} class:list={[cell, 'text-text hover:text-accent-text']} rel="next">
+        next →
+      </a>
+    ) : (
+      <span class:list={[cell, 'text-text-muted']} aria-hidden="true">
+        next →
+      </span>
+    )
+  }
+</nav>

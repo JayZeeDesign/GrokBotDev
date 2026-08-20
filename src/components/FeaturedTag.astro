@@ -1,0 +1,21 @@
+---
+// §4.2.12 FeaturedTag — the square corner label on featured cards.
+// Radius 0 is the ONE deliberate radius break in the system: it reads as a corner mark.
+// The parent card must be `position: relative` (§4.2.10 sets it).
+
+interface Props {
+  label?: string;
+  class?: string;
+}
+
+const { label = 'featured', class: className = '' } = Astro.props;
+---
+
+<span
+  class:list={[
+    'absolute top-0 right-0 rounded-none bg-accent px-2 py-0.5 font-mono text-xs lowercase text-accent-contrast',
+    className,
+  ]}
+>
+  {label}
+</span>

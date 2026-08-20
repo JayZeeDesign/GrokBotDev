@@ -1,0 +1,38 @@
+---
+// §4.2.20 RelatedList — "related" / "appears in" block of EntryCards.
+// Renders NOTHING when `entries` is empty — no empty related/appears-in sections, ever.
+// The `appears-in` variant lists every live collection containing this entry (§6.10).
+// Copy CP-026 (KEEP, bundle): `related` · `appears in`.
+import SectionHeading from './SectionHeading.astro';
+import EntryCard from './EntryCard.astro';
+import { CP_026_APPEARS_IN_HEADING, CP_026_RELATED_HEADING } from '../lib/copy';
+import type { Entry } from '../lib/types';
+
+interface Props {
+  heading?: string;
+  /** 2–3 entries; selection logic owned by §05/§06. */
+  entries: Entry[];
+  variant?: 'related' | 'appears-in';
+  /** Passthrough to EntryCard; omitted → each card uses its own entry type. */
+  cardVariant?: 'plugin' | 'use-case' | 'collection';
+  class?: string;
+}
+
+const { heading, entries, variant = 'related', cardVariant, class: className = '' } = Astro.props;
+
+const resolvedHeading =
+  heading ?? (variant === 'appears-in' ? CP_026_APPEARS_IN_HEADING : CP_026_RELATED_HEADING);
+---
+
+{
+  entries.length > 0 && (
+    <section class:list={['flex flex-col gap-4', className]} data-pagefind-ignore>
+      <SectionHeading title={resolvedHeading} variant="sub" />
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+        {entries.map((entry) => (
+          <EntryCard entry={entry} variant={cardVariant ?? entry.type} />
+        ))}
+      </div>
+    </section>
+  )
+}

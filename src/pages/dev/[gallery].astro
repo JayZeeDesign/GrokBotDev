@@ -1,0 +1,648 @@
+---
+// §11 M1.2 — `/dev/components/`: every component in EVERY variant, grouped and labeled.
+// noindex,nofollow · excluded from the sitemap (astro.config filter) · excluded from
+// PRODUCTION OUTPUT (§6.1): getStaticPaths returns nothing unless INCLUDE_DEV_PAGES is
+// set, so `npm run build` never emits it. M7.5 asserts it 404s in production.
+//
+// The fixtures below are DEV-ONLY sample props. They are not content, never ship, and
+// never carry a verification claim anywhere real (B4 standing policy).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { INCLUDE_DEV_PAGES } from '../../lib/buildFlags';
+
+import AgentContractBlock from '../../components/AgentContractBlock.astro';
+import BracketBadge from '../../components/BracketBadge.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Button from '../../components/Button.astro';
+import Callout from '../../components/Callout.astro';
+import Chip from '../../components/Chip.astro';
+import ContributeSteps from '../../components/ContributeSteps.astro';
+import CopyButton from '../../components/CopyButton.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import EntryCard from '../../components/EntryCard.astro';
+import FeaturedTag from '../../components/FeaturedTag.astro';
+import FilterBar from '../../components/FilterBar.astro';
+import InstallModal from '../../components/InstallModal.astro';
+import MarkGlyph from '../../components/MarkGlyph.astro';
+import NavLink from '../../components/NavLink.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import Pagination from '../../components/Pagination.astro';
+import PromptBlock from '../../components/PromptBlock.astro';
+import RelatedList from '../../components/RelatedList.astro';
+import SearchInput from '../../components/SearchInput.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import StatBar from '../../components/StatBar.astro';
+import TweetEmbed from '../../components/TweetEmbed.astro';
+import WallCard from '../../components/WallCard.astro';
+
+import {
+  CP_067_CALLOUT_NEEDS_UPDATE,
+  CP_068_CALLOUT_DEPRECATED,
+  fillCopy,
+} from '../../lib/copy';
+import type { CollectionEntry, PluginEntry, UseCaseEntry } from '../../lib/types';
+
+export function getStaticPaths() {
+  return INCLUDE_DEV_PAGES ? [{ params: { gallery: 'components' } }] : [];
+}
+
+const NOW = '2026-08-20T14:02:00Z';
+
+const samplePlugin: PluginEntry = {
+  type: 'plugin',
+  name: 'seo-audit-bot',
+  slug: 'seo-audit-bot',
+  tagline: "audits any site's SEO and files the fixes as issues — from one prompt.",
+  category: 'marketing',
+  subcategory: 'seo',
+  installSteps: [
+    'Open Grok and start a new Bot.',
+    'Paste the prompt below into the Bot instructions.',
+    'Connect GitHub so the Bot can file issues.',
+  ],
+  prompt:
+    'You are an SEO auditor. Crawl {site}, list every issue you find with its severity, and file each one as a GitHub issue in {repo} with a one-line fix. Ask before filing more than ten issues at once.',
+  worksWith: ['Slack', 'GitHub', 'Gmail', 'Notion'],
+  projectUrl: 'https://example.com/seo-audit-bot',
+  repoUrl: 'https://github.com/example/seo-audit-bot',
+  author: { handle: 'example', url: 'https://x.com/example', platform: 'x' },
+  setupMinutes: 5,
+  featured: true,
+  addedAt: '2026-08-01T09:00:00Z',
+  updatedAt: '2026-08-18T09:00:00Z',
+  verifiedAt: '2026-08-18T09:00:00Z',
+  status: 'live',
+};
+
+const sampleUseCase: UseCaseEntry = {
+  type: 'use-case',
+  name: 'R2 · Chief of Staff',
+  slug: 'r2-chief-of-staff',
+  tagline: 'a Grok Bot that runs your calendar, inbox triage and daily brief.',
+  category: 'work',
+  subcategory: 'tasks',
+  whatItDoes:
+    'Runs your morning: triages the inbox, preps the day from your calendar, and chases whatever is stuck. Reports once, in one message.',
+  integrations: ['Google Calendar', 'Gmail', 'Slack'],
+  schedule: 'daily',
+  autonomy: 'proposes',
+  difficulty: 'beginner',
+  setupMinutes: 15,
+  sourceTweets: [
+    {
+      url: 'https://x.com/example/status/1000000000000000001',
+      authorHandle: 'example',
+      excerpt:
+        'my Grok Bot now runs my morning — inbox triaged, calendar prepped, one message and I am done. took 15 minutes to set up.',
+      postedAt: '2026-08-11T07:30:00Z',
+    },
+  ],
+  replicability:
+    'Anyone with Gmail + a calendar can copy this in about 15 minutes; no code, one API key for Slack.',
+  featured: false,
+  addedAt: '2026-08-11T09:00:00Z',
+  updatedAt: '2026-08-19T09:00:00Z',
+  verifiedAt: '2026-08-19T09:00:00Z',
+  status: 'live',
+};
+
+const staleUseCase: UseCaseEntry = {
+  ...sampleUseCase,
+  slug: 'r2-chief-of-staff-stale',
+  status: 'needs-update',
+};
+
+const sampleCollection: CollectionEntry = {
+  type: 'collection',
+  name: 'the complete support desk',
+  slug: 'the-complete-support-desk',
+  tagline:
+    'three plugins + one use case = a support inbox that answers, triages and escalates itself.',
+  category: 'support',
+  subcategory: 'helpdesk',
+  members: [
+    { slug: 'seo-audit-bot', reason: 'files the fixes so nothing sits in a doc nobody reads.' },
+    { slug: 'r2-chief-of-staff', reason: 'runs the daily triage pass over whatever came in.' },
+  ],
+  prompt:
+    'You are running a support desk. Answer what you can from the docs, triage what you cannot, and escalate anything a human has to decide. Report once a day with what you handled and what is waiting.',
+  featured: false,
+  addedAt: '2026-08-05T09:00:00Z',
+  updatedAt: '2026-08-17T09:00:00Z',
+  verifiedAt: '2026-08-17T09:00:00Z',
+  status: 'live',
+};
+
+const stats = { plugins: 128, useCases: 74, collections: 12, generatedAt: NOW };
+
+const facetOptions = {
+  categories: [
+    { label: 'Marketing', href: '/categories/marketing/', count: 24, current: true },
+    { label: 'Work', href: '/categories/work/', count: 18, current: false },
+    { label: 'Support', href: '/categories/support/', count: 6, current: false },
+  ],
+  integrations: [
+    { label: 'Slack', href: '/integrations/slack/', count: 31, current: false },
+    { label: 'Gmail', href: '/integrations/gmail/', count: 22, current: false },
+  ],
+  types: [
+    { label: 'plugin', href: '/plugins/', count: 128, current: false },
+    { label: 'use case', href: '/use-cases/', count: 74, current: false },
+  ],
+};
+
+const contractMarkdown = `# grokbot.dev — machine contract
+
+base: https://grokbot.dev/api/v1/
+
+GET /api/v1/index.json        directory index + counts
+GET /api/v1/latest.json       newest entries, all types
+GET /api/v1/plugins.json      full plugin list
+
+(the real contract is generated at build per §07 — this is a dev fixture)`;
+
+const groups = [
+  'MarkGlyph',
+  'BracketBadge',
+  'SiteHeader',
+  'NavLink',
+  'Footer',
+  'Breadcrumbs',
+  'SectionHeading',
+  'Button',
+  'SearchInput',
+  'FilterBar',
+  'EntryCard',
+  'Chip',
+  'FeaturedTag',
+  'PromptBlock',
+  'CopyButton',
+  'AgentContractBlock',
+  'TweetEmbed',
+  'StatBar',
+  'NewsletterRow',
+  'Pagination',
+  'RelatedList',
+  'EmptyState',
+  'Callout',
+  'ContributeSteps',
+  'InstallModal',
+  'WallCard',
+];
+---
+
+<BaseLayout
+  title="component gallery — dev only"
+  description="Dev-only component gallery. Never shipped to production."
+  robots="noindex,nofollow"
+>
+  <div class="container-page flex flex-col gap-16 py-16">
+    <header class="flex flex-col gap-4">
+      <p class="font-mono text-xs lowercase text-text-muted">/dev/components/ · dev only</p>
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">component gallery</h1>
+      <p class="max-w-prose text-base text-text-muted">
+        Every component in the §4.2 inventory, in every documented variant — plus the
+        addendum-added components (A3 <code>MarkGlyph</code> variant system,
+        A3 <code>BracketBadge</code>, B3 <code>InstallModal</code>, B2 <code>WallCard</code>).
+        This page is <strong>noindex,nofollow</strong>, excluded from the sitemap, and
+        excluded from production output. There is deliberately no sponsor-slot component (§1.7 / §12.6).
+      </p>
+      <nav aria-label="gallery contents" class="flex flex-wrap gap-2">
+        {
+          groups.map((group) => (
+            <a
+              href={`#c-${group.toLowerCase()}`}
+              class="inline-flex min-h-6 items-center rounded-sm border border-border-interactive px-2 py-1 font-mono text-xs lowercase text-text-muted hover:border-accent hover:text-accent-text"
+            >
+              {group}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    {/* ---------------------------------------------------------------- MarkGlyph */}
+    <section id="c-markglyph" class="flex flex-col gap-6">
+      <SectionHeading title="MarkGlyph — §4.2.1 + A3 variant system" />
+      <p class="font-mono text-xs text-text-muted">
+        variants: mark · logo · favicon · skeleton · divider · status. never the plain 3x3.
+      </p>
+      <div class="flex flex-wrap items-center gap-8">
+        <figure class="flex flex-col items-center gap-2">
+          <MarkGlyph variant="mark" size={24} class="text-text" />
+          <figcaption class="font-mono text-xs text-text-muted">mark (default)</figcaption>
+        </figure>
+        <figure class="flex flex-col items-center gap-2">
+          <MarkGlyph variant="mark" size={12} class="text-accent" />
+          <figcaption class="font-mono text-xs text-text-muted">mark · 12px · accent</figcaption>
+        </figure>
+        <figure class="flex flex-col items-center gap-2">
+          <MarkGlyph variant="logo" size={18} />
+          <figcaption class="font-mono text-xs text-text-muted">logo (lockup)</figcaption>
+        </figure>
+        <figure class="flex flex-col items-center gap-2">
+          <MarkGlyph variant="favicon" size={20} label="grokbot.dev" />
+          <figcaption class="font-mono text-xs text-text-muted">favicon (tile)</figcaption>
+        </figure>
+        <figure class="flex flex-col items-center gap-2">
+          <MarkGlyph variant="skeleton" size={24} />
+          <figcaption class="font-mono text-xs text-text-muted">skeleton (loading)</figcaption>
+        </figure>
+        <figure class="flex flex-col items-center gap-2">
+          <MarkGlyph variant="status" size={16} label="live" />
+          <figcaption class="font-mono text-xs text-text-muted">status (pulse off)</figcaption>
+        </figure>
+        <figure class="flex flex-col items-center gap-2">
+          <MarkGlyph variant="status" size={16} label="sweeping" pulse />
+          <figcaption class="font-mono text-xs text-text-muted">
+            status · pulse — POST-LAUNCH flag, ships OFF
+          </figcaption>
+        </figure>
+      </div>
+      <MarkGlyph variant="divider" size={14} />
+      <p class="font-mono text-xs text-text-muted">divider (section motif)</p>
+    </section>
+
+    {/* -------------------------------------------------------------- BracketBadge */}
+    <section id="c-bracketbadge" class="flex flex-col gap-6">
+      <SectionHeading title="BracketBadge — A3 (built with grokbot.dev)" />
+      <div class="flex flex-wrap items-center gap-4">
+        <BracketBadge />
+        <BracketBadge size="sm" />
+        <BracketBadge variant="static" label="grokbot.dev" />
+      </div>
+    </section>
+
+    {/* ----------------------------------------------------------------- SiteHeader */}
+    <section id="c-siteheader" class="flex flex-col gap-4">
+      <SectionHeading title="SiteHeader — §4.2.2" />
+      <p class="text-base text-text-muted">
+        Rendered once at the top of this page by <code>BaseLayout</code> — mark + wordmark,
+        five nav links (incl. <code>wall</code> per B2), link-mode search, the ▪ /agent door,
+        and the single solid submit Button. No variants; sticky is off.
+      </p>
+    </section>
+
+    {/* ------------------------------------------------------------------- NavLink */}
+    <section id="c-navlink" class="flex flex-col gap-6">
+      <SectionHeading title="NavLink — §4.2.3" />
+      <div class="flex flex-wrap items-center gap-6">
+        <NavLink href="/plugins/" label="header (default)" />
+        <NavLink href="/plugins/" label="header (current)" current />
+        <NavLink href="/plugins/" label="footer" variant="footer" />
+        <NavLink href="https://github.com/ZeroPointRepo/GrokBotDev" label="external" external />
+      </div>
+    </section>
+
+    {/* -------------------------------------------------------------------- Footer */}
+    <section id="c-footer" class="flex flex-col gap-4">
+      <SectionHeading title="Footer — §4.2.4" />
+      <p class="text-base text-text-muted">
+        Rendered once at the bottom of this page by <code>BaseLayout</code>: browse / machine /
+        project columns, counts, and the full-width bottom line with the FENCED §10.5 disclaimer
+        and the build stamp. The Footer never contains NewsletterRow (§9.1).
+      </p>
+    </section>
+
+    {/* --------------------------------------------------------------- Breadcrumbs */}
+    <section id="c-breadcrumbs" class="flex flex-col gap-6">
+      <SectionHeading title="Breadcrumbs — §4.2.5" />
+      <Breadcrumbs
+        items={[
+          { label: 'home', href: '/' },
+          { label: 'plugins', href: '/plugins/' },
+          { label: 'marketing', href: '/categories/marketing/' },
+          { label: 'seo', href: '/categories/marketing/' },
+          { label: 'seo-audit-bot' },
+        ]}
+      />
+    </section>
+
+    {/* ------------------------------------------------------------ SectionHeading */}
+    <section id="c-sectionheading" class="flex flex-col gap-6">
+      <SectionHeading title="SectionHeading — §4.2.6" />
+      <SectionHeading title="default (h2, --text-2xl)" />
+      <SectionHeading title="default + action" action={{ label: 'view all →', href: '/plugins/' }} />
+      <SectionHeading title="sub (h3, --text-xl)" variant="sub" />
+    </section>
+
+    {/* -------------------------------------------------------------------- Button */}
+    <section id="c-button" class="flex flex-col gap-6">
+      <SectionHeading title="Button — §4.2.7" />
+      <div class="flex flex-wrap items-center gap-4">
+        <Button variant="solid" label="solid · md" href="/submit/" />
+        <Button variant="outline" label="outline · md" href="/plugins/" />
+        <Button variant="ghost" label="ghost · md" href="/about/" />
+      </div>
+      <div class="flex flex-wrap items-center gap-4">
+        <Button variant="solid" size="sm" label="solid · sm" href="/submit/" />
+        <Button variant="outline" size="sm" label="outline · sm" href="/plugins/" />
+        <Button variant="ghost" size="sm" label="ghost · sm" href="/about/" />
+      </div>
+      <div class="flex flex-wrap items-center gap-4">
+        <Button variant="outline" label="button element" type="button" />
+        <Button variant="outline" label="disabled" type="button" disabled />
+        <Button variant="outline" label="external" href="https://x.com/" external />
+      </div>
+    </section>
+
+    {/* --------------------------------------------------------------- SearchInput */}
+    <section id="c-searchinput" class="flex flex-col gap-6">
+      <SectionHeading title="SearchInput — §4.2.8" />
+      <p class="font-mono text-xs text-text-muted">mode: link (zero JS, GET → /search/)</p>
+      <SearchInput mode="link" />
+      <p class="font-mono text-xs text-text-muted">
+        mode: link, pre-scoped (submits q + type=plugin)
+      </p>
+      <SearchInput mode="link" hiddenFields={{ type: 'plugin' }} />
+      <p class="font-mono text-xs text-text-muted">
+        mode: page (Pagefind island + noscript fallback) — index exists only after a full build
+      </p>
+      <SearchInput mode="page" initialQuery="" />
+    </section>
+
+    {/* ----------------------------------------------------------------- FilterBar */}
+    <section id="c-filterbar" class="flex flex-col gap-6">
+      <SectionHeading title="FilterBar — §4.2.9" />
+      <p class="font-mono text-xs text-text-muted">facets: category + integration (lane index)</p>
+      <FilterBar
+        facets={['category', 'integration']}
+        options={facetOptions}
+        clearHref="/plugins/"
+      />
+      <p class="font-mono text-xs text-text-muted">facets: category only (/collections/)</p>
+      <FilterBar facets={['category']} options={facetOptions} clearHref="/collections/" />
+      <p class="font-mono text-xs text-text-muted">facets: all three (/search/)</p>
+      <FilterBar
+        facets={['category', 'integration', 'type']}
+        options={facetOptions}
+        clearHref="/search/"
+      />
+    </section>
+
+    {/* ----------------------------------------------------------------- EntryCard */}
+    <section id="c-entrycard" class="flex flex-col gap-6">
+      <SectionHeading title="EntryCard — §4.2.10" />
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+        <EntryCard entry={samplePlugin} variant="plugin" />
+        <EntryCard entry={sampleUseCase} variant="use-case" />
+        <EntryCard
+          entry={sampleCollection}
+          variant="collection"
+          memberCounts={{ plugins: 3, useCases: 1 }}
+        />
+      </div>
+      <p class="font-mono text-xs text-text-muted">
+        featured · needs-update · hub mode (type chip rendered)
+      </p>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+        <EntryCard entry={samplePlugin} variant="plugin" featured />
+        <EntryCard entry={staleUseCase} variant="use-case" />
+        <EntryCard entry={samplePlugin} variant="plugin" showType />
+      </div>
+    </section>
+
+    {/* ---------------------------------------------------------------------- Chip */}
+    <section id="c-chip" class="flex flex-col gap-6">
+      <SectionHeading title="Chip — §4.2.11 + A5" />
+      <div class="flex flex-wrap items-center gap-2">
+        <Chip variant="verified" date="2026-08-21" />
+        <Chip variant="setup-time" label="~5 min setup" />
+        <Chip variant="category" label="Marketing" href="/categories/marketing/" />
+        <Chip variant="integration" label="Google Calendar" href="/integrations/gmail/" />
+        <Chip variant="scouted" label="scouted on x" href="https://x.com/example/status/1" />
+        <Chip variant="scouted" label="scouted on x" />
+      </div>
+      <p class="font-mono text-xs text-text-muted">
+        A5 type axis — shape, never hue: plugin (filled) · use-case (outline) · collection (dashed)
+      </p>
+      <div class="flex flex-wrap items-center gap-2">
+        <Chip variant="type" label="plugin" entryType="plugin" href="/plugins/" />
+        <Chip variant="type" label="use case" entryType="use-case" href="/use-cases/" />
+        <Chip variant="type" label="collection" entryType="collection" href="/collections/" />
+      </div>
+      <p class="font-mono text-xs text-text-muted">active filter chip (removeHref)</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <Chip variant="category" label="Marketing" removeHref="/plugins/" />
+      </div>
+    </section>
+
+    {/* ---------------------------------------------------------------- FeaturedTag */}
+    <section id="c-featuredtag" class="flex flex-col gap-6">
+      <SectionHeading title="FeaturedTag — §4.2.12" />
+      <div class="relative max-w-sm rounded-sm border border-border bg-surface p-4">
+        <FeaturedTag />
+        <p class="text-base text-text-muted">
+          square-cornered corner mark — the one deliberate radius break
+        </p>
+      </div>
+      <div class="relative max-w-sm rounded-sm border border-border bg-surface p-4">
+        <FeaturedTag label="editor's pick" />
+        <p class="text-base text-text-muted">custom label</p>
+      </div>
+    </section>
+
+    {/* --------------------------------------------------------------- PromptBlock */}
+    <section id="c-promptblock" class="flex flex-col gap-6">
+      <SectionHeading title="PromptBlock — §4.2.13" />
+      <PromptBlock prompt={samplePlugin.prompt ?? ''} />
+      <p class="font-mono text-xs text-text-muted">clamped preview (maxLines 12 + view full)</p>
+      <PromptBlock
+        prompt={`${samplePlugin.prompt}\n\n${sampleCollection.prompt}`}
+        maxLines={4}
+        viewFullHref="/plugins/"
+      />
+    </section>
+
+    {/* ---------------------------------------------------------------- CopyButton */}
+    <section id="c-copybutton" class="flex flex-col gap-6">
+      <SectionHeading title="CopyButton — §4.2.14" />
+      <p class="font-mono text-xs text-text-muted">
+        states are runtime: idle → copied ▪ (2000ms) → idle; error → press ctrl+c
+      </p>
+      <div class="flex flex-wrap items-center gap-4">
+        <CopyButton text="copied from the dev gallery" />
+        <CopyButton text="copied from the dev gallery" label="copy contract" size="md" />
+      </div>
+    </section>
+
+    {/* -------------------------------------------------------- AgentContractBlock */}
+    <section id="c-agentcontractblock" class="flex flex-col gap-6">
+      <SectionHeading title="AgentContractBlock — §4.2.15" />
+      <AgentContractBlock contractMarkdown={contractMarkdown} />
+    </section>
+
+    {/* ---------------------------------------------------------------- TweetEmbed */}
+    <section id="c-tweetembed" class="flex flex-col gap-6">
+      <SectionHeading title="TweetEmbed — §4.2.16" />
+      <p class="font-mono text-xs text-text-muted">
+        unloaded = default and permanent until a click. zero third-party requests before then.
+      </p>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+        <TweetEmbed
+          tweetUrl={sampleUseCase.sourceTweets[0].url}
+          authorHandle={sampleUseCase.sourceTweets[0].authorHandle}
+          excerpt={sampleUseCase.sourceTweets[0].excerpt}
+          postedAt={sampleUseCase.sourceTweets[0].postedAt}
+        />
+        <TweetEmbed
+          tweetUrl="https://x.com/example/status/1000000000000000002"
+          authorHandle="example"
+          excerpt="second embed on the same page reuses the already-loaded widgets.js — it is injected once, and only after a click."
+        />
+      </div>
+    </section>
+
+    {/* ------------------------------------------------------------------- StatBar */}
+    <section id="c-statbar" class="flex flex-col gap-6">
+      <SectionHeading title="StatBar — §4.2.17" />
+      <p class="font-mono text-xs text-text-muted">variant: full (home)</p>
+      <StatBar stats={stats} variant="full" />
+      <p class="font-mono text-xs text-text-muted">variant: inline (hub pages)</p>
+      <StatBar stats={stats} variant="inline" />
+      <p class="font-mono text-xs text-text-muted">
+        inline, hub scope — plugins + use cases only, no collection count (§6.2)
+      </p>
+      <StatBar stats={stats} variant="inline" hideCollections />
+    </section>
+
+    {/* ------------------------------------------------------------- NewsletterRow */}
+    <section id="c-newsletterrow" class="flex flex-col gap-6">
+      <SectionHeading title="NewsletterRow — §4.2.18" />
+      <NewsletterRow source="home" />
+      <p class="font-mono text-xs text-text-muted">custom heading/subcopy (props)</p>
+      <NewsletterRow
+        source="plugin-detail"
+        heading="the week's best, in one email"
+        subcopy="new plugins, use cases and collections. one email a week. that's it."
+      />
+    </section>
+
+    {/* ---------------------------------------------------------------- Pagination */}
+    <section id="c-pagination" class="flex flex-col gap-6">
+      <SectionHeading title="Pagination — §4.2.19" />
+      <Pagination
+        page={{ current: 1, total: 6, nextUrl: '/plugins/', baseUrl: '/plugins/' }}
+      />
+      <Pagination
+        page={{
+          current: 3,
+          total: 6,
+          prevUrl: '/plugins/',
+          nextUrl: '/plugins/',
+          baseUrl: '/plugins/',
+        }}
+      />
+      <Pagination page={{ current: 6, total: 6, prevUrl: '/plugins/', baseUrl: '/plugins/' }} />
+    </section>
+
+    {/* --------------------------------------------------------------- RelatedList */}
+    <section id="c-relatedlist" class="flex flex-col gap-6">
+      <SectionHeading title="RelatedList — §4.2.20" />
+      <RelatedList entries={[samplePlugin, sampleUseCase]} />
+      <RelatedList entries={[sampleCollection]} variant="appears-in" />
+      <p class="font-mono text-xs text-text-muted">
+        empty → renders nothing at all (no empty related/appears-in sections, ever):
+      </p>
+      <RelatedList entries={[]} />
+    </section>
+
+    {/* ---------------------------------------------------------------- EmptyState */}
+    <section id="c-emptystate" class="flex flex-col gap-6">
+      <SectionHeading title="EmptyState — §4.2.21" />
+      <div class="rounded-sm border border-border">
+        <EmptyState variant="search" query="slack" />
+      </div>
+      <div class="rounded-sm border border-border">
+        <EmptyState variant="hub" />
+      </div>
+      <div class="rounded-sm border border-border">
+        <EmptyState
+          variant="generic"
+          heading="404 — not found"
+          body="this page doesn't exist. the bots have been notified. (they haven't. it's a static site.)"
+          action={{ label: 'home', href: '/' }}
+        />
+      </div>
+    </section>
+
+    {/* ------------------------------------------------------------------- Callout */}
+    <section id="c-callout" class="flex flex-col gap-6">
+      <SectionHeading title="Callout — §4.2.22" />
+      <Callout variant="info" title="humans">you probably want /plugins/ instead</Callout>
+      <Callout variant="warn" title="needs update">
+        {fillCopy(CP_067_CALLOUT_NEEDS_UPDATE, { verified_at: '2026-05-02' })}
+      </Callout>
+      <Callout variant="danger" title="deprecated">{CP_068_CALLOUT_DEPRECATED}</Callout>
+      <Callout variant="info" title="what you need">
+        works on any Grok plan with calendar + gmail connected. no code.
+      </Callout>
+    </section>
+
+    {/* ----------------------------------------------------------- ContributeSteps */}
+    <section id="c-contributesteps" class="flex flex-col gap-6">
+      <SectionHeading title="ContributeSteps — §4.2.23" />
+      <ContributeSteps
+        steps={[
+          {
+            title: 'fork ZeroPointRepo/GrokBotDev',
+            body: 'one public repo, one markdown file per entry.',
+            code: 'gh repo fork ZeroPointRepo/GrokBotDev',
+          },
+          {
+            title: 'add your entry file',
+            body: 'content/plugins/<slug>.md — the schema lives in the repo README.',
+          },
+          {
+            title: 'open the PR',
+            body: 'CI checks it. we verify it. merged = live in minutes.',
+          },
+        ]}
+      />
+      <p class="font-mono text-xs text-text-muted">startAt = 4 (reused as a generic step list)</p>
+      <ContributeSteps
+        startAt={4}
+        steps={[{ title: 'set the schedule', body: 'daily is the default and the right default.' }]}
+      />
+    </section>
+
+    {/* --------------------------------------------------------------- InstallModal */}
+    <section id="c-installmodal" class="flex flex-col gap-6">
+      <SectionHeading title="InstallModal — Addendum B3" />
+      <p class="font-mono text-xs text-text-muted">
+        entry variant (prompt) · entry variant (install steps) · site variant (section 2 first)
+      </p>
+      <div class="flex flex-wrap items-center gap-4">
+        <InstallModal
+          id="demo-entry"
+          variant="entry"
+          prompt={samplePlugin.prompt}
+          entryName={samplePlugin.name}
+        />
+        <InstallModal
+          id="demo-steps"
+          variant="entry"
+          installSteps={samplePlugin.installSteps}
+          entryName={samplePlugin.name}
+          triggerLabel="install in grok bot (steps)"
+        />
+        <InstallModal id="site" variant="site" />
+      </div>
+    </section>
+
+    {/* -------------------------------------------------------------------- WallCard */}
+    <section id="c-wallcard" class="flex flex-col gap-6">
+      <SectionHeading title="WallCard — Addendum B2" />
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+        <WallCard
+          tweet={sampleUseCase.sourceTweets[0]}
+          entryName={sampleUseCase.name}
+          entryHref="/use-cases/"
+        />
+      </div>
+    </section>
+
+    <p class="font-mono text-xs text-text-muted">
+      no sponsor-slot component exists — §1.7 / §12.6: do not build even a stub.
+    </p>
+  </div>
+</BaseLayout>

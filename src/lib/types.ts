@@ -1,0 +1,131 @@
+// Shared UI types for the §4.2 component inventory.
+// Frontmatter is snake_case (§05); TypeScript internals are camelCase (CONTEXT) —
+// the rename happens at the content-collection boundary (§4.2.10). M2 owns the Zod
+// schemas in src/content.config.ts; these interfaces mirror them field for field.
+
+export type EntryType = 'plugin' | 'use-case' | 'collection';
+export type EntryStatus = 'live' | 'needs-update' | 'deprecated';
+
+export interface EntryAuthor {
+  handle: string;
+  url: string;
+  platform: 'x' | 'github' | 'web';
+}
+
+export interface ScoutedBy {
+  handle: string;
+  platform: 'x' | 'github';
+}
+
+export interface SourceTweet {
+  url: string;
+  authorHandle: string;
+  excerpt: string;
+  postedAt?: string;
+}
+
+export interface CollectionMember {
+  slug: string;
+  reason: string;
+}
+
+interface EntryBase {
+  name: string;
+  slug: string;
+  tagline: string;
+  category: string;
+  subcategory: string;
+  featured: boolean;
+  addedAt: string;
+  updatedAt: string;
+  verifiedAt?: string;
+  status: EntryStatus;
+}
+
+export interface PluginEntry extends EntryBase {
+  type: 'plugin';
+  installSteps: string[];
+  prompt?: string;
+  worksWith: string[];
+  projectUrl: string;
+  repoUrl?: string;
+  author: EntryAuthor;
+  scoutedBy?: ScoutedBy;
+  sourceUrl?: string;
+  pricingNote?: string;
+  setupMinutes?: number;
+}
+
+export interface UseCaseEntry extends EntryBase {
+  type: 'use-case';
+  botName?: string;
+  whatItDoes: string;
+  integrations: string[];
+  schedule: 'none' | 'adhoc' | 'hourly' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  autonomy: 'readonly' | 'proposes' | 'acts-with-approval' | 'autonomous';
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  setupMinutes: number;
+  costNote?: string;
+  sourceTweets: SourceTweet[];
+  author?: EntryAuthor;
+  scoutedBy?: ScoutedBy;
+  replicability: string;
+}
+
+export interface CollectionEntry extends EntryBase {
+  type: 'collection';
+  members: CollectionMember[];
+  prompt?: string;
+}
+
+export type Entry = PluginEntry | UseCaseEntry | CollectionEntry;
+
+/** §4.2.17 / §4.2.4 — build-time counts. */
+export interface SiteStats {
+  plugins: number;
+  useCases: number;
+  collections: number;
+  generatedAt: string;
+}
+
+/** §4.2.9 */
+export interface FacetOption {
+  label: string;
+  href: string;
+  count: number;
+  current: boolean;
+}
+
+/** §4.2.19 — Astro `paginate()` output. */
+export interface PageInfo {
+  current: number;
+  total: number;
+  prevUrl?: string;
+  nextUrl?: string;
+  baseUrl: string;
+}
+
+/** §4.2.5 */
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+/** §4.2.23 */
+export interface ContributeStep {
+  title: string;
+  body: string;
+  code?: string;
+}
+
+/** §9.2 `source` enum — the surfaces the waitlist form reports. */
+export type WaitlistSource =
+  | 'home'
+  | 'plugins-index'
+  | 'use-cases-index'
+  | 'collections-index'
+  | 'plugin-detail'
+  | 'use-case-detail'
+  | 'collection-detail'
+  | 'hub'
+  | 'contribute';

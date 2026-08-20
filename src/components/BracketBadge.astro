@@ -1,0 +1,45 @@
+---
+// Addendum A3 — `BracketBadge`: Mark C, the bracket wrapping the grid.
+// This is the "built with grokbot.dev" plugin badge; the embeddable snippet and its
+// dofollow mechanics are owned by §8 (this component only renders the badge).
+import MarkGlyph from './MarkGlyph.astro';
+
+interface Props {
+  /** `link` renders an <a> (the embeddable badge); `static` renders an inert <span>. */
+  variant?: 'link' | 'static';
+  label?: string;
+  href?: string;
+  size?: 'sm' | 'md';
+  class?: string;
+}
+
+const {
+  variant = 'link',
+  label = 'grokbot.dev',
+  href = 'https://grokbot.dev/',
+  size = 'md',
+  class: className = '',
+} = Astro.props;
+
+const Tag = variant === 'link' ? 'a' : 'span';
+const glyphSize = size === 'sm' ? 12 : 14;
+const box = [
+  'inline-flex min-h-6 items-center gap-2 rounded-sm border px-2 py-1 font-mono lowercase',
+  size === 'sm' ? 'text-xs' : 'text-sm',
+  variant === 'link'
+    ? 'border-border-interactive text-text hover:border-accent hover:text-accent-text'
+    : 'border-border text-text',
+  className,
+];
+---
+
+<Tag
+  class:list={box}
+  href={variant === 'link' ? href : undefined}
+  rel={variant === 'link' ? 'noopener' : undefined}
+>
+  <span aria-hidden="true" class="text-text-muted">[</span>
+  <MarkGlyph size={glyphSize} />
+  <span aria-hidden="true" class="text-text-muted">]</span>
+  <span>{label}</span>
+</Tag>

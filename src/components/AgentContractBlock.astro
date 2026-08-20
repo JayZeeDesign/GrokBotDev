@@ -1,0 +1,43 @@
+---
+// §4.2.15 AgentContractBlock — renders the /agent contract markdown generated at build
+// per §07 (this component only renders it).
+// Copy CP-044 (KEEP) label · CP-043 (KEEP, "the single best microcopy string in the PRD")
+// microhint — neither may be reworded.
+import CopyButton from './CopyButton.astro';
+
+interface Props {
+  contractMarkdown: string;
+  class?: string;
+}
+
+const { contractMarkdown, class: className = '' } = Astro.props;
+---
+
+<div
+  class:list={['rounded-sm border border-border bg-surface-raised', className]}
+  data-copy-source-root
+>
+  <div class="flex flex-wrap items-center justify-between gap-4 border-b border-border px-4 py-2">
+    <span class="font-mono text-xs lowercase text-text-muted">grokbot.dev agent contract · v1</span>
+    <CopyButton text={contractMarkdown} label="copy contract" size="md" />
+  </div>
+
+  <div
+    class="contract-scroll overflow-y-auto"
+    tabindex="0"
+    role="region"
+    aria-label="agent contract markdown"
+  >
+    <pre class="m-0 p-4 font-mono text-sm whitespace-pre-wrap text-text">{contractMarkdown}</pre>
+  </div>
+
+  <p class="px-4 py-2 font-mono text-xs lowercase text-text-muted">
+    paste this into your grok bot — it figures out the rest
+  </p>
+</div>
+
+<style>
+  .contract-scroll {
+    max-height: 480px;
+  }
+</style>

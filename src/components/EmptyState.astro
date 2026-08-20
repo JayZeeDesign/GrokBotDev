@@ -1,0 +1,47 @@
+---
+// §4.2.21 EmptyState — zero-results / thin-hub placeholder.
+// Copy defaults are the pack's: CP-065 (search, KEEP) and CP-066 (hub — A7 renaming,
+// "the bots" → "the Scouts"). Pages may override `heading`/`body`, never silently
+// reword these defaults.
+import MarkGlyph from './MarkGlyph.astro';
+import Button from './Button.astro';
+import { CP_065_EMPTY_SEARCH, CP_066_EMPTY_HUB, fillCopy } from '../lib/copy';
+
+interface Props {
+  variant: 'search' | 'hub' | 'generic';
+  heading?: string;
+  body?: string;
+  action?: { label: string; href: string };
+  /** Search variant: the query echoed into CP-065's `{q}` token. */
+  query?: string;
+  class?: string;
+}
+
+const { variant, heading, body, action, query = '', class: className = '' } = Astro.props;
+
+const defaults = {
+  search: {
+    heading: 'no results',
+    body: fillCopy(CP_065_EMPTY_SEARCH, { q: query }),
+    action: { label: 'browse plugins', href: '/plugins/' },
+  },
+  hub: {
+    heading: 'nothing here yet',
+    body: CP_066_EMPTY_HUB,
+    action: { label: 'submit one', href: '/submit/' },
+  },
+  generic: { heading: 'nothing here', body: '', action: undefined },
+} as const;
+
+const resolvedHeading = heading ?? defaults[variant].heading;
+const resolvedBody = body ?? defaults[variant].body;
+const resolvedAction = action ?? defaults[variant].action;
+---
+
+<div class:list={['flex flex-col items-center gap-4 p-12 text-center', className]}>
+  <MarkGlyph size={24} class="text-text-muted" />
+  <p class="font-display text-xl text-text display-track">{resolvedHeading}</p>
+  {resolvedBody && <p class="max-w-prose text-base text-text-muted">{resolvedBody}</p>}
+  <slot />
+  {resolvedAction && <Button variant="outline" href={resolvedAction.href} label={resolvedAction.label} />}
+</div>

@@ -1,0 +1,154 @@
+---
+// §4.2.18 NewsletterRow — SANCTIONED ISLAND #4 (inline-confirm enhancement).
+// The form is a NATIVE POST to the hardcoded same-origin path `/api/waitlist`
+// (Ruling 8) — no env-var placeholder. With JS off it posts urlencoded and the
+// services endpoint 303-redirects to the static /subscribed/ page (§9.2a).
+// The Footer NEVER contains this component (§9.1) — it is always its own page region.
+// Copy: CP-014 heading · CP-015 subcopy · CP-016 states · CP-017 error (all pack AFTERs).
+import Button from './Button.astro';
+import {
+  CP_014_NEWSLETTER_HEADING,
+  CP_015_NEWSLETTER_SUBCOPY,
+  CP_016_NEWSLETTER_SUCCESS,
+} from '../lib/copy';
+import type { WaitlistSource } from '../lib/types';
+
+interface Props {
+  heading?: string;
+  subcopy?: string;
+  /** Surface value sent to the endpoint; enum owned by §09.2. */
+  source: WaitlistSource;
+  class?: string;
+}
+
+const {
+  heading = CP_014_NEWSLETTER_HEADING,
+  subcopy = CP_015_NEWSLETTER_SUBCOPY,
+  source,
+  class: className = '',
+} = Astro.props;
+
+const fieldId = `newsletter-email-${source}`;
+---
+
+<section
+  class:list={['rounded-sm border border-border bg-surface p-6', className]}
+  data-newsletter
+  data-pagefind-ignore
+>
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div class="flex flex-col gap-2">
+      <p class="font-display text-xl text-text display-track">{heading}</p>
+      <p class="text-base text-text-muted">{subcopy}</p>
+    </div>
+
+    <form
+      method="post"
+      action="/api/waitlist"
+      class="flex w-full max-w-md flex-col gap-2"
+      data-newsletter-form
+      novalidate
+    >
+      <label class="sr-only" for={fieldId}>email address</label>
+      <div class="flex flex-wrap items-center gap-2">
+        <input
+          id={fieldId}
+          type="email"
+          name="email"
+          required
+          autocomplete="email"
+          placeholder="you@example.com"
+          aria-describedby={`${fieldId}-error`}
+          class="min-h-6 flex-1 rounded-sm border border-border-interactive bg-surface px-3 py-2 font-mono text-sm text-text placeholder:text-text-muted"
+          data-newsletter-input
+        />
+        <Button variant="solid" type="submit" label="subscribe" attrs={{ 'data-newsletter-submit': 'true' }} />
+      </div>
+
+      {/* Honeypot — never shown, never focusable, never announced (§4.6, §9.2). */}
+      <div class="sr-only" aria-hidden="true">
+        <label for={`${fieldId}-website`}>website</label>
+        <input id={`${fieldId}-website`} type="text" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+      <input type="hidden" name="source" value={source} />
+
+      <p id={`${fieldId}-error`} class="hidden font-mono text-xs text-danger" data-newsletter-error></p>
+      <p class="font-mono text-xs text-text-muted">
+        one email a week. <a href="/about/#privacy" class="underline underline-offset-4 hover:text-accent-text">what we do with it</a>.
+      </p>
+    </form>
+
+    <p class="hidden font-mono text-sm text-accent-text" aria-live="polite" data-newsletter-success>
+      {CP_016_NEWSLETTER_SUCCESS}
+    </p>
+  </div>
+</section>
+
+<script>
+  // Enhancement only: intercept submit, POST JSON, swap the form for the confirmation.
+  // Fetch failure → CP-017's honest down-message. No JS → the native POST + 303 path.
+  import { CP_016_NEWSLETTER_SUBMITTING, CP_017_NEWSLETTER_ERROR } from '../lib/copy';
+
+  document.querySelectorAll<HTMLElement>('[data-newsletter]').forEach((row) => {
+    const form = row.querySelector<HTMLFormElement>('[data-newsletter-form]');
+    const input = row.querySelector<HTMLInputElement>('[data-newsletter-input]');
+    const button = row.querySelector<HTMLButtonElement>('[data-newsletter-submit]');
+    const errorEl = row.querySelector<HTMLElement>('[data-newsletter-error]');
+    const successEl = row.querySelector<HTMLElement>('[data-newsletter-success]');
+    if (!form || !input || !button || !errorEl || !successEl) return;
+
+    const field = input;
+    const message = errorEl;
+    const idleLabel = button.textContent?.trim() ?? 'subscribe';
+
+    const fail = (text: string) => {
+      message.textContent = text;
+      message.classList.remove('hidden');
+      field.setAttribute('aria-invalid', 'true');
+      field.classList.add('newsletter-input--invalid');
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.classList.add('hidden');
+      field.removeAttribute('aria-invalid');
+      field.classList.remove('newsletter-input--invalid');
+
+      if (!field.checkValidity()) {
+        fail('that email address does not look right');
+        field.focus();
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = CP_016_NEWSLETTER_SUBMITTING;
+
+      const payload = {
+        email: field.value,
+        source: form.querySelector<HTMLInputElement>('input[name="source"]')?.value ?? 'home',
+        website: form.querySelector<HTMLInputElement>('input[name="website"]')?.value ?? '',
+      };
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        form.classList.add('hidden');
+        successEl.classList.remove('hidden');
+      } catch {
+        button.disabled = false;
+        button.textContent = idleLabel;
+        fail(CP_017_NEWSLETTER_ERROR);
+      }
+    });
+  });
+</script>
+
+<style is:global>
+  .newsletter-input--invalid {
+    border-color: var(--color-danger);
+  }
+</style>

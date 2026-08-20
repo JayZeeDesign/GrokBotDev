@@ -10,11 +10,14 @@ import geistMonoUrl from '@fontsource/geist-mono/files/geist-mono-latin-400-norm
 interface Props {
   title?: string;
   description?: string;
+  /** Dev-only and thin surfaces set their own robots directive (§6.2). */
+  robots?: string;
 }
 
 const {
   title = 'grokbot.dev',
   description = 'A community directory for what Grok Bot can do.',
+  robots,
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
@@ -30,19 +33,24 @@ const stats = { plugins: 0, useCases: 0, collections: 0, generatedAt };
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
+    {robots && <meta name="robots" content={robots} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" />
     <link rel="preload" href={geistDisplayUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={interBodyUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={geistMonoUrl} as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
+    {/* SANCTIONED ISLAND #1 — analytics loader, once, sitewide (§4.2 client-JS policy). */}
+    <script>
+      import '../scripts/analytics';
+    </script>
   </head>
   <body>
-    <a class="skip-link" href="#content">skip to content</a>
+    <a class="skip-link" href="#main">skip to content</a>
     <SiteHeader currentPath={currentPath} />
     <div class="site-grid" data-rails={ENABLE_RAILS ? 'true' : 'false'}>
       {ENABLE_RAILS && <aside class="hidden lg:block" aria-label="left rail"><slot name="rail-left" /></aside>}
-      <main id="content" class="min-h-dvh">
+      <main id="main" class="min-h-dvh">
         <slot />
       </main>
       {ENABLE_RAILS && <aside class="hidden lg:block" aria-label="right rail"><slot name="rail-right" /></aside>}

@@ -1,0 +1,111 @@
+---
+// §4.2.16 TweetEmbed — SANCTIONED ISLAND #3, click-to-load ONLY (§10.3 / Ruling 5).
+// ZERO third-party requests occur before a user click: no IntersectionObserver, no
+// scroll/proximity trigger, no x.com markup in the initial HTML. `unloaded` is the
+// default AND permanent state until the user clicks.
+// The styled quote card is the permanent rendering when JS is off, when widgets.js
+// fails, or before a click — it must look finished, not broken.
+// Copy CP-034 (KEEP, bundle): `load tweet from x` · `@{handle} on x ↗`.
+import { CP_034_TWEET_LOAD_LABEL } from '../lib/copy';
+
+interface Props {
+  tweetUrl: string;
+  authorHandle: string;
+  /** `source_tweets[].excerpt` (§05) — ≤280 chars, NEVER the full post (§10.6). */
+  excerpt: string;
+  postedAt?: string;
+  class?: string;
+}
+
+const { tweetUrl, authorHandle, excerpt, postedAt, class: className = '' } = Astro.props;
+---
+
+<figure
+  class:list={['tweet-embed flex flex-col gap-3 border border-border-interactive bg-surface p-4', className]}
+  data-tweet-embed
+  data-tweet-url={tweetUrl}
+>
+  <blockquote class="border-l-2 border-l-border-strong pl-4 text-base text-text" data-tweet-fallback>
+    <p>{excerpt}</p>
+  </blockquote>
+
+  <figcaption class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-text-muted">
+    <a href={tweetUrl} target="_blank" rel="noopener" class="hover:text-accent-text">
+      @{authorHandle} on x <span aria-hidden="true">↗</span>
+    </a>
+    <span class="flex items-center gap-3">
+      {postedAt && <time datetime={postedAt}>{postedAt.slice(0, 10)}</time>}
+      <button
+        type="button"
+        hidden
+        data-tweet-load
+        class="tweet-embed__btn"
+      >
+        {CP_034_TWEET_LOAD_LABEL}
+      </button>
+    </span>
+  </figcaption>
+</figure>
+
+<style>
+  .tweet-embed__btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 6px 12px;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+  }
+
+  .tweet-embed__btn:hover {
+    border-color: var(--color-accent);
+  }
+</style>
+
+<script>
+  // Click loader. widgets.js is injected ONCE per page, and only after a real click.
+  const WIDGETS_SRC = 'https://platform.twitter.com/widgets.js';
+
+  function ensureWidgets(): void {
+    if (document.querySelector(`script[src="${WIDGETS_SRC}"]`)) {
+      (window as unknown as { twttr?: { widgets?: { load?: () => void } } }).twttr?.widgets?.load?.();
+      return;
+    }
+    const tag = document.createElement('script');
+    tag.src = WIDGETS_SRC;
+    tag.async = true;
+    document.head.appendChild(tag);
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-tweet-embed]').forEach((figure) => {
+    const button = figure.querySelector<HTMLButtonElement>('[data-tweet-load]');
+    const url = figure.dataset.tweetUrl;
+    if (!button || !url) return;
+
+    button.removeAttribute('hidden');
+
+    button.addEventListener(
+      'click',
+      () => {
+        figure.setAttribute('aria-busy', 'true');
+        const quote = document.createElement('blockquote');
+        quote.className = 'twitter-tweet';
+        const link = document.createElement('a');
+        link.href = url;
+        quote.appendChild(link);
+        figure.replaceChildren(quote);
+        ensureWidgets();
+        window.setTimeout(() => figure.removeAttribute('aria-busy'), 1200);
+      },
+      { once: true }
+    );
+  });
+</script>

@@ -1,0 +1,50 @@
+---
+// §4.2.17 StatBar — the site-wide counts strip.
+// Dates are ABSOLUTE UTC `YYYY-MM-DD` computed at build (§02 Q21); the full ISO stamp
+// rides in the `title` attribute. No relative times anywhere on the site — the pages are
+// static and relative times go stale.
+// A9 density directive: visible totals are a hard requirement, not a suggestion.
+import { isoToDate } from '../lib/format';
+import type { SiteStats } from '../lib/types';
+
+interface Props {
+  stats: SiteStats;
+  /** `full` = home (bordered strip) · `inline` = hub pages (single line, no borders). */
+  variant?: 'full' | 'inline';
+  /** Hub scope: hubs count plugins + use cases only, never collections (§6.2). */
+  hideCollections?: boolean;
+  class?: string;
+}
+
+const { stats, variant = 'full', hideCollections = false, class: className = '' } = Astro.props;
+
+const items = [
+  { label: `${stats.plugins} plugins`, href: '/plugins/' },
+  { label: `${stats.useCases} use cases`, href: '/use-cases/' },
+  ...(hideCollections ? [] : [{ label: `${stats.collections} collections`, href: '/collections/' }]),
+];
+const updated = isoToDate(stats.generatedAt);
+---
+
+<div
+  class:list={[
+    'font-mono text-sm text-text-muted',
+    variant === 'full' ? 'border-y border-border py-4' : '',
+    className,
+  ]}
+>
+  <p class="flex flex-wrap items-center gap-2">
+    {
+      items.map((item, index) => (
+        <>
+          {index > 0 && <span aria-hidden="true">·</span>}
+          <a href={item.href} class="hover:text-accent-text">
+            {item.label}
+          </a>
+        </>
+      ))
+    }
+    <span aria-hidden="true">·</span>
+    <span title={stats.generatedAt}>updated {updated}</span>
+  </p>
+</div>

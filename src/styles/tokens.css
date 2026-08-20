@@ -13,8 +13,11 @@
   --color-accent-contrast: #FFFFFF;
   --color-accent-tint: #FFFFFF;
   --color-success: #8C7A5C;
-  --color-warn: #8C7A5C;
-  --color-danger: #6E6E76;
+  /* warn/danger keep their §4.1.2 values: Addendum A1's table does not define them, and
+     collapsing them onto accent/muted breaks §4.1.2's status map (live→accent,
+     needs-update→warn, deprecated→danger) and A1's own accent law. See BUILD-NOTES. */
+  --color-warn: #A16207;
+  --color-danger: #DC2626;
   --color-focus: #8C7A5C;
 
   --color-sponsor-sage-tint: #E8F0E6;
@@ -100,8 +103,8 @@
   --color-accent-contrast: #0B0B0C;
   --color-accent-tint: #141417;
   --color-success: #C6AE85;
-  --color-warn: #C6AE85;
-  --color-danger: #8A8A93;
+  --color-warn: #EAB308;
+  --color-danger: #EF4444;
   --color-focus: #C6AE85;
 
   --color-sponsor-sage-tint: #101512;
