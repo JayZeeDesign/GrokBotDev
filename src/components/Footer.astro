@@ -1,0 +1,89 @@
+---
+import MarkGlyph from './MarkGlyph.astro';
+import NavLink from './NavLink.astro';
+
+interface FooterStats {
+  plugins: number;
+  useCases: number;
+  collections: number;
+  generatedAt: string;
+}
+
+interface Props {
+  stats?: FooterStats;
+  statsUrl?: string;
+}
+
+const { stats = { plugins: 0, useCases: 0, collections: 0, generatedAt: new Date().toISOString() }, statsUrl = '' } = Astro.props;
+const builtStamp = stats.generatedAt.replace(/\.\d{3}Z$/, 'Z');
+const columns = [
+  {
+    title: 'browse',
+    links: [
+      { href: '/plugins/', label: 'plugins' },
+      { href: '/use-cases/', label: 'use cases' },
+      { href: '/collections/', label: 'collections' },
+      { href: '/wall/', label: 'wall' },
+      { href: '/categories/', label: 'categories' },
+      { href: '/integrations/', label: 'integrations' },
+    ],
+  },
+  {
+    title: 'machine',
+    links: [
+      { href: '/agent/', label: 'agent' },
+      { href: '/api/v1/index.json', label: 'api' },
+      { href: '/rss.xml', label: 'rss' },
+      { href: '/llms.txt', label: 'llms.txt' },
+      { href: 'https://mcp.grokbot.dev', label: 'mcp host', external: true },
+    ],
+  },
+  {
+    title: 'project',
+    links: [
+      { href: '/about/', label: 'about' },
+      { href: '/contribute/', label: 'contribute' },
+      { href: 'https://github.com/ZeroPointRepo/GrokBotDev', label: 'github', external: true },
+      ...(statsUrl ? [{ href: statsUrl, label: 'stats', external: true }] : []),
+    ],
+  },
+  {
+    title: 'counts',
+    links: [
+      { href: '/plugins/', label: `${stats.plugins} plugins` },
+      { href: '/use-cases/', label: `${stats.useCases} use cases` },
+      { href: '/collections/', label: `${stats.collections} collections` },
+    ],
+  },
+];
+---
+
+<footer class="border-t border-border bg-bg">
+  <div class="container-page py-12">
+    <nav aria-label="footer" class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      {columns.map((column) => (
+        <section aria-labelledby={`footer-${column.title.replaceAll(' ', '-')}`}>
+          <h2 id={`footer-${column.title.replaceAll(' ', '-')}`} class="mb-3 font-mono text-xs text-text">
+            {column.title}
+          </h2>
+          <ul class="space-y-2">
+            {column.links.map((link) => (
+              <li>
+                <NavLink href={link.href} label={link.label} external={link.external} variant="footer" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </nav>
+
+    <div class="mt-10 flex flex-col gap-3 border-t border-border pt-6 font-mono text-xs text-text-muted md:flex-row md:items-center md:justify-between">
+      <p class="flex items-center gap-2 text-text">
+        <MarkGlyph size={14} />
+        <span class="display-track font-display font-semibold">grokbot.dev</span>
+      </p>
+      <p>GrokBot.dev is an independent community project — not affiliated with xAI.</p>
+      <p>built {builtStamp}</p>
+    </div>
+  </div>
+</footer>

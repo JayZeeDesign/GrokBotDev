@@ -1,0 +1,39 @@
+---
+import MarkGlyph from './MarkGlyph.astro';
+import NavLink from './NavLink.astro';
+
+interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+const isCurrent = (href: string) => href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+const centerNav = [
+  { href: '/plugins/', label: 'plugins' },
+  { href: '/use-cases/', label: 'use cases' },
+  { href: '/collections/', label: 'collections' },
+  { href: '/wall/', label: 'wall' },
+  { href: '/contribute/', label: 'contribute' },
+];
+---
+
+<header class="border-b border-border bg-bg">
+  <div class="container-page flex min-h-16 flex-wrap items-center gap-x-8 gap-y-4 py-4">
+    <a href="/" class="flex items-center gap-3" aria-label="grokbot.dev home">
+      <MarkGlyph size={18} />
+      <span class="display-track font-display text-sm font-semibold text-text">grokbot.dev</span>
+    </a>
+
+    <nav class="flex flex-1 flex-wrap items-center gap-x-5 gap-y-2" aria-label="primary">
+      {centerNav.map((item) => (
+        <NavLink href={item.href} label={item.label} current={isCurrent(item.href)} />
+      ))}
+    </nav>
+
+    <nav class="flex items-center gap-x-5" aria-label="utility">
+      <NavLink href="/agent/" label="▪ agent" current={isCurrent('/agent/')} />
+      <NavLink href="https://github.com/ZeroPointRepo/GrokBotDev" label="github" external />
+      <NavLink href="/search/" label="search" current={isCurrent('/search/')} />
+    </nav>
+  </div>
+</header>

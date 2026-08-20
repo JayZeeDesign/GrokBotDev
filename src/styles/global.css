@@ -1,0 +1,80 @@
+@import "@fontsource/geist/latin-600.css";
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/geist-mono/latin-400.css";
+@import "@fontsource/geist-mono/latin-500.css";
+@import "tailwindcss";
+@import "./tokens.css";
+
+@layer base {
+  html {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background: var(--color-bg);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: var(--border-width) solid var(--color-focus);
+    outline-offset: 4px;
+  }
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--page-gutter);
+  }
+
+  .site-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .site-grid[data-rails="true"] {
+    grid-template-columns: minmax(0, 160px) minmax(0, var(--container-max)) minmax(0, 160px);
+    gap: 24px;
+  }
+
+  .display-track {
+    letter-spacing: var(--tracking-display);
+  }
+
+  .skip-link {
+    position: absolute;
+    inset-block-start: 8px;
+    inset-inline-start: 8px;
+    z-index: 50;
+    transform: translateY(-150%);
+    border: var(--border-width) solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    padding: 8px 12px;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .container-page {
+    padding-inline: var(--page-gutter-desktop);
+  }
+}

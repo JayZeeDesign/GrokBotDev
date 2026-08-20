@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import Footer from '../components/Footer.astro';
+import { ENABLE_RAILS } from '../lib/buildFlags';
+import geistDisplayUrl from '@fontsource/geist/files/geist-latin-600-normal.woff2?url';
+import interBodyUrl from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
+import geistMonoUrl from '@fontsource/geist-mono/files/geist-mono-latin-400-normal.woff2?url';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'grokbot.dev',
+  description = 'A community directory for what Grok Bot can do.',
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const generatedAt = new Date().toISOString();
+const statsUrl = import.meta.env.PUBLIC_STATS_URL ?? '';
+const stats = { plugins: 0, useCases: 0, collections: 0, generatedAt };
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" />
+    <link rel="preload" href={geistDisplayUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={interBodyUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={geistMonoUrl} as="font" type="font/woff2" crossorigin />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">skip to content</a>
+    <SiteHeader currentPath={currentPath} />
+    <div class="site-grid" data-rails={ENABLE_RAILS ? 'true' : 'false'}>
+      {ENABLE_RAILS && <aside class="hidden lg:block" aria-label="left rail"><slot name="rail-left" /></aside>}
+      <main id="content" class="min-h-dvh">
+        <slot />
+      </main>
+      {ENABLE_RAILS && <aside class="hidden lg:block" aria-label="right rail"><slot name="rail-right" /></aside>}
+    </div>
+    <Footer stats={stats} statsUrl={statsUrl} />
+  </body>
+</html>

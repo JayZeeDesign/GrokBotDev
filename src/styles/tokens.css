@@ -1,0 +1,118 @@
+@theme static {
+  --color-bg: #F7F7F5;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-text: #0B0B0C;
+  --color-text-muted: #6E6E76;
+  --color-border: #E5E5E1;
+  --color-border-interactive: #6E6E76;
+  --color-border-strong: #6E6E76;
+  --color-accent: #8C7A5C;
+  --color-accent-text: #7A6748;
+  --color-accent-ink: #7A6748;
+  --color-accent-contrast: #FFFFFF;
+  --color-accent-tint: #FFFFFF;
+  --color-success: #8C7A5C;
+  --color-warn: #8C7A5C;
+  --color-danger: #6E6E76;
+  --color-focus: #8C7A5C;
+
+  --color-sponsor-sage-tint: #E8F0E6;
+  --color-sponsor-sand-tint: #F3EBDC;
+  --color-sponsor-lilac-tint: #EBE8F5;
+  --color-sponsor-sky-tint: #E5EDF4;
+  --color-sponsor-blush-tint: #F5E9E7;
+
+  --color-cat-bg: #ECEFF4;
+  --color-cat-text: #546D8A;
+  --color-cat-border: #D4DBE2;
+  --color-cat-solid: #4E5D6E;
+  --color-cat-on-solid: #FFFFFF;
+
+  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-xs--font-weight: 400;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-sm--font-weight: 400;
+  --text-base: 1rem;
+  --text-base--line-height: 1.625rem;
+  --text-base--font-weight: 400;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-lg--font-weight: 500;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.875rem;
+  --text-xl--font-weight: 600;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-2xl--font-weight: 600;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.375rem;
+  --text-3xl--font-weight: 700;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.75rem;
+  --text-4xl--font-weight: 700;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 3.25rem;
+  --text-5xl--font-weight: 700;
+
+  --container-site: 1200px;
+  --radius-sm: 2px;
+  --radius-none: 0;
+  --shadow-none: none;
+}
+
+:root {
+  color-scheme: light;
+  --cat-bg: var(--color-cat-bg);
+  --cat-text: var(--color-cat-text);
+  --cat-border: var(--color-cat-border);
+  --cat-solid: var(--color-cat-solid);
+  --cat-on-solid: var(--color-cat-on-solid);
+  --container-max: 1200px;
+  --measure: 68ch;
+  --section-gap-desktop: 64px;
+  --section-gap-mobile: 48px;
+  --page-gutter: 16px;
+  --page-gutter-desktop: 24px;
+  --border-width: 1px;
+  --tracking-display: -0.02em;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0B0B0C;
+  --color-surface: #141417;
+  --color-surface-raised: #141417;
+  --color-text: #F7F7F5;
+  --color-text-muted: #8A8A93;
+  --color-border: #26262B;
+  --color-border-interactive: #8A8A93;
+  --color-border-strong: #8A8A93;
+  --color-accent: #C6AE85;
+  --color-accent-text: #C6AE85;
+  --color-accent-ink: #C6AE85;
+  --color-accent-contrast: #0B0B0C;
+  --color-accent-tint: #141417;
+  --color-success: #C6AE85;
+  --color-warn: #C6AE85;
+  --color-danger: #8A8A93;
+  --color-focus: #C6AE85;
+
+  --color-sponsor-sage-tint: #101512;
+  --color-sponsor-sand-tint: #151310;
+  --color-sponsor-lilac-tint: #121118;
+  --color-sponsor-sky-tint: #0F1317;
+  --color-sponsor-blush-tint: #161110;
+
+  --color-cat-bg: #14191F;
+  --color-cat-text: #738BA5;
+  --color-cat-border: #2A323C;
+  --color-cat-solid: #9BAABB;
+  --color-cat-on-solid: #0B0B0C;
+}

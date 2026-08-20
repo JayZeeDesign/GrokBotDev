@@ -1,0 +1,24 @@
+---
+interface Props {
+  href: string;
+  label: string;
+  current?: boolean;
+  external?: boolean;
+  variant?: 'header' | 'footer';
+}
+
+const { href, label, current = false, external = false, variant = 'header' } = Astro.props;
+const classes = variant === 'footer'
+  ? 'font-mono text-xs text-text-muted hover:text-text underline-offset-4 focus-visible:text-text'
+  : 'font-mono text-sm text-text-muted hover:text-text underline-offset-4 focus-visible:text-text';
+---
+
+<a
+  href={href}
+  class:list={[classes, current && 'text-text decoration-accent underline']}
+  aria-current={current ? 'page' : undefined}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener' : undefined}
+>
+  {label}{external ? ' ↗' : ''}
+</a>
