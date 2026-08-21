@@ -1,0 +1,138 @@
+---
+// ThemeToggle — F9. A1: "Dual mode mandatory; DEFAULT = light with dark toggle."
+//
+// Every dark token in `tokens.css` was dead code until this shipped: `[data-theme="dark"]`
+// existed and nothing ever set it. This is the control that sets it.
+//
+// A2 voice: Geist Mono, lowercase, no icon. The label names the mode you would switch TO —
+// `dark` while you are in light — because a control labelled with the state you are already
+// in is the classic ambiguity here.
+//
+// THE LABEL IS CSS-DRIVEN, NOT JS-DRIVEN. Both words are in the markup and `[data-theme]`
+// picks which one shows. That matters: `public/theme-init.js` sets the theme before first
+// paint, so on a repeat dark visit a JS-written label would be briefly wrong. This way the
+// correct word is painted with the rest of the page, and every instance of the toggle stays
+// in sync for free — no cross-instance bookkeeping.
+//
+// `hidden` until the island removes it: without JS the control cannot work, and a dead
+// control is worse than none. No-JS therefore gets light, which is A1's default anyway.
+
+interface Props {
+  /** `chrome` = header / drawer / footer bar. Only affects sizing, never voice. */
+  variant?: 'chrome' | 'inline';
+  class?: string;
+}
+
+const { variant = 'chrome', class: className = '' } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={['themeToggle', `themeToggle--${variant}`, className]}
+  data-theme-toggle
+  hidden
+  aria-label="switch colour theme"
+>
+  <span class="themeToggle__word themeToggle__word--to-dark">dark</span>
+  <span class="themeToggle__word themeToggle__word--to-light">light</span>
+</button>
+
+<style>
+  .themeToggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    text-transform: lowercase;
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+  }
+
+  /* §4.6 target size. `chrome` carries the 44px mobile floor the drawer and footer need;
+     `inline` is the compact desktop-header form and still clears the 24px minimum. */
+  .themeToggle--chrome {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    padding-inline: 0.75rem;
+    font-size: var(--text-sm);
+  }
+  .themeToggle--inline {
+    min-block-size: 1.5rem;
+    padding-inline: 0.5rem;
+    padding-block: 0.125rem;
+    font-size: var(--text-sm);
+  }
+
+  .themeToggle:hover {
+    color: var(--color-text);
+    border-color: var(--color-accent);
+  }
+  .themeToggle:active {
+    transform: translateY(1px);
+  }
+  /* Focus is the global §4.6 ring — never overridden here. */
+
+  /* The one word that shows is chosen by the theme, not by script. */
+  .themeToggle__word--to-light {
+    display: none;
+  }
+  :global([data-theme='dark']) .themeToggle__word--to-dark {
+    display: none;
+  }
+  :global([data-theme='dark']) .themeToggle__word--to-light {
+    display: inline;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .themeToggle:active {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  // Island #10 (orchestrator directive, F9) — the toggle half. The pre-paint half is
+  // `public/theme-init.js`, a blocking classic script in <head>; both are same-origin
+  // externals, so §10.7's `script-src 'self'` covers them with nothing inline.
+  const STORAGE_KEY = 'gb-theme';
+  const toggles = document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]');
+
+  if (toggles.length) {
+    const root = document.documentElement;
+    const current = (): 'light' | 'dark' => (root.dataset.theme === 'dark' ? 'dark' : 'light');
+
+    const sync = () => {
+      // The visible label is CSS's job; this is only for assistive tech, which cannot see
+      // which of the two spans is displayed.
+      const next = current() === 'dark' ? 'light' : 'dark';
+      for (const button of toggles) {
+        button.removeAttribute('hidden');
+        button.setAttribute('aria-label', `switch to ${next} mode`);
+        button.setAttribute('aria-pressed', String(current() === 'dark'));
+      }
+    };
+
+    for (const button of toggles) {
+      button.addEventListener('click', () => {
+        const next = current() === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem(STORAGE_KEY, next);
+        } catch (err) {
+          // Storage blocked — the choice still applies for this page. Not worth surfacing.
+        }
+        sync();
+        (window as unknown as { grokbotTrack?: (e: string, p?: Record<string, string>) => void })
+          .grokbotTrack?.('theme_toggle', { theme: next });
+      });
+    }
+
+    sync();
+  }
+</script>

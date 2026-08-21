@@ -17,7 +17,13 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const DIST = 'dist';
+// `/theme-init.js` (F9) is the one hand-placed script on the site and the allowance is
+// deliberately an EXACT path, not a prefix: it is the pre-paint theme setter, and it has to
+// be a blocking classic script in <head> because an Astro-compiled module defers past first
+// paint and reintroduces the flash. Still same-origin and still external, so §10.7's
+// `script-src 'self'` is unchanged — this widens what the AUDIT accepts, never the CSP.
 const ALLOWED_SRC_PREFIXES = ['/_astro/', '/pagefind/'];
+const ALLOWED_SRC_EXACT = ['/theme-init.js'];
 const ALLOWED_INLINE_TYPES = ['application/ld+json'];
 
 if (!existsSync(DIST)) {
@@ -57,7 +63,9 @@ for (const file of htmlFiles) {
 
     if (src) {
       externals.set(src, (externals.get(src) ?? 0) + 1);
-      const allowed = ALLOWED_SRC_PREFIXES.some((prefix) => src.startsWith(prefix));
+      const allowed =
+        ALLOWED_SRC_PREFIXES.some((prefix) => src.startsWith(prefix)) ||
+        ALLOWED_SRC_EXACT.includes(src);
       if (!allowed) violations.push(`${page}: <script src="${src}"> is outside /_astro/ and /pagefind/`);
       continue;
     }

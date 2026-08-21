@@ -44,6 +44,11 @@ const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    {/* F9 — pre-paint theme. BLOCKING classic script, deliberately first: an Astro <script>
+        compiles to type="module" and defers, which paints light before flipping to dark on a
+        repeat visit. Same-origin external, so §10.7's `script-src 'self'` covers it with
+        nothing inline. `is:inline` only tells Astro not to process it. */}
+    <script is:inline src="/theme-init.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />

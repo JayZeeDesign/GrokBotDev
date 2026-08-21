@@ -1,6 +1,7 @@
 ---
 import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
+import ThemeToggle from './ThemeToggle.astro';
 
 interface FooterStats {
   plugins: number;
@@ -99,7 +100,12 @@ const columns = [
         <span class="display-track font-display font-semibold">grokbot.dev</span>
       </p>
       <p>GrokBot.dev is an independent community project — not affiliated with xAI.</p>
-      <p>built {builtStamp}</p>
+      {/* F9 — the bottom bar, not the link columns: a button among a list of links reads as
+          a broken link. This row already holds non-link chrome (mark, disclaimer, stamp). */}
+      <p class="flex items-center gap-4">
+        <span>built {builtStamp}</span>
+        <ThemeToggle variant="inline" />
+      </p>
     </div>
   </div>
 </footer>

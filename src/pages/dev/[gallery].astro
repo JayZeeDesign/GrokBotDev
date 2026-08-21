@@ -32,6 +32,7 @@ import SearchInput from '../../components/SearchInput.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import StatBar from '../../components/StatBar.astro';
 import TweetEmbed from '../../components/TweetEmbed.astro';
+import ThemeToggle from '../../components/ThemeToggle.astro';
 import WallCard from '../../components/WallCard.astro';
 
 import {
@@ -164,6 +165,7 @@ const groups = [
   'MarkGlyph',
   'BracketBadge',
   'SiteHeader',
+  'ThemeToggle',
   'NavLink',
   'Footer',
   'Breadcrumbs',
@@ -300,6 +302,52 @@ const groups = [
         <code>✕</code> pinned inside the panel's top-right. Honours
         <code>prefers-reduced-motion</code> by appearing instantly.
       </p>
+    </section>
+
+    {/* --------------------------------------------------------------- ThemeToggle */}
+    <section id="c-themetoggle" class="flex flex-col gap-6">
+      <SectionHeading title="ThemeToggle — F9 (A1 dual mode)" />
+      <p class="max-w-prose text-base text-text-muted">
+        A1 requires dual mode with light as the default and a dark toggle. Until F9 every
+        dark token in <code>tokens.css</code> was dead code: <code>[data-theme="dark"]</code>
+        existed and nothing ever set it. This is the control that sets it — on
+        <code>&lt;html&gt;</code>, persisted to <code>localStorage</code> under
+        <code>gb-theme</code>.
+      </p>
+      <p class="max-w-prose text-base text-text-muted">
+        <strong>The label names the mode you would switch TO</strong> — it reads
+        <code>dark</code> while you are in light — because a control labelled with the state
+        you are already in is the classic ambiguity. Both words are in the markup and
+        <code>[data-theme]</code> chooses which one displays, so the label is CSS-driven, not
+        script-driven: <code>public/theme-init.js</code> applies the stored theme before first
+        paint, and a JS-written label would be briefly wrong on a repeat dark visit. It also
+        means every instance on the page stays in sync with no bookkeeping.
+      </p>
+      <p class="max-w-prose text-base text-text-muted">
+        <strong>Placements:</strong> desktop header right cluster (left of
+        <code>submit</code>, so the one amber element keeps its prominence), inside the mobile
+        drawer between the nav and the CTA, and the footer's bottom chrome bar — not the
+        footer link columns, where a button reads as a broken link.
+        <strong>prefers-color-scheme is deliberately not consulted</strong> (A1 says default
+        light plus a toggle); only an explicit choice counts. No JS means light, which is that
+        same default.
+      </p>
+
+      <div class="flex flex-col gap-4">
+        <p class="font-mono text-xs lowercase text-text-muted">
+          variants — `inline` (header, footer bar) and `chrome` (drawer, 44px floor)
+        </p>
+        <div class="flex flex-wrap items-center gap-6">
+          <ThemeToggle variant="inline" />
+          <ThemeToggle variant="chrome" />
+        </div>
+        <p class="max-w-prose font-mono text-xs text-text-muted">
+          States: rest (muted, interactive border) · hover (text + accent border) · active
+          (1px translate, removed under prefers-reduced-motion) · focus (the global §4.6
+          2px ring, never overridden here) · hidden until the island runs, because a control
+          that cannot work is worse than no control.
+        </p>
+      </div>
     </section>
 
     {/* ------------------------------------------------------------------- NavLink */}

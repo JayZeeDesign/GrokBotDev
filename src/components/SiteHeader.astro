@@ -29,6 +29,7 @@ import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
 import SearchInput from './SearchInput.astro';
 import Button from './Button.astro';
+import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
   currentPath: string;
@@ -71,6 +72,10 @@ const nav = [
         <span aria-hidden="true" class="agent-glyph text-accent">▪</span>
         <NavLink href="/agent/" label="/agent" current={isCurrent('/agent/')} />
       </span>
+
+      {/* F9 — sits with the other chrome, left of the one amber element so `submit` keeps
+          A1's "one accent per viewport" position of prominence. */}
+      <ThemeToggle variant="inline" />
 
       <Button href="/submit/" variant="solid" size="sm" label="submit" />
     </div>
@@ -129,6 +134,10 @@ const nav = [
             <span aria-hidden="true" class="agent-glyph text-accent">▪</span> /agent
           </a>
         </nav>
+
+        {/* F9 — below the nav section, above the CTA. `chrome` variant carries the 44px
+            floor the drawer holds everything else to. */}
+        <ThemeToggle variant="chrome" class="self-start" />
 
         {/* A1 accent law: submit is the ONE amber element in the drawer. */}
         <a href="/submit/" class="navDrawer__cta">submit</a>

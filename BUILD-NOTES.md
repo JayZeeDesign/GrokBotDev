@@ -1133,6 +1133,26 @@ This list is what M7 adds on top, in execution order.
       M7.5(b)'s 301 assertion testable; it cannot be verified locally**; `/404.html` as the
       error page; CSP per §10.7 including `'wasm-unsafe-eval'` for Pagefind and the Vemetric
       ingest host in `connect-src`.
+- [ ] **3a · LAUNCH-CRITICAL — run the §10.7 guard against the DEPLOYED conf, not the repo
+      copy.** `audit-scripts.mjs`'s header assertion reads `infra/security-headers.conf` **in
+      the checkout**. That is the right scope for CI, and it is NOT sufficient at cutover: the
+      whole reason the M0 gap survived seven milestones is that **no gate had ever read deploy
+      config**, and a repo file that is correct while the server includes a stale, partial or
+      unincluded copy reproduces exactly that failure with a green build. So, on
+      crhq-products, after the vhost is wired:
+      ```bash
+      # the deployed copy must be byte-identical to the repo's
+      diff -u /opt/projects/user/grokbot/infra/security-headers.conf /etc/nginx/snippets/grokbot-security-headers.conf
+      # and the guard must pass against the file nginx actually includes
+      cd /opt/projects/user/grokbot && node scripts/audit-scripts.mjs
+      # then prove it is really included, per location — headers on a page AND on the two
+      # locations that set their own add_header (this is the §7.1.5 include trap)
+      for u in / /api/v1/latest.json /rss.xml; do
+        echo "== $u"; curl -sI "https://grokbot.dev$u" | grep -iE 'content-security-policy|strict-transport|x-frame|x-content-type|referrer-policy|permissions-policy|cross-origin-opener'
+      done
+      ```
+      All seven headers must appear on **all three** URLs. A missing CSP on `/api/v1/latest.json`
+      while `/` has it is the §7.1.5 inheritance bug, not a typo.
 - [ ] **4 · Staging vhost first.** `curl -sI https://products-grokbot.crhq.ai/` must show
       `X-Robots-Tag: noindex, nofollow` (§3.5/§3.10) **before** anything points at production.
 - [ ] **5 · certbot / TLS** for `grokbot.dev` and `mcp.grokbot.dev`; HSTS per §10.7
@@ -1447,7 +1467,8 @@ visitor would have got a dark embed inside a light page. Verified both ways — 
 emulated dark the site stays light and all five embeds request `theme=light`; forcing the root
 to dark (`bg rgb(11,11,12)`) makes the rule return `dark`.
 
-⚠️ **Finding surfaced by that check, out of F5's scope: dark mode is currently unreachable.**
+⚠️ **Finding surfaced by that check — CLOSED at F9, see below.** *(As written at F5: dark mode
+was unreachable.)*
 `[data-theme="dark"]` exists in `tokens.css` and is never set — there is no toggle and no
 `prefers-color-scheme` fallback, so every dark token on the site is dead code today. A1 says
 "Dual mode mandatory; DEFAULT = light with dark toggle". Flagged rather than fixed: shipping a
@@ -1745,6 +1766,77 @@ including `home-MODAL` at `right=413`; with them restored, **three consecutive c
 45/45. `page-probe.js` carries the identical logic so the sweep cannot go intermittently red
 for the same reason.
 
+### F9 · dark mode toggle — A1's second mode finally reachable
+
+A1 has said "Dual mode mandatory; DEFAULT = light with dark toggle" since M0. `tokens.css`
+has carried a full `[data-theme="dark"]` block since M0 too. **Nothing ever set the
+attribute** — no toggle, no fallback — so every dark token was dead code and the dark half of
+`check-contrast`'s table was measuring a mode no visitor could reach. Raised at F5, commissioned
+as F9, closed here.
+
+**I shipped the NO-FLASH version.** The brief allowed a one-frame flash on repeat dark visits
+if avoiding it meant breaking CSP. It does not: `public/theme-init.js` is a **blocking,
+same-origin, classic script** and `script-src 'self'` permits exactly that. Nothing inline, no
+nonce, no hash, §10.7 untouched.
+
+Why a file in `public/` rather than an Astro `<script>`: Astro compiles component scripts to
+`type="module"`, and modules defer — they run *after* parsing, i.e. after the light paint,
+which is the flash. Verified on the built output, not assumed: `theme-init.js` sits
+**before `<body>` and before the first stylesheet**, with no `defer`/`async`.
+
+**`audit-scripts` allow-list widened by exactly one EXACT path**, not a prefix — `/theme-init.js`.
+This widens what the *audit* accepts; it does not touch the CSP, and every other non-`/_astro/`
+script still fails. **Island #10** by orchestrator directive, logged like #9: §12.5's list is
+now ten (the pre-paint setter plus the toggle's own handler).
+
+**The label is CSS-driven, not JS-driven** — and that is load-bearing, not stylistic. Both
+words (`dark`, `light`) are in the markup and `[data-theme]` picks which one displays. Since
+the theme is applied before first paint, a JS-written label would be briefly *wrong* on a
+repeat dark visit; this way the correct word is painted with everything else. It also keeps
+all three instances in sync with zero cross-instance bookkeeping. The label names the mode you
+would switch **to** — `dark` while you are in light — because a control labelled with the
+state you are already in is the classic ambiguity here.
+
+`hidden` until the island removes it: without JS the control cannot work, and a dead control
+is worse than none. **No JS ⇒ light**, which is A1's default anyway — verified by aborting
+`/theme-init.js` at the network layer: theme unset, background `#F7F7F5`.
+
+**`prefers-color-scheme` is deliberately not consulted.** A1 specifies default-light-plus-toggle;
+reading the OS would silently override the product default for a large share of visitors. Only
+an explicit choice counts. This is the same reasoning F5 used for the embed theme, and F9 is
+what finally gives that wiring something real to follow.
+
+**Placements** (three, all measured): desktop header right cluster, left of `submit` so the one
+amber element keeps its prominence · inside the mobile drawer, between the nav and the CTA,
+`chrome` variant at the 44px floor · the footer's **bottom chrome bar**, not the link columns —
+a button among a list of links reads as a broken link, and that row already holds non-link
+chrome (mark, disclaimer, build stamp).
+
+| check | result |
+|---|---|
+| toggle at 1440 | light → `data-theme=dark`, bg `#0B0B0C`, text `#F7F7F5`, `color-scheme: dark` |
+| toggle at 390 (drawer) | 58×44px, below nav, above CTA; panel surface `#141417` |
+| label + a11y | `dark` ⇄ `light`; `aria-label` "switch to X mode", `aria-pressed` tracks state |
+| persistence — reload | dark held, `gb-theme=dark` |
+| persistence — navigation | `/` → `/plugins/` still dark |
+| no flash | `theme-init.js` before `<body>` **and** before the first stylesheet, not deferred |
+| no JS | light (A1 default) |
+| Lighthouse a11y | **100, zero failing audits** — the toggle costs nothing |
+
+**Embeds:** new page loads follow the theme — loading `/wall/` in dark had all five X embeds
+request `theme=dark`, and after reloading in light all five requested `theme=light`. **Existing
+embeds keep their theme until navigation**: `createTweet` renders into a cross-origin iframe
+that cannot be cheaply re-themed in place, so toggling with embeds already on screen leaves
+them as they were. This is the behaviour the brief named acceptable, and it is what shipped.
+
+**The dark half of `check-contrast` now describes something real** — and it was already
+passing, so nothing had to move: text 18.34:1 · muted 5.75:1 · `accent-contrast on
+accent-strong` 9.18:1 · every gated pair clear, in both modes.
+
+Style-guide entry at `/dev/components/` (C13) covers both variants and every state — rest,
+hover, active with its reduced-motion exception, the global §4.6 focus ring, and the
+hidden-until-JS behaviour with the reason.
+
 ### Verification
 
 - **Full gate suite green:** validate 10 entries · negative fixtures still rejected ·
@@ -1756,7 +1848,7 @@ for the same reason.
   `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`,
   `F5-wall-embeds-{390,768,1440}.png`, `F5-entry-detail-embed-{390,1440}.png`,
   `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`, `F6-modal-390.png`,
-  `F3b-hero-drag-390.png`, `F7-drawer-390.png`, `F8-footer-{390,768}.png`.
+  `F3b-hero-drag-390.png`, `F7-drawer-390.png`, `F8-footer-{390,768}.png`, `F9-dark-{390,1440}.png`.
   **Screenshot caveat worth knowing:** a `--full` full-page capture does not repaint
   cross-origin iframes, so the wall's embeds photograph as blank boxes in a full-page shot even
   when they are rendering correctly. The F5 wall captures are therefore VIEWPORT shots, and the
