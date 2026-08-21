@@ -23,7 +23,7 @@ primary_source:
   timestamp: "13:50"
 replicability: "Reconstructed from Matthew Berman's \"11 INSANE Use Cases for Grok Bot\" walkthrough. Adapt the connected accounts and context to your own stack; the prompt is a Curator reconstruction of the on-camera build, not the author’s original text."
 prompt_provenance: curator
-featured: false
+featured: true
 added_at: '2026-08-21T00:00:00Z'
 updated_at: '2026-08-21T12:00:00Z'
 verified_at: '2026-08-21T12:00:00Z'

@@ -24,7 +24,7 @@ author:
   url: https://x.com/liam_fallen
   platform: x
 replicability: "Reconstructed from @liam_fallen's published Grok Bot build. Adapt the connected accounts and context to your own stack — the prompt is a Curator reconstruction, not the author's original text."
-featured: false
+featured: true
 added_at: '2026-08-21T00:00:00Z'
 updated_at: '2026-08-21T12:00:00Z'
 verified_at: '2026-08-21T12:00:00Z'

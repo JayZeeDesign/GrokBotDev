@@ -18,7 +18,7 @@ author:
   platform: github
 source_url: "https://github.com/knowz-io/cursor-knowz-plugin"
 setup_minutes: 10
-featured: false
+featured: true
 added_at: "2026-08-20T22:45:00Z"
 updated_at: "2026-08-20T23:45:00Z"
 verified_at: "2026-08-20T23:45:00Z"

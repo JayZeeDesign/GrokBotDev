@@ -19,7 +19,7 @@ author:
   platform: github
 setup_minutes: 20
 pricing_note: "Free, Apache-2.0. Keyless by default; paid tool connectors are opt-in."
-featured: false
+featured: true
 added_at: "2026-08-20T23:45:00Z"
 updated_at: "2026-08-20T23:45:00Z"
 verified_at: "2026-08-20T23:45:00Z"

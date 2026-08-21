@@ -1,17 +1,9 @@
 ---
-// F11 — HOME = THE DIRECTORY. Operator: "less is more, home page is everything."
-//
-// SUPERSESSIONS (operator directive, logged in BUILD-NOTES):
-//   · §4.3.1 home regions [4] featured, [5] lane tiles ("what's in here") and [6] latest are
-//     REMOVED, along with the hero's search input. The full listing replaces them.
-//   · Collections leave the home page entirely. `/collections/` still builds and stays in the
-//     sitemap; it is simply unlinked from home.
-//
-// ZERO NEW ISLANDS. Tabs, the table/cards view switch and the category filter are all
-// radio + `:has()` — the same mechanism F10 landed on for the schedule picker, for the same
-// reason: it keys off real form state and ignores DOM order, so every control works with JS
-// disabled and there is no hydration to wait for. The operator allowed new islands here;
-// none were needed, which is a better outcome than spending them.
+// HOME = THE DIRECTORY, featured-first (operator). The home now shows only FEATURED entries
+// with a "N featured · M total · view all →" line above each panel; "view all" links to the
+// full, filterable hub (/plugins/, /use-cases/). Keeps the tab toggle (Awesome Use Cases |
+// Plugins) and the plugin table/cards switch — radio + :has(), zero islands. The category
+// filters moved to the hubs, where the complete listing lives.
 import EntryCard from './EntryCard.astro';
 import Chip from './Chip.astro';
 import PluginIcon from './PluginIcon.astro';
@@ -25,51 +17,18 @@ interface Props {
 }
 
 const { plugins, useCases } = Astro.props;
-
 const labelOf = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
 
-/** Only categories that actually have entries — a filter offering an empty result is noise. */
-const catsFor = (docs: AnyDoc[]) =>
-  [...new Set(docs.map((d) => d.data.category))].sort().map((slug) => ({ slug, label: labelOf(slug) }));
-
-const pluginCats = catsFor(plugins);
-const useCaseCats = catsFor(useCases);
-
-// The category filter needs ONE rule per slug (`:has()` cannot compare two attributes), so
-// the rules are generated here from the same list that renders the chips — they can never
-// drift apart. Emitted as a static <style> in the built page; nothing runs at runtime.
-// Re-show uses the right display per context: table rows are `table-row`, cards are `block`.
-const filterCss = [
-  // hide-half: with any specific category selected, hide every row in that panel…
-  `.homeDirectory:not(:has(#plugin-cat-all:checked)) [data-home-panel='plugins'] [data-row-cat]{display:none}`,
-  `.homeDirectory:not(:has(#uc-cat-all:checked)) [data-home-panel='use-cases'] [data-row-cat]{display:none}`,
-  // …then re-show the match, with the display each context needs.
-  ...pluginCats.map(
-    (c) => `.homeDirectory:has(#plugin-cat-${c.slug}:checked) [data-home-panel='plugins'] tr[data-row-cat='${c.slug}']{display:table-row}
-.homeDirectory:has(#plugin-cat-${c.slug}:checked) [data-home-panel='plugins'] div[data-row-cat='${c.slug}']{display:block}`
-  ),
-  ...useCaseCats.map(
-    (c) => `.homeDirectory:has(#uc-cat-${c.slug}:checked) [data-home-panel='use-cases'] div[data-row-cat='${c.slug}']{display:block}`
-  ),
-  ...pluginCats.map(
-    (c) => `.homeDirectory:has(#plugin-cat-${c.slug}:checked) [data-plugin-cat='${c.slug}'],
-.homeDirectory:has(#uc-cat-${c.slug}:checked) [data-uc-cat='${c.slug}']{border-color:var(--color-accent-strong);background:var(--color-accent-strong);color:var(--color-accent-contrast)}`
-  ),
-  ...useCaseCats.map(
-    (c) => `.homeDirectory:has(#uc-cat-${c.slug}:checked) [data-uc-cat='${c.slug}']{border-color:var(--color-accent-strong);background:var(--color-accent-strong);color:var(--color-accent-contrast)}`
-  ),
-].join('\n');
+const isFeatured = (d: AnyDoc) => Boolean(d.data.featured);
+const featuredPlugins = plugins.filter(isFeatured);
+const featuredUseCases = useCases.filter(isFeatured);
 ---
 
 <section class="homeDirectory container-page flex flex-col gap-6 pt-6 pb-12 md:pt-8 md:pb-16" aria-label="directory">
-  {/* ── TAB SWITCHER ──────────────────────────────────────────────────────────────────
-      Default is "Awesome Use Cases": the operator listed it first and it is the brand's
-      primacy noun. Plugins are one tap away. */}
+  {/* ── TAB SWITCHER (centred, slate active) ──────────────────────────────────────────── */}
   <input type="radio" name="home-tab" id="home-tab-use-cases" class="sr-only" checked />
   <input type="radio" name="home-tab" id="home-tab-plugins" class="sr-only" />
 
-  {/* Direct round: tabs CENTERED, active state in the slate secondary (not amber);
-      the table|cards switch moves down into the plugins filter row (icons, no label). */}
   <div class="homeTabs flex flex-wrap items-center justify-center gap-2" role="presentation">
     <label for="home-tab-use-cases" data-home-tab="use-cases" class="homeTab">Awesome Use Cases</label>
     <label for="home-tab-plugins" data-home-tab="plugins" class="homeTab">Plugins</label>
@@ -77,23 +36,17 @@ const filterCss = [
 
   {/* ── PLUGINS ─────────────────────────────────────────────────────────────────────── */}
   <div data-home-panel="plugins" class="flex flex-col gap-4">
-    <div class="flex flex-wrap items-center gap-2">
-      <input type="radio" name="plugin-cat" id="plugin-cat-all" class="sr-only" checked />
-      <label for="plugin-cat-all" data-plugin-cat="all" class="homeFilter">all</label>
-      {
-        pluginCats.map((c) => (
-          <>
-            <input type="radio" name="plugin-cat" id={`plugin-cat-${c.slug}`} class="sr-only" />
-            <label for={`plugin-cat-${c.slug}`} data-plugin-cat={c.slug} class="homeFilter">
-              {c.label}
-            </label>
-          </>
-        ))
-      }
+    <div class="homeMeta flex flex-wrap items-center gap-x-3 gap-y-2">
+      <span class="homeMeta__count">
+        <strong>{featuredPlugins.length}</strong> featured
+        <span aria-hidden="true">·</span>
+        <span class="homeMeta__total">{plugins.length} total</span>
+        <span aria-hidden="true">·</span>
+        <a href="/plugins/" class="homeMeta__all">view all {plugins.length} →</a>
+      </span>
 
-      {/* Table|Cards — icons only (operator). Same row as the categories from sm up;
-          its own full-width row below them on mobile. */}
-      <div class="homeView flex w-full items-center gap-2 sm:ml-auto sm:w-auto" data-home-view-switch>
+      {/* Table|Cards — icons only, plugins only. */}
+      <div class="homeView flex items-center gap-2 sm:ml-auto" data-home-view-switch>
         <input type="radio" name="home-view" id="home-view-table" class="sr-only" checked />
         <input type="radio" name="home-view" id="home-view-cards" class="sr-only" />
         <label for="home-view-table" data-home-view="table" class="homeViewBtn" title="table view">
@@ -116,7 +69,7 @@ const filterCss = [
       </div>
     </div>
 
-    {/* TABLE — full width, the BotDirectory anatomy: name (linked) · tagline · category. */}
+    {/* TABLE — featured plugins: favicon + name · tagline · category. */}
     <div data-home-view-panel="table" class="homeTableWrap">
       <table class="homeTable">
         <thead>
@@ -128,14 +81,15 @@ const filterCss = [
         </thead>
         <tbody>
           {
-            plugins.map((doc) => (
-              <tr data-row-cat={doc.data.category}>
+            featuredPlugins.map((doc) => (
+              <tr>
                 <td>
                   <span class="flex items-center gap-3">
                     <PluginIcon slug={doc.data.slug} name={doc.data.name} size="sm" />
                     <a href={`/plugins/${doc.data.slug}/`} class="homeTable__name">
                       {doc.data.name}
                     </a>
+                    {doc.data.sponsor && <span class="homeTable__sponsor">sponsor</span>}
                   </span>
                 </td>
                 <td class="homeTable__tagline">{doc.data.tagline}</td>
@@ -151,50 +105,32 @@ const filterCss = [
 
     {/* CARDS */}
     <div data-home-view-panel="cards" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
-      {
-        plugins.map((doc) => (
-          <div data-row-cat={doc.data.category}>
-            <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />
-          </div>
-        ))
-      }
+      {featuredPlugins.map((doc) => <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />)}
     </div>
   </div>
 
   {/* ── USE CASES ───────────────────────────────────────────────────────────────────── */}
   <div data-home-panel="use-cases" class="flex flex-col gap-4">
-    <div class="flex flex-wrap items-center gap-2">
-      <input type="radio" name="uc-cat" id="uc-cat-all" class="sr-only" checked />
-      <label for="uc-cat-all" data-uc-cat="all" class="homeFilter">all</label>
-      {
-        useCaseCats.map((c) => (
-          <>
-            <input type="radio" name="uc-cat" id={`uc-cat-${c.slug}`} class="sr-only" />
-            <label for={`uc-cat-${c.slug}`} data-uc-cat={c.slug} class="homeFilter">
-              {c.label}
-            </label>
-          </>
-        ))
-      }
+    <div class="homeMeta flex flex-wrap items-center gap-x-3 gap-y-2">
+      <span class="homeMeta__count">
+        <strong>{featuredUseCases.length}</strong> featured
+        <span aria-hidden="true">·</span>
+        <span class="homeMeta__total">{useCases.length} total</span>
+        <span aria-hidden="true">·</span>
+        <a href="/use-cases/" class="homeMeta__all">view all {useCases.length} →</a>
+      </span>
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
-      {
-        useCases.map((doc) => (
-          <div data-row-cat={doc.data.category}>
-            <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />
-          </div>
-        ))
-      }
+      {featuredUseCases.map((doc) => <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />)}
     </div>
   </div>
 </section>
 
 <style>
-  /* ---------- tabs ---------- */
+  /* ---------- tabs + view switch ---------- */
   .homeTab,
-  .homeViewBtn,
-  .homeFilter {
+  .homeViewBtn {
     display: inline-flex;
     align-items: center;
     min-block-size: 44px;
@@ -213,40 +149,52 @@ const filterCss = [
   .homeTab {
     font-size: var(--text-base);
   }
-  .homeViewBtn,
-  .homeFilter {
+  .homeViewBtn {
     font-size: var(--text-xs);
     min-block-size: 32px;
-  }
-  /* icon-only square buttons for the view switch */
-  .homeViewBtn {
     min-inline-size: 36px;
     justify-content: center;
     padding-inline: 0;
   }
   .homeTab:hover,
-  .homeViewBtn:hover,
-  .homeFilter:hover {
+  .homeViewBtn:hover {
     color: var(--color-text);
   }
-
-  /* Selected states — same `:has()` mechanism as F10's picker: real form state, order
-     independent, and it survives JS being off. */
-  .homeDirectory:has(#plugin-cat-all:checked) [data-plugin-cat='all'],
-  .homeDirectory:has(#uc-cat-all:checked) [data-uc-cat='all'],
   .homeDirectory:has(#home-view-table:checked) [data-home-view='table'],
   .homeDirectory:has(#home-view-cards:checked) [data-home-view='cards'] {
     border-color: var(--color-accent-strong);
     background: var(--color-accent-strong);
     color: var(--color-accent-contrast);
   }
-  /* Direct round: the ACTIVE TAB wears the slate secondary, not the amber primary —
-     6.74:1 / 8.30:1, an already-gated pair (F10's secondary button uses the same one). */
+  /* Active tab wears the slate secondary. */
   .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'],
   .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'] {
     border-color: var(--color-cat-solid);
     background: var(--color-cat-solid);
     color: var(--color-cat-on-solid);
+  }
+
+  /* ---------- count / view-all line ---------- */
+  .homeMeta__count {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+  .homeMeta__count strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .homeMeta__all {
+    color: var(--color-accent-text);
+    text-decoration: none;
+  }
+  .homeMeta__all:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   /* ---------- panel visibility ---------- */
@@ -256,10 +204,6 @@ const filterCss = [
   .homeDirectory:has(#home-tab-use-cases:checked) [data-home-panel='use-cases'],
   .homeDirectory:has(#home-tab-plugins:checked) [data-home-panel='plugins'] {
     display: flex;
-  }
-  /* The table/cards switch is a plugins-only affordance. */
-  .homeDirectory:has(#home-tab-use-cases:checked) .homeView {
-    display: none;
   }
 
   .homeDirectory [data-home-view-panel] {
@@ -272,15 +216,8 @@ const filterCss = [
     display: grid;
   }
 
-  /* The category filter lives ENTIRELY in the generated block below — see `filterCss`.
-     Splitting it was a real bug: Astro scopes this block by appending `[data-astro-cid-…]`
-     to every selector, which outranks the unscoped generated rules, so the hide-half won
-     and a filtered view rendered ZERO rows. Hide and show must share one specificity. */
-
   /* ---------- table ---------- */
   .homeTableWrap {
-    /* C4 table rule: a genuinely tabular block may scroll WITHIN its own container. The page
-       still cannot move — F6's `body { overflow-x: clip }` guarantees that. */
     overflow-x: auto;
     max-inline-size: 100%;
   }
@@ -321,14 +258,18 @@ const filterCss = [
     text-decoration: underline;
     text-underline-offset: 3px;
   }
-  /* Below sm the tagline column is what makes the table too wide to read; the name and its
-     category still carry the row, and the tagline is one tap away on the entry page. */
+  .homeTable__sponsor {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    padding: 1px 5px;
+  }
   @media (max-width: 639px) {
     .homeTable__tagline {
       display: none;
     }
   }
 </style>
-
-{/* Generated per-category rules — see `filterCss` above. Static CSS in the built page. */}
-<style is:inline set:html={filterCss}></style>
