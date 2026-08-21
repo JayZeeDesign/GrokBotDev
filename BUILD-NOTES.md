@@ -629,3 +629,33 @@ backfilled — if the log format is missing at cutover, the data for that window
 5. **M4.5 PASS** — with the services process killed, `check-links` still walks 107 pages with
    0 broken links and `audit-scripts` still exits 0. The static site has no runtime
    dependency on services; the MCP server only reads what the build already wrote.
+
+## 2026-08-21 — M2b-1b: 016 factored-digest imported (hold resolved)
+
+The v2 re-capture settled the question the M2b-1 hold raised: the template is **raw,
+selectable X post text** in a same-thread reply (`2088830417516236927`), not image OCR —
+two independent raw-vs-image passes both reported no attached media, no alt text and no
+external links, and two verbatim passes matched at exactly 1626 characters. So the glyph
+oddities (`actuallv`, `endina`, `vour read`, `backqround knowledqe`, `[SINGLE-SOURCE1`,
+`thar`) are the **author's own hand-typed errors**, which he acknowledges in the thread.
+
+Imported with the prompt **verbatim, zero corrections** — byte-identical to the capture at
+1626 chars, every typo intact, verified programmatically rather than by eye. One plain
+sentence sits above the prompt saying it is quoted exactly as posted, typos included,
+because he wrote it by hand and says so. `prompt_provenance: author`; §10.1 checklist run;
+`status: live`, `featured: false`.
+
+Two `source_tweets`: the main post (the digest output) and the template reply. The entry
+therefore reaches `/wall/` and carries the scouted chip.
+
+**Counts: 10 live** — 5 plugins · 4 use cases · 1 collection · 0 demo.
+
+**Hub-math delta: still two indexable hubs.** 016 is `work/research`, which now holds
+**1 entry** against the ≥3 threshold — so it stays `noindex,follow`. The indexable set is
+unchanged: `/categories/engineering/` and `/categories/engineering/agents-ops/`. Seeds 005
+(x-to-notion-research-bot) and 021 (ai-tool-radar-digest) are the two that would take
+`work/research` to 3 and flip it; both are in the #17-gated set. `collection-02` stays held
+— its members 005/014 are still gated.
+
+Gates: validate OK (10 entries) · astro check 0/0 · build exit 0 · keyword, contrast, links,
+hub-intros, OG and audit-scripts all green.
