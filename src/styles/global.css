@@ -160,18 +160,18 @@
  */
 .wallMasonry {
   columns: 1;
-  column-gap: 1.5rem;
+  column-gap: 2rem;
+  max-inline-size: 620px;   /* single column ~= one tweet, centered */
+  margin-inline: auto;
 }
 @media (min-width: 768px) {
   .wallMasonry {
     columns: 2;
+    max-inline-size: 1160px;   /* two ~550 tweets + gap, centered */
   }
 }
-@media (min-width: 1280px) {
-  .wallMasonry {
-    columns: 3;
-  }
-}
+/* Direct round: capped at TWO columns (was 3 at xl) — operator wants a 2-col wall, and
+   an X embed is ~550px wide, so 2 columns fill the container with no right-side waste. */
 .wallMasonry > * {
   break-inside: avoid;
   page-break-inside: avoid;

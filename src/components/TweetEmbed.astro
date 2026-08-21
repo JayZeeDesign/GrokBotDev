@@ -36,7 +36,11 @@ const tweetId = tweetUrl.match(/status\/(\d+)/)?.[1] ?? '';
 ---
 
 <figure
-  class:list={['tweet-embed flex flex-col gap-3 border border-border-interactive bg-surface p-4', className]}
+  {/* Direct round: the bordered/padded card wrapper is GONE — X's widget is already a
+     self-contained card, so the old figure border made a card-in-a-card. The fallback
+     blockquote keeps its own left border, so it still reads as a quote when the embed
+     hasn't loaded. */}
+  class:list={['tweet-embed flex flex-col gap-2', className]}
   data-tweet-embed
   data-tweet-url={tweetUrl}
   data-tweet-id={tweetId}

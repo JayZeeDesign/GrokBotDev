@@ -87,8 +87,10 @@ const nav = [{ href: '/wall/', label: 'wall' }];
         with no padding at all. That is exactly what the operator saw. Utilities can't
         silently evaluate to nothing. */}
     {/* Direct round: light/dark is VISIBLE in the mobile header now, not inside the
-        drawer — moved, not duplicated. */}
-    <ThemeToggle variant="inline" class="md:hidden" />
+        drawer — moved, not duplicated. The wrapper (not the button) carries `md:hidden`,
+        because the button's scoped `.themeToggle{display:inline-flex}` outranks the utility
+        and would keep it visible at desktop otherwise. */}
+    <span class="md:hidden inline-flex"><ThemeToggle variant="inline" /></span>
 
     <details class="navDrawer md:hidden" data-nav-drawer>
       <summary class="navDrawer__toggle" aria-label="menu">
