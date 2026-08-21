@@ -125,7 +125,7 @@ const REQUIRED_CSP_TOKENS = [
   "'wasm-unsafe-eval'", // Pagefind — removing it kills search in production only
   'https://platform.twitter.com', // F5 embeds (script-src + frame-src)
   'https://syndication.twitter.com', // F5 embeds
-  'https://hub.vemetric.com', // §9.7 ingest
+  'https://plausible.io', // §9.7 Plausible (script + ingest)
   'https://www.youtube-nocookie.com', // F17 embeds (frame-src ONLY — see below)
   "object-src 'none'",
   "frame-ancestors 'none'",
@@ -158,7 +158,8 @@ if (!existsSync(HEADERS_CONF)) {
     ['script-src-elem', 'https://syndication.twitter.com'],
     ['frame-src', 'https://platform.twitter.com'],
     ['script-src', "'wasm-unsafe-eval'"],
-    ['connect-src', 'https://hub.vemetric.com'],
+    ['connect-src', 'https://plausible.io'],
+    ['script-src-elem', 'https://plausible.io'],
     // F17 — the YouTube host is gated exactly the way the twitter ones are: presence in the
     // policy is not enough, it has to be in the directive that actually does the work.
     ['frame-src', 'https://www.youtube-nocookie.com'],
