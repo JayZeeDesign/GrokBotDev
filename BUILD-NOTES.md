@@ -543,3 +543,89 @@ voice, no money-phrase stuffing. It breaks no gate.
 
 All 83 hub pages now render their intro (verified by markup presence on 83/83). Build
 green: 107 HTML pages, 0 broken links, `astro check` 0/0, validate/contrast/OG/audit all OK.
+
+## 2026-08-21 — M4 machine layer (§7 JSON API + MCP service)
+
+### Card-rendering fix that preceded M4 (commit 6298cc7)
+
+The QA finding "~undefined min setup" was the visible tip of a real defect: §4.2.10 requires
+"snake_case frontmatter → camelCase at the collection boundary", and that boundary did not
+exist. Pages passed raw collection data to EntryCard's camelCase Props behind an `as never`
+cast, which silenced the compiler — so `setupMinutes`, `verifiedAt`, `worksWith` and
+`sourceTweets` were ALL undefined at runtime. Only setup-time was loud about it; the
+verified chip, integration chips and scouted chip were silently missing from every card.
+`toCardEntry()` in `entries.ts` is now that boundary, every call site uses it, and no call
+site casts. `setupLabel()` returns null for a non-number and all four renderers omit the
+chip on null (mirroring SearchInput's existing guard).
+
+### API (§7.1)
+
+Seven endpoints as Astro endpoints under `src/pages/api/v1/`, with `src/lib/api.ts` holding
+the serializers. §7.1.1 calls them a post-build script; §3.2's repo layout puts them at
+`src/pages/api/v1/*.json.ts`. §3.2 owns repo layout, so endpoints win — identical `dist`
+output, and they read the content collections instead of re-parsing frontmatter (same call
+as `llms.txt`, logged in M3).
+
+Non-lossy per §7.1.3: every §5 field and every §5.3 body section is serialized under its
+snake_case name, with the two documented renames (`works_with` / `integrations` → API
+`integrations`). Body sections map to `description` (plugin), `how_its_set_up` /
+`why_its_cool` / `example_output` / `prompt` (use case), `rationale` (collection).
+`prompt_provenance` rides along on use-case items and defaults to `author` when absent, so
+a consumer can tell a published prompt from a reconstruction without visiting the page.
+`deprecated` and `demo` never appear anywhere. Sort is `added_at` desc / slug asc — the
+§7.1.6 stable cursor.
+
+### MCP (§7.4)
+
+`services/` is a dependency-free Node process (`node:http`): Streamable HTTP MCP at `/mcp`,
+no auth in v1, plus `/healthz`. Four tools — `search_directory`, `whats_new`, `get_entry`,
+`list_collections` — each with an `inputSchema` AND an `outputSchema`, and every result
+carries `structuredContent` beside the text block plus a `truncated` flag.
+
+It is a READER of the built static API (§12.7 — the engine gets no privileged path): it
+loads `dist/api/v1/*.json` through a fixed endpoint allow-list with a 60s in-process cache,
+so no tool argument can produce a path traversal. Rate limit is 60/min per IP (§7.4.2) with
+the client IP resolved Cloudflare-first (`CF-Connecting-IP` → `X-Forwarded-For` → socket),
+per §9.3/§10.9 — and the agent team is subject to it like any consumer (§12.7).
+
+Running under pm2 as `grokbot-services` on this box.
+
+### §7.5 consumption metrics — deploy-time hook
+
+Nothing to build in the app. At deploy, nginx needs the §3.5 log format
+`machine '$time_iso8601 $remote_addr "$http_user_agent" "$request" $status'` applied via
+`access_log /var/log/nginx/grokbot-machine.log machine` on the `/api/v1/` and RSS-feed
+locations ONLY. `$remote_addr` must be the Cloudflare-resolved real client IP (§9.3) or the
+metric can be poisoned by a spoofed header. This is §1.6's metric #1 and it cannot be
+backfilled — if the log format is missing at cutover, the data for that window is gone.
+
+### M4 exit criteria — evidence (2026-08-21)
+
+1. **M4.1 PASS** — all seven endpoints emit into `dist/api/v1/` and carry the canonical
+   envelope. Verified per endpoint (`generated_at` present, `count` numeric, `items` array):
+   index 7 · latest 9 · plugins 5 · use-cases 3 · collections 1 · categories 10 ·
+   integrations 4. Field naming is snake_case throughout. `latest.json` additionally carries
+   `truncated: false` and `oldest_added_at` (§7.1.2) — at 9 entries the window is not cut.
+2. **M4.2 PASS** — the three §7.2 feeds now exist (M0 shipped only a scaffold `/rss.xml`;
+   the two lane feeds were built here). `xmllint --noout dist/rss.xml dist/plugins/rss.xml
+   dist/use-cases/rss.xml` exits **0** — and xmllint is now genuinely installed on this box
+   (`sudo apt-get install -y libxml2-utils` succeeded), so the M3.2 Node-parse workaround is
+   retired. `/rss.xml` carries 9 items.
+3. **M4.3 PASS** — `/agent/` renders the §7.3 contract in a copyable block
+   (`data-copy` + "grokbot.dev — Bot Contract v1"), is linked in the site header, and its
+   first paragraph contains the §6.11 money phrase verbatim.
+4. **M4.4 PASS (amended: inspector not run)** — `curl http://127.0.0.1:4390/healthz` returns
+   `{"ok":true}`. `initialize` returns protocolVersion 2025-06-18 + serverInfo. `tools/list`
+   returns exactly the four §7 tools, **all four with an outputSchema**. One `tools/call` per
+   tool against the seed corpus: search_directory (count=3, truncated=true), whats_new
+   (count=2, truncated=true), get_entry firstmate (found=true, 4091-char prompt returned),
+   list_collections (count=1, truncated=false) — every one `isError=false` with
+   `structuredContent`. Rate limit verified live: 62 rapid calls → 54×200 then 8×429 with
+   `Retry-After: 60`. **Amendment:** `@modelcontextprotocol/inspector` was not run — it is an
+   interactive UI needing a browser session this box does not have, and installing it would
+   add a dependency for one check. The raw JSON-RPC transcript above exercises the same
+   surface (initialize → tools/list → tools/call) and is reproducible with curl.
+   `curl https://mcp.grokbot.dev/healthz` is a production URL and belongs to M7.
+5. **M4.5 PASS** — with the services process killed, `check-links` still walks 107 pages with
+   0 broken links and `audit-scripts` still exits 0. The static site has no runtime
+   dependency on services; the MCP server only reads what the build already wrote.

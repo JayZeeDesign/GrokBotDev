@@ -1,7 +1,12 @@
-export const prerender = true;
+// §7.2 — the all-types feed.
+import type { APIRoute } from 'astro';
+import { allListable } from '../lib/entries';
+import { rssFeed } from '../lib/feed';
 
-export function GET() {
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"><channel><title>grokbot.dev</title><link>https://grokbot.dev/</link><description>grokbot.dev feed scaffold</description></channel></rss>`;
-  return new Response(xml, { headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' } });
-}
+export const GET: APIRoute = async () =>
+  rssFeed({
+    title: 'grokbot.dev',
+    description: 'Ready-to-use Grok Bot prompts, plugins and collections — everything, newest first.',
+    path: '/rss.xml',
+    docs: await allListable(),
+  });
