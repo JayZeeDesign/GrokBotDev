@@ -160,6 +160,16 @@ const tilePx = Math.round(size * 1.75);
 }
 
 <style is:global>
+  /* Direct round, operator: the bottom-centre accent dot rendered BLACK in both themes.
+     Root cause: that <circle> sits OUTSIDE the `<g class="fill-current">` group and leaned
+     on a `fill-accent` utility that never generated — so it fell back to the SVG initial
+     `fill:black` (a fixed hex, not currentColor, which is why dark mode never flipped it to
+     white either). This binds the accent dot to A1's Ash Amber in BOTH themes
+     (--color-accent = #8C7A5C light / #C6AE85 dark). Applies to every variant. */
+  .mark-grid .mark-accent {
+    fill: var(--color-accent);
+  }
+
   /* A3 `skeleton` — the grid fills dot-by-dot as a loading state. */
   .mark-grid--skeleton :is(rect, circle) {
     opacity: 0.25;

@@ -2,7 +2,7 @@
 type: plugin
 name: "GenerateSpecs"
 slug: generatespecs
-tagline: "Turn a rough idea into a build-ready spec in minutes."
+tagline: "Give your agents build-ready specs from a rough idea."
 category: engineering
 subcategory: docs
 install_steps:

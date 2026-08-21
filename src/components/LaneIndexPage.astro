@@ -9,9 +9,13 @@ import EntryCard from './EntryCard.astro';
 import EmptyState from './EmptyState.astro';
 import Pagination from './Pagination.astro';
 import NewsletterRow from './NewsletterRow.astro';
+import PluginIcon from './PluginIcon.astro';
+import Chip from './Chip.astro';
+import RotatingSponsorSlot from './RotatingSponsorSlot.astro';
 import { integrationSlug, integrationsOf, kindOf } from '../lib/entries';
 import type { AnyDoc } from '../lib/entries';
 import type { WaitlistSource } from '../lib/types';
+import categories from '../data/categories.json';
 
 interface Props {
   h1: string;
@@ -26,9 +30,28 @@ interface Props {
   /** Whole-lane pool, so facet counts do not shrink page by page. */
   pool: AnyDoc[];
   laneLabel: string;
+  /** Operator: /plugins/ renders a scannable TABLE; everything else stays on cards. */
+  layout?: 'cards' | 'table';
+  /** Operator: /plugins/ and /use-cases/ carry one rotating sponsored slot. */
+  showSponsorSlot?: boolean;
 }
 
-const { h1, intro, entries, page, baseUrl, variant, facets, source, pool, laneLabel } = Astro.props;
+const {
+  h1,
+  intro,
+  entries,
+  page,
+  baseUrl,
+  variant,
+  facets,
+  source,
+  pool,
+  laneLabel,
+  layout = 'cards',
+  showSponsorSlot = false,
+} = Astro.props;
+
+const categoryLabel = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
 
 const categoryCounts = new Map<string, number>();
 const integrationCounts = new Map<string, number>();
@@ -81,8 +104,52 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
     <FilterBar facets={facets} options={options} clearHref={baseUrl} />
   </div>
 
+  {showSponsorSlot && <RotatingSponsorSlot />}
+
   {
-    entries.length > 0 ? (
+    entries.length === 0 ? (
+      <EmptyState variant="hub" />
+    ) : layout === 'table' ? (
+      // Operator: the plugin listing is a scannable TABLE — favicon+name | what it does |
+      // category (rightmost). The wrapper scrolls horizontally on a phone (the table keeps a
+      // min-width so columns never crush) and never widens the page past the viewport.
+      <div class="hubTableWrap" role="region" aria-label={`${laneLabel} table`} tabindex="0">
+        <table class="hubTable">
+          <thead>
+            <tr>
+              <th scope="col">{variant === 'plugin' ? 'plugin' : 'name'}</th>
+              <th scope="col" class="hubTable__desc">what it does</th>
+              <th scope="col" class="hubTable__catcol">category</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry) => (
+              <tr>
+                <td>
+                  <span class="flex items-center gap-3">
+                    {variant === 'plugin' && (
+                      <PluginIcon slug={entry.data.slug} name={entry.data.name} size="sm" />
+                    )}
+                    <a href={`${baseUrl}${entry.data.slug}/`} class="hubTable__name">
+                      {entry.data.name}
+                    </a>
+                    {entry.data.sponsor && <span class="hubTable__sponsor">sponsor</span>}
+                  </span>
+                </td>
+                <td class="hubTable__desc">{entry.data.tagline}</td>
+                <td class="hubTable__catcol">
+                  <Chip
+                    variant="category"
+                    label={categoryLabel(entry.data.category)}
+                    href={`/categories/${entry.data.category}/`}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
       // §4.5 gives collections their OWN grid row (1 / 1 / 2 / 2 — "collections are wider
       // cards", §4.3.6). Every other lane uses the standard EntryCard row (1 / 2 / 2 / 3).
       // Fixed at M7.1 QA: all three lanes were rendering the standard grid.
@@ -101,8 +168,6 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
           </div>
         ))}
       </div>
-    ) : (
-      <EmptyState variant="hub" />
     )
   }
 
@@ -122,3 +187,78 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
 
   <NewsletterRow source={source} />
 </div>
+
+<style>
+  /* Operator: plugin listing = table. The wrapper is the ONLY thing that scrolls (C4 high-pri:
+     a table never widens the page past the viewport); the table keeps a min-width so on a phone
+     the columns stay legible and you swipe sideways instead of them crushing. */
+  .hubTableWrap {
+    overflow-x: auto;
+    max-inline-size: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+  .hubTableWrap:focus-visible {
+    outline: 2px solid var(--color-accent-strong);
+    outline-offset: 2px;
+  }
+  .hubTable {
+    inline-size: 100%;
+    min-inline-size: 620px;
+    border-collapse: collapse;
+    text-align: start;
+  }
+  .hubTable th {
+    padding: 0.625rem 1rem;
+    border-block-end: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    text-align: start;
+    white-space: nowrap;
+  }
+  .hubTable td {
+    padding: 0.75rem 1rem;
+    border-block-end: 1px solid var(--color-border);
+    vertical-align: middle;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .hubTable tbody tr:last-child td {
+    border-block-end: 0;
+  }
+  .hubTable tbody tr:hover {
+    background: var(--color-surface);
+  }
+  .hubTable__name {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+  .hubTable__name:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .hubTable__desc {
+    min-inline-size: 16rem;
+  }
+  .hubTable__catcol {
+    white-space: nowrap;
+  }
+  .hubTable__sponsor {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    padding: 1px 5px;
+  }
+</style>

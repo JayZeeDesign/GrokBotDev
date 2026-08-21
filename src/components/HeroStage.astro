@@ -77,6 +77,12 @@ const SUBLINE =
 @media(max-width:719px){
   .stage{height:clamp(420px, 56vh, 500px)}
 }
+/* Direct round, operator: the mobile hero read a touch crammed at the top. #content is
+   BOTTOM-anchored, so dropping its `bottom` slides the whole block (h1 → CTA) ~20px lower,
+   opening breathing room above the title. Phones only — desktop centring is unchanged. */
+@media(max-width:719px){
+  .stage .content{ bottom:clamp(20px, 4.5vh, 52px); }
+}
 
 /* bot layer sits *behind* the text block so text is always legible,
    but physics guarantees they never overlap it anyway. */

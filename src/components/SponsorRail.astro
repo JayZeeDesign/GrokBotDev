@@ -61,8 +61,12 @@ const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless
     max-block-size: calc(100vh - 140px);
     z-index: 20;
   }
-  /* Only when the viewport is wide enough to have a real gutter beside the content. */
-  @media (min-width: 1440px) {
+  /* Only when the viewport is wide enough to have a REAL gutter beside the content.
+     Geometry: container-max is 1200px and each rail needs 172px (160 card + 12 gap), so the
+     gutter first exceeds 172px at 100vw > 1544px — below that the `max(12px, …)` clamp pinned
+     the rail at 12px and it sat ON TOP of the h1/cards (seen at 1440/1536, both common laptop
+     widths). 1600px leaves a clean 12px gap; narrower screens get the SponsorBar instead. */
+  @media (min-width: 1600px) {
     .sponsorRail {
       display: block;
     }

@@ -1,0 +1,183 @@
+---
+// Operator: a single ROTATING "sponsored" slot for the hub listing pages (/plugins/ and
+// /use-cases/). It shows ONE sponsor at a time and cycles through ALL sponsors — regardless
+// of whether that sponsor is also listed as a plugin — in a shuffled order, flipping every
+// ~7s. Modelled on canivibecodeit.com / trustmrr.com's top-of-listing sponsor unit.
+//
+// CSP: the rotation runs in a bundled Astro <script> (compiles to a same-origin ES module,
+// covered by §10.7's `script-src 'self'`) — no inline handlers, nothing for audit-scripts to
+// flag. With JS off (or reduced-motion) the first card simply stays put; every sponsor is
+// still reachable from /sponsors/, so no one is hidden behind the animation.
+import { SPONSORS, sponsorHref, sponsorIconPath } from '../lib/sponsors';
+---
+
+{
+  SPONSORS.length > 0 && (
+    <aside class="sponsorSlot" aria-label="sponsored" data-sponsor-slot>
+      <span class="sponsorSlot__eyebrow">sponsored</span>
+      {/* Grid-stacked: every card shares one cell, so the slot sizes to the tallest card and
+          never reflows as it rotates. Only the [data-active] card is visible/clickable. */}
+      <div class="sponsorSlot__stack">
+        {SPONSORS.map((s, i) => (
+          <a
+            href={sponsorHref(s)}
+            target="_blank"
+            rel="sponsored noopener"
+            class="sponsorSlot__card"
+            data-sponsor-card
+            data-active={i === 0 ? 'true' : undefined}
+            style={`--tint: var(--color-sponsor-${s.tint}-tint)`}
+          >
+            {sponsorIconPath(s) ? (
+              <img
+                src={sponsorIconPath(s)!}
+                alt=""
+                width="30"
+                height="30"
+                class="sponsorSlot__icon"
+                loading="lazy"
+              />
+            ) : (
+              <span class="sponsorSlot__tile" aria-hidden="true">
+                {s.name.charAt(0)}
+              </span>
+            )}
+            <span class="sponsorSlot__body">
+              <span class="sponsorSlot__name">{s.name}</span>
+              <span class="sponsorSlot__tag">{s.tagline}</span>
+            </span>
+            <span class="sponsorSlot__cta" aria-hidden="true">
+              visit →
+            </span>
+          </a>
+        ))}
+      </div>
+    </aside>
+  )
+}
+
+<style>
+  .sponsorSlot {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sponsorSlot__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+  }
+  .sponsorSlot__stack {
+    display: grid;
+  }
+  .sponsorSlot__card {
+    grid-area: 1 / 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--tint);
+    text-decoration: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.45s ease,
+      border-color 0.15s;
+  }
+  .sponsorSlot__card[data-active] {
+    opacity: 1;
+    visibility: visible;
+  }
+  .sponsorSlot__card:hover {
+    border-color: var(--color-border-strong);
+  }
+  .sponsorSlot__icon,
+  .sponsorSlot__tile {
+    inline-size: 30px;
+    block-size: 30px;
+    border-radius: 7px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .sponsorSlot__tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text);
+  }
+  .sponsorSlot__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-inline-size: 0;
+  }
+  .sponsorSlot__name {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .sponsorSlot__tag {
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sponsorSlot__cta {
+    margin-inline-start: auto;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-accent-text);
+  }
+  @media (max-width: 479px) {
+    .sponsorSlot__cta {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sponsorSlot__card {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Shuffle the sponsor order per page-load, then flip the visible card every ~7s.
+  // Bundled module script (same-origin) — CSP clean. Browser Math.random is fine here.
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  document.querySelectorAll<HTMLElement>('[data-sponsor-slot]').forEach((slot) => {
+    const cards = Array.from(slot.querySelectorAll<HTMLElement>('[data-sponsor-card]'));
+    if (cards.length < 2) return;
+
+    // Fisher–Yates over the indices so the first card shown is random, then cycle in that order.
+    const order = cards.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+
+    let pos = 0;
+    const show = (idx: number) =>
+      cards.forEach((card, i) => card.toggleAttribute('data-active', i === idx));
+
+    show(order[0]);
+    if (reduced) return;
+    window.setInterval(() => {
+      pos = (pos + 1) % order.length;
+      show(order[pos]);
+    }, 7000);
+  });
+</script>

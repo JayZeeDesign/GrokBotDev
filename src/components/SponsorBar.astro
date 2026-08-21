@@ -49,8 +49,10 @@ const items = scroll ? [...SPONSORS, ...SPONSORS] : SPONSORS;
     background: var(--color-bg);
     overflow: hidden;
   }
-  /* The fixed rails take over on wide screens. */
-  @media (min-width: 1440px) {
+  /* The fixed rails take over on wide screens — but only where the gutter is real (≥1600px,
+     matching SponsorRail). Keeping the bar up to 1600 closes the 1440–1600 dead zone where
+     the rails used to overlap the content and the bar was already hidden. */
+  @media (min-width: 1600px) {
     .sponsorBar {
       display: none;
     }

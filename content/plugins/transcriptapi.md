@@ -2,7 +2,7 @@
 type: plugin
 name: "TranscriptAPI"
 slug: transcriptapi
-tagline: "Audio & video to accurate transcripts in one API call."
+tagline: "Give your agents accurate transcripts from any audio or video."
 category: data
 subcategory: enrichment
 install_steps:

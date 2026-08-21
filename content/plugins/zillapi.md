@@ -2,7 +2,7 @@
 type: plugin
 name: "ZillAPI"
 slug: zillapi
-tagline: "Fast, scalable data APIs for builders."
+tagline: "Give your agents fast, structured data on demand."
 category: data
 subcategory: enrichment
 install_steps:
