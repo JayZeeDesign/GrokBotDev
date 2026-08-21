@@ -48,11 +48,11 @@
     "icon": "recapio.png"
   },
   {
-    "slug": "youtube2transcript",
-    "name": "YouTube2Transcript",
-    "url": "https://youtube2transcript.com",
+    "slug": "youtubetotranscript",
+    "name": "YouTube to Transcript",
+    "url": "https://youtubetotranscript.com",
     "tagline": "Any YouTube video to clean, usable text — instantly.",
     "tint": "sand",
-    "icon": null
+    "icon": "youtubetotranscript.png"
   }
 ]
