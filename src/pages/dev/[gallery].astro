@@ -166,6 +166,8 @@ const groups = [
   'BracketBadge',
   'SiteHeader',
   'ThemeToggle',
+  'SecondaryButton',
+  'SelectedChip',
   'NavLink',
   'Footer',
   'Breadcrumbs',
@@ -301,6 +303,59 @@ const groups = [
         <code>&lt;summary&gt;</code> serves as both the <code>menu</code> button and the
         <code>✕</code> pinned inside the panel's top-right. Honours
         <code>prefers-reduced-motion</code> by appearing instantly.
+      </p>
+    </section>
+
+    {/* ----------------------------------------------------- button — secondary (slate) */}
+    <section id="c-secondarybutton" class="flex flex-col gap-6">
+      <SectionHeading title="button — secondary (slate) — F10(5)" />
+      <p class="max-w-prose text-base text-text-muted">
+        The section-level action that is <em>not</em> the amber primary. Filled with the A5
+        slate family (<code>--color-cat-solid</code> on <code>--color-cat-on-solid</code>) so
+        it reads as <strong>the</strong> action of its section while leaving A1's
+        one-accent-per-viewport rule intact for the amber CTA.
+      </p>
+      <p class="max-w-prose text-base text-text-muted">
+        ⚠️ <strong>Operator overrule, logged.</strong> A5 says slate is the ONLY taxonomy
+        colour and nothing else; here it is doing action work. Directed by the operator at
+        F10, recorded in BUILD-NOTES, and carried to the design authority.
+        <strong>Deliberately scoped to this one control — do not generalise slate CTAs.</strong>
+        Contrast is not waived: <code>cat-on-solid on cat-solid</code> is a gated pair in
+        <code>check-contrast</code> (6.74:1 light · 8.30:1 dark).
+      </p>
+      <div class="flex flex-wrap items-center gap-6">
+        <CopyButton text="secondary (slate) — rest / hover / copied" label="copy routine prompt" variant="slate" />
+        <CopyButton text="ghost for comparison" label="copy" />
+      </div>
+      <p class="max-w-prose font-mono text-xs text-text-muted">
+        States: rest (filled slate) · hover (brightness 0.92, border held) · copied (`copied ▪`
+        stays on the filled tint, never inverting to an unreadable pair) · focus (global §4.6
+        ring) · hidden until the copy island runs. 44px min height — it is a primary-weight
+        target even though it is visually secondary.
+      </p>
+    </section>
+
+    {/* ------------------------------------------------------- chip — selected (picker) */}
+    <section id="c-selectedchip" class="flex flex-col gap-6">
+      <SectionHeading title="chip — selected state — F10(4)" />
+      <p class="max-w-prose text-base text-text-muted">
+        The frequency picker's four options previously rendered identically whether chosen or
+        not — only a faint border/text tint separated them, which read as "nothing is
+        selected". The chosen chip is now <strong>filled and inverted</strong>
+        (<code>--color-accent-strong</code> with <code>--color-accent-contrast</code>),
+        unselected stay outline. Default remains <code>daily</code>.
+      </p>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="inline-flex min-h-6 items-center rounded-sm border border-accent-strong bg-accent-strong px-3 py-1 font-mono text-xs lowercase text-accent-contrast">
+          daily — selected
+        </span>
+        <span class="inline-flex min-h-6 items-center rounded-sm border border-border-interactive px-3 py-1 font-mono text-xs lowercase text-text-muted">
+          hourly — unselected
+        </span>
+      </div>
+      <p class="max-w-prose font-mono text-xs text-text-muted">
+        Driven by `peer-checked/*` off a visually-hidden radio, so selection is real form
+        state and works with the island disabled.
       </p>
     </section>
 

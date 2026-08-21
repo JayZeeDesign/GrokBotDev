@@ -103,6 +103,35 @@ export const CP_120_ABOUT_PRIVACY_EMBEDS =
 /** The one token in CP-120 rendered in mono. Split, never re-typed, so the string stays whole. */
 export const CP_120_MONO_TOKEN = 'platform.twitter.com';
 
+/**
+ * §16 PROTECTED · OPERATOR-AMENDED (F10, 2026-08-21). CP-121 … CP-124.
+ *
+ * All four are the operator's own wording, supplied verbatim in the F10 brief. Register-first,
+ * ship-exactly: CP-121 is deliberately sentence-cased with capitalised product nouns even
+ * though modal chrome is lowercase mono elsewhere — that is the operator's call, not a slip,
+ * so the heading drops `lowercase` rather than "correcting" the string.
+ *
+ * CP-124 REPLACES the long §7.3 machine contract inside the modal. The contract itself is NOT
+ * deleted from the product — `/agent/` still renders it in full and the modal links there
+ * (CP-107), exactly as B3 specified. What changed is who the modal talks to: a human choosing
+ * a cadence, not a machine reading a spec.
+ */
+export const CP_121_INSTALL_SECTION2 = 'Keep getting new Awesome Use Cases and Plugins';
+export const CP_122_INSTALL_STEP_1 = 'pick your settings';
+export const CP_123_INSTALL_STEP_2 = 'copy the prompt and paste it into your Grok Bot';
+
+/** CP-124 — the one-liner. The cadence opener is the ONLY templated part; the rest is fixed. */
+export const CP_124_ROUTINE_ONE_LINER = (cadence: string) =>
+  `${cadence}, fetch https://grokbot.dev/api/v1/latest.json and show me new awesome use cases and plugins posted on grokbot.dev`;
+
+/** Cadence openers, operator-supplied. Keys match the schedule picker. */
+export const CP_124_CADENCE = {
+  hourly: 'Every hour',
+  daily: 'Every morning',
+  'two-days': 'Every 2 days',
+  weekly: 'Every week',
+} as const;
+
 /** Interpolate `{token}` placeholders in a pack string without editorialising it. */
 export function fillCopy(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) =>

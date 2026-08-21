@@ -1863,6 +1863,92 @@ Style-guide entry at `/dev/components/` (C13) covers both variants and every sta
 hover, active with its reduced-motion exception, the global §4.6 focus ring, and the
 hidden-until-JS behaviour with the reason.
 
+### F10 · install modal overhaul — six items, two of them the same root cause
+
+Operator screenshot: the site-level modal clipped past the viewport with no internal scroll,
+four identical frequency chips, a buried subtitle, an outline copy button, and the long §7.3
+machine contract rendered **centred**.
+
+**(1) CLIPPED SHEET — the root cause was not the max-height.** The entry variant was fine
+(top 45, bottom 855 in a 900px viewport); only the SITE variant clipped (top 125, bottom 935).
+The difference: `#content` carried `left:50%; transform:translateX(-50%)`, and **a transformed
+ancestor becomes the containing block for `position: fixed` descendants**. The site modal
+lives inside `#content`, so its "fixed" overlay was being positioned against the hero's
+content box rather than the viewport. Centring `.content` without a transform
+(`left:0; right:0; margin-inline:auto`) is visually identical, leaves `#content`'s measured
+rect — and therefore A4's static physics body — unchanged, and fixes the whole class.
+*This is the content block's centring, not bot-generation JS or the `.s-*` paint rules; those
+are untouched, per the F16 file boundary.*
+
+Belt as well as braces, since the brief asked for it: sheet `max-height: 85vh` at all
+viewports, and **`min-block-size: 0`** on both the sheet and the body — which is what actually
+lets a *column* flex child scroll. Without it the child's automatic minimum is its content
+height and `overflow-y: auto` never engages. **F6 set `min-inline-size: 0`; this is the same
+bug on the other axis.**
+
+**(2) SECTION TITLE — CP-121, operator-authored, verbatim.**
+`Keep getting new Awesome Use Cases and Plugins`. **Judgment call the brief invited:** I
+shipped it in the **display face**, not mono. Two reasons. Mechanically, the old heading
+carried `lowercase`, which would have silently rewritten the operator's capitalised product
+nouns — so that class had to go regardless. Aesthetically, at heading weight the capitalised
+nouns read as a title in the display face and read like a code comment in mono.
+
+**(3) STEPS — CP-122 / CP-123, verbatim.** The buried one-line subtitle is replaced by two
+numbered steps, one per line: mono accent index + `--text-base` text, one step up from the old
+caption. Prominent, not shouty.
+
+**(4) SELECTED CHIP — and the reason all four looked identical was a dead selector.** The
+picker used Tailwind's `peer-checked/*`, whose selector is `.peer:checked ~ *` — a **sibling**
+combinator. The radios were siblings of a wrapper div while the labels sat *inside* it, so the
+chip rules were generated and **matched nothing**. Not "too subtle": never applied. Making the
+labels siblings then broke the panels, which had been relying on that same adjacency. Both now
+key off **one** mechanism — `:has()` on the container, matching the checked radio's `value`,
+which does not care about DOM order — so chips and panels can each sit where they read best.
+Selected chip is filled and inverted (`--color-accent-strong` / `--color-accent-contrast`);
+unselected stay outline; default `daily` still comes from the radio, so it survives no-JS.
+Chips also went 24px → **44px**.
+
+**(5) SLATE SECONDARY CTA.** `copy routine prompt` is now filled slate
+(`--color-cat-solid` on `--color-cat-on-solid`, 44px), so it reads as *the* action of section 2
+and is unmistakably not the amber primary.
+⚠️ **OPERATOR OVERRULE, LOGGED:** this bends **A5's "slate = the ONLY taxonomy colour" hue
+law** — slate is doing action work here. Directed by the operator, recorded here for the design
+authority, and **deliberately scoped to this one control: do not generalise slate CTAs.**
+Contrast is *not* waived — `cat-on-solid on cat-solid` is already a gated pair in
+`check-contrast` (6.74:1 light · 8.30:1 dark).
+*Implementation note: the slate rule initially had no effect because I inserted it before the
+base `.copy-button__btn` rules, which then overrode it at equal specificity. Moved after.*
+
+**(6) THE PROMPT — CP-124.** The long §7.3 contract is replaced by the operator's one-liner,
+cadence-templated and nothing else:
+
+```
+{Every hour | Every morning | Every 2 days | Every week}, fetch
+https://grokbot.dev/api/v1/latest.json and show me new awesome use cases and
+plugins posted on grokbot.dev
+```
+
+All four verified **byte-exact** in the built `data-copy` payloads, on **both** variants, with
+the §7.3 contract confirmed absent from the modal. **The contract is not deleted from the
+product** — `/agent/` still renders it in full (3,090 chars, `Bot Contract v1`, endpoints
+intact; those files have no diff) and the modal links there via CP-107, exactly as B3
+specified. What changed is the modal's audience: a human picking a cadence, not a machine
+reading a spec.
+
+**Left-alignment, same root cause as (1).** The prompt rendered centred because the site
+variant inherits `text-align: center` from the hero's `#content`. Fixed once on the sheet
+(`text-align: start`) rather than per element — the heading and steps were inheriting it too.
+
+**Copy ledger:** CP-121…CP-124 registered in `lib/copy.ts` as operator-amended and protected,
+with the reason each is verbatim recorded beside it.
+
+**Measured after:** sheet 468px at 1440 and a full-height 844px sheet at 390, **neither
+clipped**; heading and prompt both `start`-aligned; exactly one chip filled; exactly one panel
+visible; slate button `rgb(78,93,110)` on white at 44px. Gates green including
+`check-keyword-placements` (4 required placements untouched — the retrieval-phrase surfaces are
+home hero, `/use-cases/`, `/agent/` and `llms.txt`, none of which the modal copy touches).
+Overflow guard 45/45, QA sweep 57/57.
+
 ### Verification
 
 - **Full gate suite green:** validate 10 entries · negative fixtures still rejected ·
@@ -1874,7 +1960,7 @@ hidden-until-JS behaviour with the reason.
   `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`,
   `F5-wall-embeds-{390,768,1440}.png`, `F5-entry-detail-embed-{390,1440}.png`,
   `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`, `F6-modal-390.png`,
-  `F3b-hero-drag-390.png`, `F7-drawer-390.png`, `F8-footer-{390,768}.png`, `F9-dark-{390,1440}.png`.
+  `F3b-hero-drag-390.png`, `F7-drawer-390.png`, `F8-footer-{390,768}.png`, `F9-dark-{390,1440}.png`, `F10-modal-{390,1440}.png`.
   **Screenshot caveat worth knowing:** a `--full` full-page capture does not repaint
   cross-origin iframes, so the wall's embeds photograph as blank boxes in a full-page shot even
   when they are rendering correctly. The F5 wall captures are therefore VIEWPORT shots, and the

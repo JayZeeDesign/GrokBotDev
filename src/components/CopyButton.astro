@@ -10,10 +10,17 @@ interface Props {
   text: string;
   label?: string;
   size?: 'sm' | 'md';
+  /**
+   * F10(5) — `slate` promotes the control to the section's SECONDARY CTA.
+   * ⚠️ OPERATOR OVERRULE of A5's "slate = taxonomy only" hue law, logged in BUILD-NOTES and
+   * carried to the design authority. Scoped to THIS control on purpose: do not generalise
+   * slate CTAs anywhere else.
+   */
+  variant?: 'ghost' | 'slate';
   class?: string;
 }
 
-const { text, label = 'copy', size = 'sm', class: className = '' } = Astro.props;
+const { text, label = 'copy', size = 'sm', variant = 'ghost', class: className = '' } = Astro.props;
 ---
 
 <span class:list={['copy-button inline-flex items-center', className]} data-copy-root>
@@ -24,7 +31,11 @@ const { text, label = 'copy', size = 'sm', class: className = '' } = Astro.props
     data-copy-trigger
     data-state="idle"
     data-label={label}
-    class:list={['copy-button__btn', size === 'md' ? 'copy-button__btn--md' : 'copy-button__btn--sm']}
+    class:list={[
+      'copy-button__btn',
+      size === 'md' ? 'copy-button__btn--md' : 'copy-button__btn--sm',
+      variant === 'slate' && 'copy-button__btn--slate',
+    ]}
   >
     <span data-copy-label>{label}</span>
   </button>
@@ -75,6 +86,28 @@ const { text, label = 'copy', size = 'sm', class: className = '' } = Astro.props
     border-color: var(--color-border-strong);
     color: var(--color-text-muted);
   }
+  /* F10(5) — SECONDARY CTA, slate-tinted. ⚠️ OPERATOR OVERRULE of A5's "slate = the ONLY
+     taxonomy colour" hue law: slate is doing action work here, not taxonomy work. Logged in
+     BUILD-NOTES and carried to the design authority; deliberately scoped to this one control
+     so it cannot spread. Contrast is NOT waived — cat-on-solid on cat-solid is a gated pair
+     in check-contrast (6.74:1 light / 8.30:1 dark). */
+  .copy-button__btn--slate {
+    border-color: var(--color-cat-solid);
+    background: var(--color-cat-solid);
+    color: var(--color-cat-on-solid);
+    min-height: 44px;
+    padding-inline: 16px;
+  }
+  .copy-button__btn--slate:hover {
+    border-color: var(--color-cat-solid);
+    filter: brightness(0.92);
+  }
+  /* The `copied ▪` state must stay legible on the filled tint. */
+  .copy-button__btn--slate[data-state='copied'] {
+    background: var(--color-cat-solid);
+    color: var(--color-cat-on-solid);
+  }
+
 </style>
 
 <script>

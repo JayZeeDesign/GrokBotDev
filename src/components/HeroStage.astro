@@ -100,7 +100,16 @@ const SUBLINE =
 /* ---------- hero content (a static physics body) ---------- */
 .content{
   position:absolute; z-index:3;
-  left:50%; transform:translateX(-50%);
+  /* F10(1) ROOT CAUSE: this block used `left:50%; transform:translateX(-50%)`, and a
+     TRANSFORMED ancestor becomes the containing block for `position: fixed` descendants.
+     The site-level InstallModal lives inside #content, so its "fixed" overlay was being
+     positioned against THIS box instead of the viewport — which is why the sheet sat at
+     top=125 and ran 35px past the bottom of a 900px viewport while the entry variant (no
+     transformed ancestor) was fine. Centring without a transform is visually identical and
+     #content's measured rect is unchanged, so the A4 physics body is unaffected.
+     NOTE: this is the content block's centring, NOT bot-generation JS or the .s-* paint
+     rules — those stay untouched. */
+  left:0; right:0; margin-inline:auto;
   /* sits ~6.5vh higher than the first cut — the pile reads as a group ABOVE the
      type rather than crowding its shoulders. Its live rect is re-measured into a
      static body on every build/resize, so the sim follows this value. */
