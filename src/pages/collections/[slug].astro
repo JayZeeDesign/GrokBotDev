@@ -12,6 +12,7 @@ import PromptBlock from '../../components/PromptBlock.astro';
 import InstallModal from '../../components/InstallModal.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
+import PagefindMeta from '../../components/PagefindMeta.astro';
 import categories from '../../data/categories.json';
 import { allCollections, allPlugins, allUseCases, kindOf, relatedTo, toCardEntry } from '../../lib/entries';
 import { isoToDate } from '../../lib/format';
@@ -67,14 +68,22 @@ const graph = [
   <article class="container-page flex flex-col gap-12 py-12 md:py-16" data-pagefind-body>
     <Breadcrumbs items={crumbs} />
 
+    <PagefindMeta type="collection" status={d.status} verifiedAt={d.verified_at ?? null} url={url} />
+
     <header class="flex flex-col gap-4">
-      <h1 class="display-track font-display text-3xl text-text md:text-4xl" data-pagefind-weight="10">
+      <h1
+        class="display-track font-display text-3xl text-text md:text-4xl"
+        data-pagefind-weight="10"
+        data-pagefind-meta="name"
+      >
         {d.name}
       </h1>
-      <p class="text-lg text-text-muted">{d.tagline}</p>
+      <p class="text-lg text-text-muted" data-pagefind-meta="tagline">{d.tagline}</p>
       <div class="flex flex-wrap items-center gap-2">
         {d.verified_at && d.status === 'live' && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
-        <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+        <span data-pagefind-filter="category">
+          <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+        </span>
       </div>
     </header>
 
@@ -83,14 +92,14 @@ const graph = [
     </div>
 
     <section class="flex flex-col gap-4">
-      <SectionHeading title="why these together" variant="sub" />
+      <SectionHeading title="why these together" variant="sub" level={2} />
       <div class="prose-body flex max-w-prose flex-col gap-4 text-base text-text">
         <Content />
       </div>
     </section>
 
     <section class="flex flex-col gap-6">
-      <SectionHeading title="in this collection" variant="sub" />
+      <SectionHeading title="in this collection" variant="sub" level={2} />
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
         {
           members.map((member) => (
@@ -106,7 +115,7 @@ const graph = [
     {
       d.prompt && (
         <section class="flex max-w-prose flex-col gap-4">
-          <SectionHeading title="combined setup" variant="sub" />
+          <SectionHeading title="combined setup" variant="sub" level={2} />
           <PromptBlock prompt={d.prompt} />
           <p class="text-base text-text">{CP_112_CTA_SENTENCE}.</p>
         </section>

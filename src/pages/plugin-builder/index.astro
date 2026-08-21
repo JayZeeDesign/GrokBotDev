@@ -8,6 +8,7 @@ import PromptBlock from '../../components/PromptBlock.astro';
 import Callout from '../../components/Callout.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
+import PagefindMeta from '../../components/PagefindMeta.astro';
 import { allPlugins, sortForLatest, toCardEntry } from '../../lib/entries';
 import { CP_112_CTA_SENTENCE } from '../../lib/copy';
 import { META, breadcrumbList, webPage } from '../../lib/seo';
@@ -32,12 +33,17 @@ const graph = [
 
 <BaseLayout title={META.pluginBuilder.title} description={META.pluginBuilder.description} graph={graph}>
   <div class="container-page flex flex-col gap-12 py-12 md:py-16" data-pagefind-body>
+    <PagefindMeta type="page" url="/plugin-builder/" />
     <header class="flex flex-col gap-4">
       <Breadcrumbs items={crumbs} />
-      <h1 class="display-track font-display text-3xl text-text md:text-4xl">
+      <h1
+        class="display-track font-display text-3xl text-text md:text-4xl"
+        data-pagefind-weight="10"
+        data-pagefind-meta="name"
+      >
         Turn your Grok Bot into a plugin builder
       </h1>
-      <p class="max-w-prose text-base text-text-muted">
+      <p class="max-w-prose text-base text-text-muted" data-pagefind-meta="tagline">
         one prompt. paste it into Grok and your Bot builds the plugin with you — checking
         what's already in here first, so you don't rebuild something that exists.
       </p>
@@ -53,7 +59,7 @@ const graph = [
       that first.
     </Callout>
 
-    <RelatedList heading="newest plugins" entries={newest.map(toCardEntry)} />
+    <RelatedList heading="newest plugins" headingLevel={2} entries={newest.map(toCardEntry)} />
 
     <p class="font-mono text-sm">
       <a href="/submit/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">

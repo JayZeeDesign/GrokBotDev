@@ -13,12 +13,18 @@ interface Props {
   /** 2–3 entries; selection logic owned by §05/§06. */
   entries: Entry[];
   variant?: 'related' | 'appears-in';
+  /**
+   * §4.2.6 level for the block heading, independent of its `sub` sizing. Entry pages
+   * leave it at 3 (they have h2 sections above); a page where this block is the FIRST
+   * thing after the h1 must pass 2 or the outline skips a level (§4.6 / M7.2 a11y).
+   */
+  headingLevel?: 2 | 3;
   /** Passthrough to EntryCard; omitted → each card uses its own entry type. */
   cardVariant?: 'plugin' | 'use-case' | 'collection';
   class?: string;
 }
 
-const { heading, entries, variant = 'related', cardVariant, class: className = '' } = Astro.props;
+const { heading, entries, variant = 'related', cardVariant, headingLevel, class: className = '' } = Astro.props;
 
 const resolvedHeading =
   heading ?? (variant === 'appears-in' ? CP_026_APPEARS_IN_HEADING : CP_026_RELATED_HEADING);
@@ -27,7 +33,7 @@ const resolvedHeading =
 {
   entries.length > 0 && (
     <section class:list={['flex flex-col gap-4', className]} data-pagefind-ignore>
-      <SectionHeading title={resolvedHeading} variant="sub" />
+      <SectionHeading title={resolvedHeading} variant="sub" level={headingLevel} />
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
         {entries.map((entry) => (
           <EntryCard entry={entry} variant={cardVariant ?? entry.type} />

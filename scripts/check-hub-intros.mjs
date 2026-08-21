@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // §6.2 — all 83 hub intros must exist and be 60–160 words; a miss fails the build.
-// GATE STATUS: report-only until the intro corpus lands (they are being drafted by a
-// content executor). `HUB_INTRO_GATE=1` makes it fail; M7 must run with the gate ON.
+// GATE STATUS: ENFORCING (flipped at M7-local, 2026-08-21 — the 83-file corpus landed at M3x).
+// Default is ON. `HUB_INTRO_GATE=1` is still set explicitly at both call sites (the npm
+// `build` script and ci.yml) so the intent is readable there; `HUB_INTRO_GATE=0` is the only
+// way to get the old report-only behaviour, and nothing in the repo sets it.
 import { existsSync, readFileSync } from 'node:fs';
 
 const categories = JSON.parse(readFileSync('src/data/categories.json', 'utf8'));
@@ -32,7 +34,11 @@ console.log(
 if (missing.length) console.log(`  missing: ${missing.length} (first: ${missing.slice(0, 3).join(', ')})`);
 for (const row of badLength) console.log(`  length: ${row}`);
 
-if (process.env.HUB_INTRO_GATE === '1' && (missing.length || badLength.length)) {
+const gateOn = process.env.HUB_INTRO_GATE !== '0';
+if (gateOn && (missing.length || badLength.length)) {
   console.error('check-hub-intros: gate is ON and the corpus is incomplete');
   process.exit(1);
+}
+if (!gateOn && (missing.length || badLength.length)) {
+  console.warn('check-hub-intros: HUB_INTRO_GATE=0 — reporting only, NOT failing the build');
 }

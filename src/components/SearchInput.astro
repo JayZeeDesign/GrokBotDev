@@ -55,6 +55,8 @@ const inputId = mode === 'page' ? 'search-page-q' : `search-link-q-${Object.keys
   {
     mode === 'page' && (
       <>
+        {/* §4.3.11 region [3] — the FilterBar sits with the input, above the results. */}
+        <slot name="filters" />
         <p class="hidden font-mono text-sm text-text-muted" aria-live="polite" data-search-status>
           {CP_063_SEARCH_LOADING}
         </p>
@@ -137,6 +139,19 @@ const inputId = mode === 'page' ? 'search-page-q' : `search-link-q-${Object.keys
   <a class="inline-flex min-h-6 items-center rounded-sm border border-border-interactive px-4 py-2 font-mono text-sm lowercase text-text" href="/plugins/">browse plugins</a>
 </div>`;
 
+      // §4.3.11 — the island reads ALL params, not just `q`: `type` (submitted by the
+      // §4.3.2 index forms), `category` and `integration` (the FilterBar options).
+      // They map onto the §4.2.8a `data-pagefind-filter` values.
+      const FACETS = ['type', 'category', 'integration'] as const;
+      const params = new URLSearchParams(window.location.search);
+      const activeFilters: Record<string, string> = {};
+      for (const facet of FACETS) {
+        // Pagefind lowercases the filter values it indexes from the chip text, so a
+        // hand-typed `?category=Engineering` has to match too.
+        const value = params.get(facet)?.trim().toLowerCase();
+        if (value) activeFilters[facet] = value;
+      }
+
       const run = async (query: string) => {
         if (!query.trim()) {
           results.innerHTML = '';
@@ -145,7 +160,11 @@ const inputId = mode === 'page' ? 'search-page-q' : `search-link-q-${Object.keys
         }
         status.classList.remove('hidden');
         pagefind = pagefind ?? (await loadPagefind());
-        const search = await pagefind.search(query);
+        const opts = Object.keys(activeFilters).length ? { filters: activeFilters } : undefined;
+        const search = await (pagefind.search as (q: string, o?: unknown) => ReturnType<PagefindApi['search']>)(
+          query,
+          opts
+        );
         const data = await Promise.all(search.results.slice(0, 30).map((result) => result.data()));
         results.innerHTML = data.length ? data.map(card).join('') : empty(query);
         status.classList.add('hidden');
@@ -164,9 +183,50 @@ const inputId = mode === 'page' ? 'search-page-q' : `search-link-q-${Object.keys
         void run(input.value);
       });
 
-      const initial = new URLSearchParams(window.location.search).get('q');
+      // Filter links are server-rendered static hrefs, so they cannot carry the query the
+      // user typed. Rewrite them here (and on every keystroke) so clicking a facet keeps
+      // `q` and every OTHER active facet. With JS off the plain hrefs still work — they
+      // just land on an unfiltered `/search/?category=…`, which is a valid state.
+      const filterBar = root?.querySelector<HTMLElement>('[data-filter-bar]');
+      const syncFilterHrefs = () => {
+        if (!filterBar) return;
+        for (const link of filterBar.querySelectorAll<HTMLAnchorElement>('a[href^="/search/"]')) {
+          const target = new URL(link.href, window.location.origin);
+          const next = new URLSearchParams();
+          if (input.value.trim()) next.set('q', input.value.trim());
+          for (const facet of FACETS) {
+            const own = target.searchParams.get(facet);
+            const carried = own ?? activeFilters[facet];
+            if (carried) next.set(facet, carried);
+          }
+          const qs = next.toString();
+          link.href = qs ? `/search/?${qs}` : '/search/';
+        }
+      };
+
+      // Reflect the active facets in the menu summaries + option state (§4.2.9 States).
+      if (filterBar) {
+        for (const menu of filterBar.querySelectorAll<HTMLDetailsElement>('[data-filter-menu]')) {
+          for (const link of menu.querySelectorAll<HTMLAnchorElement>('a[href^="/search/"]')) {
+            const facet = FACETS.find((f) => new URL(link.href, window.location.origin).searchParams.has(f));
+            if (!facet) continue;
+            const value = new URL(link.href, window.location.origin).searchParams.get(facet);
+            if (value && activeFilters[facet] === value) {
+              link.setAttribute('aria-current', 'true');
+              const summary = menu.querySelector('summary span');
+              if (summary) summary.textContent = `${facet}: ${value.toLowerCase()}`;
+            }
+          }
+        }
+      }
+
+      input.addEventListener('input', syncFilterHrefs);
+      syncFilterHrefs();
+
+      const initial = params.get('q');
       if (initial) {
         input.value = initial;
+        syncFilterHrefs();
         void run(initial);
       }
     }

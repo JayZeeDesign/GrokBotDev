@@ -10,3 +10,6 @@ dist/
 *.csv
 .DS_Store
 npm-debug.log*
+
+# QA sweep output (regenerated on every run)
+scripts/qa/last-run.jsonl

@@ -67,7 +67,7 @@ const graph = [webPage('/submit/', META.submit.title, META.submit.description), 
     </div>
 
     <section id="plugin" class="flex flex-col gap-4">
-      <SectionHeading title="no github account? — a plugin" variant="sub" />
+      <SectionHeading title="no github account? — a plugin" variant="sub" level={2} />
       <ContributeSteps
         steps={[
           { title: 'copy the frontmatter template', body: 'every field is documented in the repo README.', code: 'content/plugins/<your-slug>.md' },
@@ -77,7 +77,7 @@ const graph = [webPage('/submit/', META.submit.title, META.submit.description), 
     </section>
 
     <section id="use-case" class="flex flex-col gap-4">
-      <SectionHeading title="no github account? — a use case" variant="sub" />
+      <SectionHeading title="no github account? — a use case" variant="sub" level={2} />
       <ContributeSteps
         steps={[
           { title: 'copy the frontmatter template', body: 'named-character title, what it does, the prompt, and the post you found it in.', code: 'content/use-cases/<your-slug>.md' },

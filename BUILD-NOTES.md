@@ -827,3 +827,344 @@ gh pr create --title "Add grokbot.dev" --body "Open directory of Grok Bot prompt
 **Also pinned for cutover (from M4):** the §7.5 nginx `machine` log format on the
 `/api/v1/` and RSS locations, with a Cloudflare-resolved `$remote_addr`. It cannot be
 backfilled — if it is missing at cutover, that window of §1.6 metric #1 is gone.
+
+## 2026-08-21 — M5x: README.md (§8.7/§8.8) — the last M5-local item
+
+The M5 deferral is closed. `README.md` replaces the M0 stub and carries §8.8's nine
+required items **in the order §8.8 lists them**: h1 + the §1.1 one-liner · the §10.5
+disclaimer verbatim · three badges (CI / MIT / CC BY 4.0) · the five lanes linked to their
+live hub URLs · the machine layer · the bright line + a four-step PR quickstart · local
+development · licensing · the footer links (awesome-grok-bot, the CRHQ credit, public
+stats).
+
+**A7 is binding on it and was applied:** the Scouts / the Curator / the Builder, never an
+internal role name; **"always on"**, never a cadence (grep for `every 30`, `30-minut`,
+`sweep every`, `PM agent` returns nothing); the awesome use cases + the plugin registry are
+foregrounded and the PR plumbing sits below them.
+
+Facts checked one by one, because a README is the one file people read instead of the site:
+RSS 2.0 at `/rss.xml` + the two lane feeds (never Atom, never `/feed.xml`) · the machine
+surfaces are exactly `/agent/`, `/api/v1/index.json`, RSS and `mcp.grokbot.dev/mcp` · **MCP
+is hosted-only — the README says out loud there is no npm package and no stdio transport**
+(§12.6) · content is one markdown file per entry under `content/<type>/` · community PRs
+**add** files only, and a new integration or category is a maintainer change via an issue
+(§8.6's path-scope rule) · the API index *is* the API documentation, because no HTML docs
+page exists (§8.8 item 5) · verification is described as what §10.1 actually requires —
+reading every relevant file of a linked repo or the complete prompt, opening every URL,
+scanning for injection, checking attribution — and `verified_at` is stated as
+maintainer-set, never contributor-set.
+
+The bright line ships as the **CP-054 rewrite** ("Sponsor slots will exist for that — this
+isn't one."), matching `PULL_REQUEST_TEMPLATE.md` verbatim. CP-054 has three sites (§8.2,
+§8.4/CP-062, §8.7) and §8.6 says the line is published verbatim in all three surfaces
+including the README, so the pack's AFTER is the only correct string here. Nothing in copy
+pack §16's protected list is touched.
+
+Gates after: build exit 0, `astro check` 0/0, links 0 broken, every other gate green.
+
+## 2026-08-21 — M7-LOCAL (everything in §11 M7 that runs without the org token or prod DNS)
+
+### 1. HUB_INTRO_GATE is now ENFORCING, permanently
+
+`scripts/check-hub-intros.mjs` **defaults to ON**. `HUB_INTRO_GATE=1` is still written
+explicitly at both call sites — the npm `build` script and `ci.yml` — so the intent reads
+at the call site, but the default is what actually guarantees it: `HUB_INTRO_GATE=0` is now
+the only way back to report-only and nothing in the repo sets it. Inverting the default
+rather than relying on an env prefix means the gate cannot be lost by someone editing the
+build chain.
+
+Proven five ways, not asserted:
+
+| # | Fixture | Result |
+|---|---|---|
+| A | `integrations/slack.md` moved aside, gate armed | `82/83 present` → **exit 1** |
+| B | `categories/support.md` truncated to 2 words | `1 out of range` → **exit 1** |
+| C | intro missing, **no env var at all** | **exit 1** — the new default is enforcing |
+| D | intro missing, `HUB_INTRO_GATE=0` | exit 0 + an explicit "reporting only, NOT failing" warning |
+| E | intro missing, full `npm run build` | **build exits 1** at the gate, before `astro build` |
+
+The corpus was restored byte-identically after each (`git status` clean). `ci.yml` gained a
+step that runs fixture A on every PR — same reasoning as the existing "negative fixtures
+must still fail" step: a gate that quietly stops rejecting is a silent regression.
+
+### 2. M3.8 wireframe QA — 19 page templates × 3 breakpoints (deferred from M3, now done)
+
+Walked with the agent-browser CLI against the built site on the preview server at
+`localhost:4381`, at **1440 · 768 · 390** (§4.5's lg / md / <sm bands). 57 full-page
+screenshots + the hero and defect captures in
+`/opt/projects/control-room/images/grokbot-m7-qa/` (75 files).
+
+Templates covered: home · the three lane indexes · plugin detail · use-case detail ·
+collection detail · `/wall/` · `/agent/` · `/contribute/` · `/submit/` ·
+`/plugin-builder/` · `/about/` · `/search/` · category hub · subcategory hub · integration
+hub · `/subscribed/` · 404.
+
+Each page/breakpoint was probed for horizontal overflow (every element measured against the
+viewport, not just `document.scrollWidth`), landmark integrity (§4.6: one header, one
+`<main id="main">`, one footer, one h1, no unlabelled `nav`), skip link, region order inside
+`<main>`, and computed grid column counts against the §4.5 responsive table.
+
+**Final state: 57/57 combos clean — zero overflow, zero landmark defects, zero heading-order
+skips across all 108 built pages.** Six defects were found and fixed to get there.
+
+#### Defects found and FIXED
+
+**QA-D1 · HIGH · §4.2.8a was half-implemented and search results were broken.**
+`data-pagefind-body`, `data-pagefind-ignore` and `data-pagefind-weight` shipped; the other
+two normative rows — `data-pagefind-meta` (name/tagline/type/status/setup_minutes/
+verified_at/url) and `data-pagefind-filter` (type/category/integration) — were **never
+emitted**. Three consequences, all live:
+1. Pagefind reported `Indexed 0 filters`, so the `/search/` facets had nothing to filter on.
+2. The island builds its result cards from `meta.*` (§4.2.8a's "without a second fetch"),
+   so **every search result rendered as "untitled"** with no tagline and no chips —
+   reproduced in the browser and captured as `DEFECT-search-untitled-before.png`.
+3. §4.3.2's lane-index search form submits `q` + `type=plugin`, and the island read only
+   `q` — the scoping was silently dropped on every search from a lane index.
+
+Fixed with `src/components/PagefindMeta.astro` (new; §4.2.8a is its only spec) on all three
+entry templates + `/plugin-builder/`, plus `data-pagefind-meta="name"|"tagline"` on the real
+h1/tagline nodes and `data-pagefind-filter` on the category and integration chip wrappers.
+**One pair per element** — a single combined attribute came back as
+`type = "plugin, url:/plugins/…, status:live, …"` and printed the whole blob in the result
+chip, because Pagefind's comma-delimited multi-pair form does not survive a value containing
+`/` or `:`. Also learned by measurement, not assumption: **Pagefind lowercases the filter
+values it indexes from chip text**, so the facet links carry the lowercased label, not the
+slug (they diverge for any multi-word integration — `Google Calendar` indexes as
+`google calendar`, slug `google-calendar`). Verified against `pagefind.filters()`.
+Now: `Indexed 3 filters`; results render name + tagline + verified/setup/type chips;
+`?type=plugin` → 5, `?type=use-case` → 4, `?category=engineering` → 6,
+`?integration=github` → 2; and `/plugins/` → search → `/search/?q=grok&type=plugin` returns
+5 plugins and nothing else.
+
+**QA-D2 · MEDIUM · `/search/` was missing wireframe region [3]'s FilterBar.** §4.3.11 shows
+`category ▾ integration ▾ type ▾` and §4.2.9's variants row says `/search/` gets **all
+three** — the page rendered only the input. Added, with options built from the live corpus
+so no menu offers a value with zero hits, sitting between the input and the results via a
+new `filters` slot in `SearchInput` page mode. The island now reads `type`, `category` and
+`integration` alongside `q`, applies them as Pagefind filters, reflects the active facet in
+the `<summary>` (§4.2.9 States), and rewrites the facet hrefs on load and on every keystroke
+so a filter click keeps the query and the other active facets. **Documented tradeoff:** the
+server-rendered hrefs are static, so with JS off a facet click lands on an unfiltered
+`/search/?category=…` — a valid state, and every option is also reachable from the §6.10 hub
+cross-links, which is the same fallback §4.2.9 already accepts for the menus themselves.
+
+**QA-D3 · MEDIUM · `/collections/` used the wrong grid.** §4.5 gives collections their own
+responsive row (1 / 1 / 2 / 2) and §4.3.6's legend says "**2-col grid at lg** (collections
+are wider cards)". `LaneIndexPage` rendered the standard EntryCard grid (1 / 2 / 2 / 3) for
+all three lanes. Now variant-aware: measured 2/2/1 at 1440/768/390, matching the table.
+
+**QA-D4 · MEDIUM · `/about/` was missing the CRHQ cross-link** required by §4.3.14 — the
+file's own header comment named it and the markup never had it. Added as a "who built it"
+section in the A7 register (no cadence, no internal role names).
+
+**QA-D5 · MEDIUM · heading-order skipped a level on 12 page templates.** Lane indexes, all
+83 hubs and `/plugin-builder/` put an h3 (EntryCard default `headingLevel`, RelatedList's
+`sub` heading) directly under the h1 with no h2 between; entry detail pages did the same
+with their first `SectionHeading variant="sub"`. Cost 2 Lighthouse a11y points and is a real
+outline defect for screen-reader users. Fixed with the props §4 already provides —
+`EntryCard headingLevel={2}` where a grid follows the h1 with no section heading, and
+`SectionHeading level={2}` on page-level sections (the `sub` sizing is unchanged; §4.2.6
+carries `level` and `variant` separately for exactly this). `RelatedList` gained a
+`headingLevel` passthrough. **Note for whoever reads this next:** axe ignores hidden
+headings, so the `InstallModal`'s h2 does not count while the modal is closed — a source-order
+outline check passes while the rendered one fails. The verification sweep therefore strips
+the closed modal before checking. **0 of 108 pages skip a level, in both scopes.**
+
+**QA-D6 · MEDIUM · the FilterBar menu opened off-screen at 390.** Surfaced by QA-D2: with a
+third facet, the 192px absolutely-positioned panel hangs off a summary at x=274 and reaches
+466 in a 390 viewport → horizontal scroll on open. §4.3.2's mobile note already specifies the
+answer ("FilterBar menus stack full-width above grid"), which was never implemented. Below
+`sm` the menus are now full-width blocks and the panel drops into normal flow; at `sm`+ the
+absolute panel is unchanged. Verified with the third menu open at 390: `scrollWidth == 390`.
+
+#### Judgment calls for the orchestrator — NOT changed
+
+1. **Footer column count contradicts §4.5.** §4.5's table says footer columns are 1 / 2 / 3 /
+   3; the build ships 1 / 2 / 4 (`sm:grid-cols-2 lg:grid-cols-4`). §4.2.4 says "Composition
+   (**4 mono columns** → see wireframes)" but then enumerates only three (browse, machine,
+   project) "plus a full-width bottom line", and §4.3.1's wireframe row [8] also shows three.
+   The shipped fourth column is `counts`, added by the Builder under A9's density directive.
+   So §4.2.4's parenthetical, §4.2.4's own enumeration, §4.5's table and A9 do not all agree,
+   and the disagreement is about **content**, not layout — which is why it is not an executor
+   call. Either drop `counts` and go `sm:grid-cols-2 md:grid-cols-3`, or amend §4.5's row to
+   4. Everything else in the §4.5 table is verified conformant (EntryCard 1/2/2/3, collection
+   and member grids 1/1/2/2, lane tiles and submit tiles 1/1/3/3, TweetEmbed row 1/1/2/2,
+   gaps 16→24px at md, h1 step-down below md, no-hamburger wrapping header).
+2. **The hero seed label is hidden below 640px** (`.stage .hero-seed{display:none}`), while
+   A4 calls the visible seed "a deliberate differentiator + build-in-public talking point".
+   Half the visits will be mobile. Keep, or show it smaller?
+3. **`/about/` says "a maintainer or the verifying agent"** where A7 names **the Curator**.
+   It is a descriptor rather than an internal role name, so it does not break the letter of
+   A7 rule 1, but the README now says "a maintainer — or the Curator" and the two surfaces
+   should probably match. One-line copy change either way.
+4. **The header wraps to three rows at 390** (wordmark+nav, nav overflow, then the right
+   cluster) where §4.5 describes two. Nothing is hidden, there is no hamburger, and no
+   overflow — conformant in substance, looser in shape.
+
+#### Not defects — recorded so the next reader does not re-open them
+
+- **No plugin page renders a `related` block.** §6.10 (the canonical owner) ranks by *same
+  subcategory* first, then shared integrations, same type only. At 10 entries, no two plugins
+  share a subcategory and no two share an integration, so the honest result is empty and
+  `RelatedList` correctly renders nothing. §4.3.3's legend says "same category", which is the
+  display-stale echo; §6.10 wins (§12.2). This resolves itself as volume arrives.
+- **`/integrations/slack/` renders `EmptyState`** — it holds zero entries, and §4.3.12 [5]
+  specifies exactly that below 1 entry.
+- **`/search/` indexes `/plugin-builder/` as `type: page`.** §4.2.8a indexes that page by
+  name, so it appears in results; the type facet menu is built from the entry corpus and does
+  not offer `page`, so nothing looks broken.
+
+### 3. Hero multi-seed sweep (A4)
+
+**30 live seeds across two breakpoints, plus 3 static-path seeds.**
+1440: 1572 · 2732 · 2008 · 1472 · 5062 · 7031 · 1206 · 9359 · 6404 · 2570 · 8418 · 2325 ·
+7446 · 6125 · 4462. 390: 5884 · 5498 · 2490 · 8229 · 7078 · 5832 · 2526 · 2260 · 9054 ·
+2920 · 5380 · 1915 · 4195 · 6288 · 2009. `?static=1`: 2593 · 2809 · 5363.
+
+- **Bot count:** 10 at 1440, 6 at 390 — A4's 10-desktop / 6-under-720px rule, on every seed.
+- **Nothing covers the copy.** Measured two ways. Box-vs-box over `#content`'s children hits
+  only the `h1` and never `p.sub`, `.hero-actions`, `.hero-friction`, `.hero-search` or any
+  control; re-run against tight `Range.getClientRects()` text-line boxes (bot boxes left at
+  full size, so the test stays conservative) gives the same answer — h1 only. The h1 hits are
+  the pile **resting on the line box's leading**, above the letterforms: confirmed visually
+  on the screenshots at both widths, where the bots sit in a clean row above the headline.
+  A4's own z-order makes this structural anyway — `#content` is z3, `#botlayer` is z1, so
+  copy composites over any bot; the measured static body is what stops one settling behind
+  the text in the first place. **Verdict: PASS, no overflow of copy on any of the 30 seeds.**
+- **`?static=1`** renders the deterministic hand-placed pile: the slot lattice is identical
+  across runs (x ≈ 284/375/438/590/674/743/895/968/1048, y ≈ 100/175 with one at ≈25),
+  varying only ±3px as different-sized forms sit in the same slots. Which of the eleven forms
+  lands in each slot follows the seed — by design (hero.js: "eleven forms, ten drawn per
+  assembly, one sits out each roll"). The hint swaps to `static assembly · reduced motion`
+  and the physics loop never starts. Captured at 1440 and 390.
+- **`prefers-reduced-motion` in the built output:** four blocks across the shipped CSS —
+  `index.hUhxuDMC.css` (§4.4 rule 6's global kill), `index.BZIMcL4o.css`
+  (`.stage * { animation:none!important; transition:none!important }`), `_page_.CBp1iqVH.css`
+  (the Button active translate) and `_gallery_` (dev-only). The JS path is the same one
+  `?static=1` forces: `REDUCED = FORCE_STATIC || matchMedia('(prefers-reduced-motion: reduce)')`.
+
+### 4. Gates + the §11 M7-local subset
+
+All green on the final build:
+
+- `validate` 10 entries (5 plugins · 4 use cases · 1 collection · 0 demo) · negative fixtures
+  still correctly rejected · `check-contrast` every gated pair clears its §4.6 floor ·
+  `check-hub-intros` **armed**, 83/83 · raw-colour grep clean · arbitrary-Tailwind grep clean ·
+  `astro check` **0 errors / 0 warnings** · `npm run build` exit 0 · `check-keyword-placements`
+  4 placements + 83 intros, 0 shingle collisions · `check-links` 108 pages, 0 broken ·
+  `audit-scripts` 8 island bundles, 0 inline JS.
+- Artifacts: 3 RSS 2.0 feeds well-formed via `xmllint` (10 / 5 / 4 items) · sitemaps
+  well-formed, **24 `<url>` and 24 `<lastmod>`** · 112 URLs enumerated · Pagefind
+  `page_count: 11` (10 entry pages + `/plugin-builder/`, §4.2.8a) · 12 OG PNGs · MCP
+  `/healthz` `{"ok":true}` and `tools/list` returns the four §7 tools.
+- **M7.5(a) all-200 walk** on the preview server: 35 URLs — every page type, all seven
+  `/api/v1/*.json`, all three feeds, both sitemaps, `llms.txt`, `llms-full.txt`, `robots.txt`
+  — **all 200**.
+- **M7.5(b) negatives:** `/dev/components/` → **404** (dev pages excluded from the production
+  build; `dist/dev` does not exist), an unknown entry slug → 404. The **trailing-slash 301 is
+  deploy-time**: `astro preview` 404s a slash-less URL rather than redirecting, because the
+  canonicalisation is nginx's (§3.5/§6.9). It is on the remote checklist below.
+
+### 5. Lighthouse — M7.2, run locally
+
+`npx lighthouse@12` against the preview server (`--headless=new`), so these are *local*
+numbers: no nginx compression, no HTTP/2, no Cloudflare. Production will differ, and M7.2
+must be re-run there.
+
+| Page | perf | a11y | seo |
+|---|---|---|---|
+| `/` | 93 | 96 | 100 |
+| `/plugins/compound-engineering/` | 99 | 96 | 100 |
+| `/use-cases/grok-ship/` | 99 | 96 | 100 |
+| `/collections/grok-ship-firstmate/` | 98 | 96 | 100 |
+| `/categories/engineering/` (indexed hub) | 98 | 96 | 100 |
+| `/categories/support/` (thin hub, `noindex` — SEO exempt per §6.2) | 98 | 96 | — |
+
+**Every M7.2 threshold is met (≥95 performance, accessibility, SEO).** Before the QA-D5
+heading fixes the entry and hub pages sat at **94 a11y — below the bar**; that is what makes
+QA-D5 an exit-criterion defect rather than a nicety. Home performance is the one number that
+moves between runs (83 / 93 / 96 observed) — the hero sim's main-thread work on first paint;
+worth re-checking on production hardware.
+
+### ⛔ A10 — the last thing between this build and a perfect a11y score (operator verdict)
+
+The only remaining Lighthouse a11y failure on every page is `color-contrast`, and it is
+**exactly A10**: white on light Ash Amber measures **4.16:1** against a 4.5 floor, on the
+primary button, the `submit` button, the featured tag and the newsletter submit.
+`check-contrast.mjs` has reported it as `A10-PENDING` since M1 by design ("block nothing").
+
+A11 item 2 says the fix is a one-line token swap awaiting an operator verdict, so it was not
+applied — but it **was measured**, so the verdict can be made on numbers instead of a guess.
+Flipping `--color-accent-contrast` in the light block from `#FFFFFF` to `#0B0B0C`:
+
+- `check-contrast`: light pair **4.16:1 → 4.73:1**, PASS. No more `A10-PENDING` row.
+- Lighthouse accessibility: **96 → 100** on `/` and on a use-case page, with `color-contrast`
+  flipping to PASS. Dark mode is unaffected (already 9.18:1).
+- Build stays green end to end.
+
+Tokens were reverted; the working tree carries no token change. **This is a one-line edit
+whenever the operator says go, and it is worth 4 Lighthouse points on every page.**
+
+### 6. M7-REMOTE REMAINDER — the checklist
+
+Everything below needs the org token, operator credentials or production DNS. **The paste-ready
+commands for the repo, labels, branch protection, dry-run PRs, awesome-grok-bot and Vemetric
+already live in the TOKEN-DAY RUNBOOK above — run that first and do not duplicate it here.**
+This list is what M7 adds on top, in execution order.
+
+- [ ] **0 · Token day.** Execute the TOKEN-DAY RUNBOOK above end to end (repo create + push,
+      the 4 labels, repo settings, branch protection, the M5.5/M5.7 dry-run PRs a–e,
+      awesome-grok-bot §8.9, Vemetric). M7.3 depends on it: "all CI green on `main`, no open
+      `needs-verification` PRs older than 48h" cannot be evaluated until `main` exists remotely.
+- [ ] **1 · Deploy to crhq-products** per §3 — checkout at `/opt/projects/user/grokbot`,
+      `npm ci && npm run build`, `services/` under pm2 (`SERVICES_PORT=4390`), `DIST_DIR`
+      pointed at the built `dist`. PII exports stay outside the checkout at
+      `/opt/data/grokbot/exports/` (§10.4).
+- [ ] **2 · nginx (§3.5) — the one thing that CANNOT be backfilled.** Define
+      `log_format machine '$time_iso8601 $remote_addr "$http_user_agent" "$request" $status'`
+      and apply `access_log /var/log/nginx/grokbot-machine.log machine` on the `/api/v1/` and
+      RSS-feed locations **only**. `$remote_addr` must be the Cloudflare-resolved real client
+      IP (§9.3) or the metric is poisonable by a spoofed header. **If this is missing at
+      cutover, §1.6 metric #1 is gone for that window — there is no recovery.**
+- [ ] **3 · nginx, the rest.** `include infra/security-headers.conf` as the **first directive
+      of every `location` block** (§10.7 — `add_header` does not inherit into a location that
+      sets its own, so `/api/v1/` and the feeds would otherwise ship with none); `dist/redirects.conf`
+      wired in; trailing-slash + lowercase 301 canonicalisation (§6.9) — **this is what makes
+      M7.5(b)'s 301 assertion testable; it cannot be verified locally**; `/404.html` as the
+      error page; CSP per §10.7 including `'wasm-unsafe-eval'` for Pagefind and the Vemetric
+      ingest host in `connect-src`.
+- [ ] **4 · Staging vhost first.** `curl -sI https://products-grokbot.crhq.ai/` must show
+      `X-Robots-Tag: noindex, nofollow` (§3.5/§3.10) **before** anything points at production.
+- [ ] **5 · certbot / TLS** for `grokbot.dev` and `mcp.grokbot.dev`; HSTS per §10.7
+      (`max-age=63072000; includeSubDomains; preload`).
+- [ ] **6 · DNS cutover** (§3, A11 item 5 — NS handover to the operator's Cloudflare).
+- [ ] **7 · Production smoke, M7.4 + M7.5.** `curl -sI https://grokbot.dev/` → 200 with every
+      §10.7 header · `curl -sI https://grokbot.dev/api/v1/latest.json` → `Access-Control-Allow-Origin: *`
+      **and the same §10.7 header set** (this is what proves the §7.1.5 `include` fix) ·
+      same on `/rss.xml` · `/search/?q=slack` returns results **in production** (proves the CSP
+      `'wasm-unsafe-eval'` allowance) · the 35-URL all-200 walk from §4 above, re-run against
+      the live host · `curl -sI https://grokbot.dev/plugins/mail-sorter` → **301** to the
+      trailing-slash canonical · `curl -sI https://grokbot.dev/dev/components/` → **404** ·
+      `curl https://mcp.grokbot.dev/healthz` → `{"ok":true}` and one `tools/call` per tool.
+- [ ] **8 · Lighthouse M7.2 re-run against production** on `/`, one plugin, one use-case, one
+      collection and one indexed hub (`/categories/engineering/` at current volume — pick any
+      hub with no `noindex`). Thin hubs are SEO-exempt (§6.2); run perf + a11y on one anyway
+      and record it. **Local numbers are in §5 above and all clear ≥95** — but §11 M7.2 asks
+      for production, so this is not satisfied until it is re-run there.
+- [ ] **9 · Production waitlist POST** (M7.6): the M6.1 JSON and form paths against the live
+      endpoint, plus the honeypot and rate-limit cases, with `WAITLIST_IP_SALT` set to a real
+      secret and `WAITLIST_DB_PATH` on the production volume.
+- [ ] **10 · Vemetric (M6.5, from the runbook).** Token in `.env`, rebuild, confirm
+      `prompt_copy` / `newsletter_signup` / `install_modal_open` land, set the dashboard
+      **public**, set `PUBLIC_STATS_URL`, confirm the footer Stats link appears (it is gated on
+      that var). The README's "Public stats" footer link points at
+      `https://app.vemetric.com/public/grokbot.dev` (§9.9's documented default) — **correct it
+      if the real dashboard URL differs.**
+- [ ] **11 · Search Console** (M7.7): submit `sitemap-index.xml`, verify the public dashboard
+      link in the live footer.
+- [ ] **12 · Carried open items, decide before or at launch.** The A10 token flip (§ above —
+      measured, one line, worth 4 a11y points) · the OG typeface stand-in (DejaVu today; §6.6
+      wants the §4 mono + sans as committed TTF subsets — a one-line swap in `build-og.mjs`) ·
+      the `favicon.svg` / `favicon-32.png` M0 assets, still not regenerated from A3's `favicon`
+      variant (M1 sweep row S5) · the four judgment calls in §2 above · the M2 post-launch
+      plugin smoke tests, none of which can run without a live Grok Bot account.

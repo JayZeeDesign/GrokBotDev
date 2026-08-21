@@ -15,6 +15,7 @@ import PromptBlock from '../../components/PromptBlock.astro';
 import InstallModal from '../../components/InstallModal.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
+import PagefindMeta from '../../components/PagefindMeta.astro';
 import categories from '../../data/categories.json';
 import {
   allCollections,
@@ -100,18 +101,32 @@ const graph = [
     }
     {isDeprecated && <Callout variant="danger" title="deprecated">{CP_068_CALLOUT_DEPRECATED}</Callout>}
 
+    <PagefindMeta
+      type="plugin"
+      status={d.status}
+      setupMinutes={d.setup_minutes ?? null}
+      verifiedAt={d.verified_at ?? null}
+      url={url}
+    />
+
     <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
       <header class="flex flex-col gap-4">
-        <h1 class="display-track font-display text-3xl text-text md:text-4xl" data-pagefind-weight="10">
+        <h1
+          class="display-track font-display text-3xl text-text md:text-4xl"
+          data-pagefind-weight="10"
+          data-pagefind-meta="name"
+        >
           {d.name}
         </h1>
-        <p class="text-lg text-text-muted">{d.tagline}</p>
+        <p class="text-lg text-text-muted" data-pagefind-meta="tagline">{d.tagline}</p>
         <div class="flex flex-wrap items-center gap-2">
           {d.verified_at && d.status === 'live' && (
             <Chip variant="verified" date={isoToDate(d.verified_at)} />
           )}
           {setupLabel(d.setup_minutes) && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)!} />}
-          <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+          <span data-pagefind-filter="category">
+            <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+          </span>
         </div>
       </header>
 
@@ -124,7 +139,7 @@ const graph = [
     </div>
 
     <section class="flex flex-col gap-6">
-      <SectionHeading title="install / how to use" variant="sub" />
+      <SectionHeading title="install / how to use" variant="sub" level={2} />
 
       <div class="flex flex-wrap items-center gap-4">
         <InstallModal
@@ -167,7 +182,9 @@ const graph = [
           <SectionHeading title="works with:" variant="sub" />
           <div class="flex flex-wrap items-center gap-2">
             {d.works_with.map((tool) => (
-              <Chip variant="integration" label={tool} href={`/integrations/${integrationSlug(tool)}/`} />
+              <span data-pagefind-filter="integration">
+                <Chip variant="integration" label={tool} href={`/integrations/${integrationSlug(tool)}/`} />
+              </span>
             ))}
           </div>
         </section>

@@ -83,13 +83,21 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
 
   {
     entries.length > 0 ? (
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+      // §4.5 gives collections their OWN grid row (1 / 1 / 2 / 2 — "collections are wider
+      // cards", §4.3.6). Every other lane uses the standard EntryCard row (1 / 2 / 2 / 3).
+      // Fixed at M7.1 QA: all three lanes were rendering the standard grid.
+      <div
+        class:list={[
+          'grid grid-cols-1 gap-4 md:gap-6',
+          variant === 'collection' ? 'md:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3',
+        ]}
+      >
         {entries.map((entry, index) => (
           <div class="flex flex-col gap-2">
             <span class="font-mono text-xs text-text-muted">
               {String(offset + index + 1).padStart(2, '0')}
             </span>
-            <EntryCard entry={entry.data as never} variant={kindOf(entry)} />
+            <EntryCard entry={entry.data as never} variant={kindOf(entry)} headingLevel={2} />
           </div>
         ))}
       </div>

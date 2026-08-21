@@ -1,0 +1,42 @@
+---
+// §4.2.8a — the Pagefind indexing contract, the half that was never emitted.
+//
+// Without these attributes Pagefind indexes zero metadata and zero filters, so the
+// /search/ island (§4.2.8) renders every result as "untitled" with no tagline and no
+// chips, and the `type=plugin` scoping that §4.3.2's header form submits is silently
+// dropped. Found in the M7.1 QA walk; this component is the fix.
+//
+// `name` and `tagline` are NOT set here: Pagefind's `key:value` form is comma-delimited,
+// and both of those strings can contain commas. They are set on the real <h1> and
+// tagline <p> with the text-content form, where a comma is harmless.
+//
+// Must render INSIDE the element carrying `data-pagefind-body`.
+interface Props {
+  /** §4.2.8a filter + meta `type`. `page` is the Plugin Builder page (indexed, not an entry). */
+  type: 'plugin' | 'use-case' | 'collection' | 'page';
+  status?: string;
+  setupMinutes?: number | null;
+  /** ISO 8601 UTC; the island slices the date off. */
+  verifiedAt?: string | null;
+  /** Canonical path of this page — the island links the result card to it. */
+  url: string;
+}
+
+const { type, status, setupMinutes, verifiedAt, url } = Astro.props;
+
+// ONE PAIR PER ELEMENT. Pagefind's comma-separated multi-pair form does not survive a
+// value containing `/` or `:` (verified at M7.1: a single combined attribute came back as
+// `type = "plugin, url:/plugins/…, status:live, …"` and printed the whole blob in the
+// result chip). One element per key has no such ambiguity.
+const pairs: Array<[string, string]> = [
+  ['type', type],
+  ['url', url],
+];
+if (status) pairs.push(['status', status]);
+if (typeof setupMinutes === 'number') pairs.push(['setup_minutes', String(setupMinutes)]);
+if (verifiedAt) pairs.push(['verified_at', verifiedAt]);
+---
+
+<span class="sr-only" data-pagefind-filter={`type:${type}`}>
+  {pairs.map(([key, value]) => <span data-pagefind-meta={`${key}:${value}`} />)}
+</span>

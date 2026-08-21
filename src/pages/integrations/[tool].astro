@@ -80,7 +80,7 @@ const graph = [
       entries.length > 0 ? (
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {entries.map((entry) => (
-            <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} showType />
+            <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} showType headingLevel={2} />
           ))}
         </div>
       ) : (

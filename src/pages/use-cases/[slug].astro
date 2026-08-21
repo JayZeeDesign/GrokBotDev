@@ -16,6 +16,7 @@ import TweetEmbed from '../../components/TweetEmbed.astro';
 import PromptBlock from '../../components/PromptBlock.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
+import PagefindMeta from '../../components/PagefindMeta.astro';
 import categories from '../../data/categories.json';
 import {
   allCollections,
@@ -125,8 +126,20 @@ const graph = [
     }
     {isDeprecated && <Callout variant="danger" title="deprecated">{CP_068_CALLOUT_DEPRECATED}</Callout>}
 
+    <PagefindMeta
+      type="use-case"
+      status={d.status}
+      setupMinutes={d.setup_minutes ?? null}
+      verifiedAt={d.verified_at ?? null}
+      url={url}
+    />
+
     <header class="flex flex-col gap-4">
-      <h1 class="display-track font-display text-3xl text-text md:text-4xl" data-pagefind-weight="10">
+      <h1
+        class="display-track font-display text-3xl text-text md:text-4xl"
+        data-pagefind-weight="10"
+        data-pagefind-meta="name"
+      >
         {
           named ? (
             <>
@@ -139,18 +152,22 @@ const graph = [
           )
         }
       </h1>
-      <p class="text-lg text-text-muted">{d.tagline}</p>
+      <p class="text-lg text-text-muted" data-pagefind-meta="tagline">{d.tagline}</p>
       <div class="flex flex-wrap items-center gap-2">
         {d.verified_at && d.status === 'live' && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
         {setupLabel(d.setup_minutes) && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)!} />}
-        <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+        <span data-pagefind-filter="category">
+          <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+        </span>
         {d.source_tweets.length > 0 && (
           <Chip variant="scouted" label="scouted on x" href={d.source_tweets[0].url} />
         )}
       </div>
       <div class="flex flex-wrap items-center gap-2">
         {d.integrations.map((tool) => (
-          <Chip variant="integration" label={tool} href={`/integrations/${integrationSlug(tool)}/`} />
+          <span data-pagefind-filter="integration">
+            <Chip variant="integration" label={tool} href={`/integrations/${integrationSlug(tool)}/`} />
+          </span>
         ))}
       </div>
     </header>
@@ -160,7 +177,7 @@ const graph = [
     </div>
 
     <section class="flex flex-col gap-4">
-      <SectionHeading title="what it does" variant="sub" />
+      <SectionHeading title="what it does" variant="sub" level={2} />
       <p class="max-w-prose text-base text-text">{d.what_it_does}</p>
     </section>
 
@@ -195,7 +212,7 @@ const graph = [
     {
       d.source_tweets.length > 0 && (
         <section class="flex flex-col gap-4">
-          <SectionHeading title="as seen on x" variant="sub" />
+          <SectionHeading title="as seen on x" variant="sub" level={2} />
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
             {d.source_tweets.map((tweet) => (
               <TweetEmbed

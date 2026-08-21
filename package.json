@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
     "validate": "node scripts/validate.mjs",
-    "build": "npm run validate && node scripts/check-contrast.mjs && node scripts/check-hub-intros.mjs && astro build && node scripts/build-og.mjs && node scripts/build-redirects.mjs && node scripts/check-keyword-placements.mjs && pagefind --site dist && node scripts/check-links.mjs && node scripts/audit-scripts.mjs",
+    "build": "npm run validate && node scripts/check-contrast.mjs && HUB_INTRO_GATE=1 node scripts/check-hub-intros.mjs && astro build && node scripts/build-og.mjs && node scripts/build-redirects.mjs && node scripts/check-keyword-placements.mjs && pagefind --site dist && node scripts/check-links.mjs && node scripts/audit-scripts.mjs",
     "preview": "astro preview --host 0.0.0.0",
     "check": "astro check"
   },

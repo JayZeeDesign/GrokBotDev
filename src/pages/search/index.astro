@@ -1,13 +1,63 @@
 ---
 // §4.3.11 — /search/. Permanently noindex,follow (§6.2). SearchInput page-mode is the
 // Pagefind island; the <noscript> fallback is CP-064.
+//
+// Region [3] carries the FilterBar with ALL THREE facets (§4.2.9 variants row). Options
+// link to `/search/?<facet>=<value>` and the island reads every param (§4.3.11 legend),
+// preserving `q` across a filter click. Added at M7.1 QA — the region was missing.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SearchInput from '../../components/SearchInput.astro';
+import FilterBar from '../../components/FilterBar.astro';
+import categories from '../../data/categories.json';
+import { allListable, integrationsOf, kindOf } from '../../lib/entries';
 import { META, breadcrumbList, webPage } from '../../lib/seo';
 
 const crumbs = [{ label: 'home', href: '/' }, { label: 'search' }];
 const graph = [webPage('/search/', META.search.title, META.search.description), breadcrumbList(crumbs)];
+
+// Facet options are built from the live corpus so a menu never offers a value with zero
+// hits. Pagefind filters on the CHIP TEXT (§4.2.8a) and **lowercases** the value it
+// indexes, so the query param must carry the lowercased label — not the slug, which
+// diverges for any multi-word label (`Google Calendar` indexes as `google calendar`,
+// slug `google-calendar`). Verified against `pagefind.filters()` at M7.1.
+const entries = await allListable();
+const categoryCounts = new Map<string, number>();
+const integrationCounts = new Map<string, number>();
+const typeCounts = new Map<string, number>();
+for (const entry of entries) {
+  categoryCounts.set(entry.data.category, (categoryCounts.get(entry.data.category) ?? 0) + 1);
+  typeCounts.set(kindOf(entry), (typeCounts.get(kindOf(entry)) ?? 0) + 1);
+  for (const tool of integrationsOf(entry)) {
+    integrationCounts.set(tool, (integrationCounts.get(tool) ?? 0) + 1);
+  }
+}
+
+const categoryLabel = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
+const facetHref = (facet: string, label: string) =>
+  `/search/?${facet}=${encodeURIComponent(label.toLowerCase())}`;
+
+const options = {
+  categories: [...categoryCounts.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([slug, count]) => ({
+      label: categoryLabel(slug),
+      href: facetHref('category', categoryLabel(slug)),
+      count,
+      current: false,
+    })),
+  integrations: [...integrationCounts.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([tool, count]) => ({
+      label: tool,
+      href: facetHref('integration', tool),
+      count,
+      current: false,
+    })),
+  types: [...typeCounts.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([kind, count]) => ({ label: kind, href: facetHref('type', kind), count, current: false })),
+};
 ---
 
 <BaseLayout
@@ -21,6 +71,13 @@ const graph = [webPage('/search/', META.search.title, META.search.description), 
       <Breadcrumbs items={crumbs} />
       <h1 class="display-track font-display text-3xl text-text md:text-4xl">search</h1>
     </header>
-    <SearchInput mode="page" />
+    <SearchInput mode="page">
+      <FilterBar
+        slot="filters"
+        facets={['category', 'integration', 'type']}
+        options={options}
+        clearHref="/search/"
+      />
+    </SearchInput>
   </div>
 </BaseLayout>

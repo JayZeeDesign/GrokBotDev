@@ -36,14 +36,21 @@ const active = facets
 ---
 
 <div class:list={['flex flex-col gap-3', className]} data-filter-bar data-pagefind-ignore>
-  <div class="flex flex-wrap items-center gap-3">
+  {/*
+    Below sm the menus stack FULL WIDTH and the panel drops into normal flow — §4.3.2's
+    mobile note ("FilterBar menus stack full-width above grid"). An absolutely positioned
+    192px panel hung off the third summary opens past the right edge at 390px and pushes
+    the page into horizontal scroll; caught in the M7.1 QA sweep on /search/, which is the
+    only surface carrying all three facets (§4.2.9 variants).
+  */}
+  <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
     {
       facets.map((facet) => {
         const list = byFacet[facet];
         const current = list.find((entry) => entry.current);
         return (
-          <details class="filterMenu relative" data-filter-menu>
-            <summary class="inline-flex min-h-6 cursor-pointer list-none items-center gap-2 rounded-sm border border-border-interactive px-3 py-1 font-mono text-sm lowercase text-text-muted hover:text-text">
+          <details class="filterMenu sm:relative" data-filter-menu>
+            <summary class="flex min-h-6 cursor-pointer list-none items-center justify-between gap-2 rounded-sm border border-border-interactive px-3 py-1 font-mono text-sm lowercase text-text-muted hover:text-text sm:inline-flex sm:justify-start">
               {current ? (
                 <span class="text-accent-text">
                   {facet}: {monoLabel(current.label)}
@@ -53,7 +60,7 @@ const active = facets
               )}
               <span aria-hidden="true">▾</span>
             </summary>
-            <ul class="filterMenu__panel absolute z-20 mt-2 min-w-48 rounded-sm border border-border bg-surface-raised p-2">
+            <ul class="filterMenu__panel z-20 mt-2 w-full rounded-sm border border-border bg-surface-raised p-2 sm:absolute sm:w-auto sm:min-w-48">
               {list.map((option) => (
                 <li>
                   <a

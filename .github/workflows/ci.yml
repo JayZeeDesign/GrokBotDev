@@ -29,8 +29,22 @@ jobs:
           echo "fixtures correctly rejected"
       - name: contrast floors (§4.6)
         run: node scripts/check-contrast.mjs
-      - name: hub intros complete (§6.2) — ARMED
+      - name: hub intros complete (§6.2) — ENFORCING
         run: HUB_INTRO_GATE=1 node scripts/check-hub-intros.mjs
+      - name: hub-intro gate must still reject a missing intro (M7-local)
+        # Same reasoning as the validate fixtures above: a gate that quietly stops rejecting
+        # is a silent regression. Move one intro aside, assert failure, restore it.
+        run: |
+          set -e
+          mv src/data/hub-intros/integrations/slack.md /tmp/slack.md
+          if HUB_INTRO_GATE=1 node scripts/check-hub-intros.mjs; then
+            mv /tmp/slack.md src/data/hub-intros/integrations/slack.md
+            echo "::error::hub-intro gate passed with an intro missing — the gate is broken"
+            exit 1
+          fi
+          mv /tmp/slack.md src/data/hub-intros/integrations/slack.md
+          echo "hub-intro gate correctly rejected a missing intro"
+          git diff --quiet
       - name: no raw colour literals outside tokens.css (§4.1.1)
         run: |
           if grep -rEn '#[0-9a-fA-F]{3,8}|rgb\(|hsl\(' src --include='*.astro' --include='*.css' \

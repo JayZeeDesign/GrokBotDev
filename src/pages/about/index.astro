@@ -31,7 +31,7 @@ const graph = [webPage('/about/', META.about.title, META.about.description), bre
     <StatBar stats={stats} variant="full" />
 
     <section class="flex max-w-prose flex-col gap-4">
-      <SectionHeading title="who keeps it current" variant="sub" />
+      <SectionHeading title="who keeps it current" variant="sub" level={2} />
       <p class="text-base text-text-muted">
         The <strong>Scouts</strong> watch X for people posting real setups. The
         <strong>Curator</strong> decides what earns a page and pairs entries into collections.
@@ -44,8 +44,24 @@ const graph = [webPage('/about/', META.about.title, META.about.description), bre
       </p>
     </section>
 
+    <section class="flex max-w-prose flex-col gap-4">
+      <SectionHeading title="who built it" variant="sub" level={2} />
+      <p class="text-base text-text-muted">
+        grokbot.dev is built and run by{' '}
+        <a
+          href="https://crhq.ai"
+          target="_blank"
+          rel="noopener"
+          class="text-text underline underline-offset-4 hover:text-accent-text"
+        >
+          CRHQ
+        </a>, which builds and operates products like this one. The site is open source and
+        the whole history is public — every entry arrived as a pull request you can read.
+      </p>
+    </section>
+
     <section id="privacy" class="flex max-w-prose flex-col gap-4">
-      <SectionHeading title="privacy" variant="sub" />
+      <SectionHeading title="privacy" variant="sub" level={2} />
       <p class="text-base text-text-muted">
         Analytics is cookieless and the dashboard is public — no cookies are set by this site
         and there is no cross-site tracking. If you join the waitlist we store your email

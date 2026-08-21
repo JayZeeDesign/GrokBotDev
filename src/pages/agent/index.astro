@@ -38,7 +38,7 @@ const graph = [webPage('/agent/', META.agent.title, META.agent.description), bre
     <AgentContractBlock contractMarkdown={AGENT_CONTRACT} />
 
     <section class="flex flex-col gap-4">
-      <SectionHeading title="endpoints" variant="sub" />
+      <SectionHeading title="endpoints" variant="sub" level={2} />
       <ul class="flex flex-col divide-y divide-border border-y border-border">
         {
           AGENT_ENDPOINTS.map((endpoint) => (
@@ -55,7 +55,7 @@ const graph = [webPage('/agent/', META.agent.title, META.agent.description), bre
     </section>
 
     <section class="flex flex-col gap-4">
-      <SectionHeading title="mcp" variant="sub" />
+      <SectionHeading title="mcp" variant="sub" level={2} />
       <p class="max-w-prose text-base text-text-muted">{MCP_INTRO}</p>
       <ol class="flex flex-col gap-2 border-l border-border pl-4">
         {
