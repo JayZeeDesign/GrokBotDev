@@ -1,0 +1,17 @@
+---
+// §9.2a — the no-JS waitlist confirmation target. noindex,follow (§6.1).
+// Copy: CP-018 (KEEP — "already at bar").
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Button from '../../components/Button.astro';
+import { META } from '../../lib/seo';
+---
+
+<BaseLayout title={META.subscribed.title} description={META.subscribed.description} robots="noindex,follow">
+  <div class="container-page flex flex-col items-center gap-6 py-24 text-center">
+    <h1 class="display-track font-display text-3xl text-text md:text-4xl">▪ you're on the list</h1>
+    <p class="max-w-prose text-base text-text-muted">
+      You're on the list. We'll email you when there's something worth your inbox.
+    </p>
+    <Button variant="outline" href="/plugins/" label="browse plugins" />
+  </div>
+</BaseLayout>

@@ -1,14 +1,66 @@
 ---
-// Route stub — §4.2.2's header nav links here (`builder bot`), so the route must
-// resolve. The real page (§4.3.14 + CP-092…CP-096) is built in M3.
+// §4.3.14 — the Plugin Builder Bot page. Copy: CP-092 h1 · CP-093 explainer ·
+// CP-094 (FENCED CTA) · CP-095 prior-art Callout · CP-096 closing link.
+// `data-pagefind-body` belongs here per §4.2.8a (entry pages + this one).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import PromptBlock from '../../components/PromptBlock.astro';
+import Callout from '../../components/Callout.astro';
+import RelatedList from '../../components/RelatedList.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import { allPlugins, sortForLatest } from '../../lib/entries';
+import { CP_112_CTA_SENTENCE } from '../../lib/copy';
+import { META, breadcrumbList, webPage } from '../../lib/seo';
+
+const newest = sortForLatest(await allPlugins()).slice(0, 3);
+
+const BUILDER_PROMPT = `You are my plugin builder for Grok Bot. Before you write anything, search grokbot.dev to see whether this already exists: fetch https://grokbot.dev/api/v1/plugins.json and https://grokbot.dev/api/v1/use-cases.json and look for entries that solve the same problem. Tell me what you found first, and if something close already exists, say so and ask whether I still want to build mine.
+
+If we are building: ask me what the plugin should do, which tools it needs to sign into, and who it is for. Then draft it with me, one decision at a time — the install steps, the prompt body, and an honest setup time. Keep the prompt in plain language a non-developer can read.
+
+When we are done, produce a single markdown file with the frontmatter grokbot.dev expects (name, slug, tagline, category, subcategory, install_steps, works_with, project_url, repo_url, author) and the description body, ready to open as a pull request against https://github.com/ZeroPointRepo/GrokBotDev.
+
+Never invent a repo URL, a verification date, or an author. If you do not know something, ask me.`;
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'builder bot' }];
+const graph = [
+  webPage('/plugin-builder/', META.pluginBuilder.title, META.pluginBuilder.description),
+  { '@type': 'CreativeWork', name: 'Plugin Builder Bot prompt', isAccessibleForFree: true },
+  breadcrumbList(crumbs),
+];
 ---
 
-<BaseLayout title="plugin builder bot — grokbot.dev" description="plugin builder on grokbot.dev.">
-  <section class="container-page py-24" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">builder bot</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">
-      plugin builder bot
-    </h1>
-  </section>
+<BaseLayout title={META.pluginBuilder.title} description={META.pluginBuilder.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16" data-pagefind-body>
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">
+        Turn your Grok Bot into a plugin builder
+      </h1>
+      <p class="max-w-prose text-base text-text-muted">
+        one prompt. paste it into Grok and your Bot builds the plugin with you — checking
+        what's already in here first, so you don't rebuild something that exists.
+      </p>
+    </header>
+
+    <div class="flex max-w-prose flex-col gap-4">
+      <PromptBlock prompt={BUILDER_PROMPT} />
+      <p class="text-base text-text">{CP_112_CTA_SENTENCE}.</p>
+    </div>
+
+    <Callout variant="info" title="prior art">
+      it searches the directory before it builds. if someone already made it, you'll hear about
+      that first.
+    </Callout>
+
+    <RelatedList heading="newest plugins" entries={newest.map((p) => p.data) as never} />
+
+    <p class="font-mono text-sm">
+      <a href="/submit/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">
+        built something? put it on the directory — it takes one file.
+      </a>
+    </p>
+
+    <NewsletterRow source="home" />
+  </div>
 </BaseLayout>

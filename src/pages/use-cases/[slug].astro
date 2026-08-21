@@ -1,11 +1,40 @@
 ---
-// M2 route stub — §11 M2.4. The full §4.3.5 detail template (breadcrumbs, the three
-// mandatory sections, PromptBlock + canonical CTA, replicability Callout, TweetEmbeds,
-// appears-in, OG + schema.org) is M3's job.
+// §4.3.5 — use-case detail.
+// [3] named-character h1 + chips · [4] what it does · [5] how it's set up (+ PromptBlock +
+// FENCED CTA) · [6] why it's cool · [7] the `replicability` field rendered under CP-032's
+// label ("what you need" — the RENDERED LABEL only; the schema field is untouched) ·
+// [8] as seen on x (TweetEmbed per source post) + the B2 wall backlink (CP-100) ·
+// [8a] appears in · [9] related.
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Chip from '../../components/Chip.astro';
-import { isoToDate, setupLabel } from '../../lib/format';
+import Callout from '../../components/Callout.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import InstallModal from '../../components/InstallModal.astro';
+import TweetEmbed from '../../components/TweetEmbed.astro';
+import PromptBlock from '../../components/PromptBlock.astro';
+import RelatedList from '../../components/RelatedList.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import categories from '../../data/categories.json';
+import {
+  allCollections,
+  allUseCases,
+  appearsIn,
+  editorialRel,
+  integrationSlug,
+  relatedTo,
+} from '../../lib/entries';
+import { extractPrompt, isoToDate, setupLabel, splitNamedCharacter } from '../../lib/format';
+import {
+  CP_032_REPLICABILITY_LABEL,
+  CP_067_CALLOUT_NEEDS_UPDATE,
+  CP_068_CALLOUT_DEPRECATED,
+  CP_100_WALL_BACKLINK,
+  CP_112_CTA_SENTENCE,
+  fillCopy,
+} from '../../lib/copy';
+import { SITE, breadcrumbList, entryDescription, entryTitle } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const useCases = await getCollection('use-cases');
@@ -15,25 +44,188 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const d = entry.data;
+
+const [pool, collections] = await Promise.all([allUseCases(), allCollections()]);
+const related = relatedTo(entry as never, pool as never);
+const inCollections = appearsIn(d.slug, collections);
+
+const category = categories.find((c) => c.slug === d.category);
+const sub = category?.subcategories.find((s) => s.slug === d.subcategory);
+const url = `/use-cases/${d.slug}/`;
+const rel = editorialRel(entry as never);
+const isDeprecated = d.status === 'deprecated';
+const named = splitNamedCharacter(d.name);
+// §5.3: exactly one fenced block per use-case body, and it is the prompt.
+const prompt = extractPrompt(entry.body ?? '');
+
+const crumbs = [
+  { label: 'home', href: '/' },
+  { label: 'use cases', href: '/use-cases/' },
+  { label: category?.label ?? d.category, href: `/categories/${d.category}/` },
+  { label: sub?.label ?? d.subcategory, href: `/categories/${d.category}/${d.subcategory}/` },
+  { label: d.name },
+];
+
+const graph = [
+  {
+    '@type': 'HowTo',
+    name: d.name,
+    description: d.what_it_does,
+    totalTime: `PT${d.setup_minutes}M`,
+    tool: d.integrations,
+    step: [
+      { '@type': 'HowToStep', text: 'Open Grok and create a new Bot.' },
+      { '@type': 'HowToStep', text: 'Copy the prompt and paste it into Grok.' },
+      { '@type': 'HowToStep', text: 'Connect the listed tools, then set the schedule.' },
+    ],
+  },
+  {
+    '@type': 'CreativeWork',
+    name: d.name,
+    url: `${SITE}${url}`,
+    genre: category?.label ?? d.category,
+    keywords: [
+      d.category,
+      d.subcategory,
+      ...d.integrations,
+      'Grok Bot prompt',
+      'ready-to-use Grok Bot prompts',
+    ],
+    creator: {
+      '@type': 'Person',
+      name: d.author?.handle ?? d.scouted_by?.handle ?? 'grokbot.dev',
+      ...(d.author?.url ? { url: d.author.url } : {}),
+    },
+    citation: d.source_tweets.map((t) => t.url),
+    datePublished: d.added_at,
+    dateModified: d.updated_at,
+    isAccessibleForFree: true,
+  },
+  breadcrumbList(crumbs),
+];
 ---
 
-<BaseLayout title={`${d.name} — grokbot.dev`} description={d.tagline}>
-  <article class="container-page flex flex-col gap-6 py-16" data-pagefind-body>
-    <h1 class="display-track font-display text-3xl text-text md:text-4xl">{d.name}</h1>
-    <p class="text-lg text-text-muted">{d.tagline}</p>
+<BaseLayout
+  title={entryTitle(d.name, 'use-case')}
+  description={entryDescription(d.tagline, 'use-case')}
+  robots={isDeprecated ? 'noindex,follow' : undefined}
+  ogImage={`${SITE}/og/use-cases/${d.slug}.png`}
+  graph={graph}
+>
+  <article class="container-page flex flex-col gap-12 py-12 md:py-16" data-pagefind-body>
+    <Breadcrumbs items={crumbs} />
 
-    <div class="flex flex-wrap items-center gap-2">
-      {d.verified_at && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
-      <Chip variant="setup-time" label={setupLabel(d.setup_minutes)} />
-      {/* No href yet: the /categories/ hubs are M3. The chip links there once they exist. */}
-      <Chip variant="category" label={d.category} />
-      {d.source_tweets.length > 0 && (
-        <Chip variant="scouted" label="scouted on x" href={d.source_tweets[0].url} />
-      )}
+    {
+      d.status === 'needs-update' && (
+        <Callout variant="warn" title="needs update">
+          {fillCopy(CP_067_CALLOUT_NEEDS_UPDATE, { verified_at: d.verified_at ? isoToDate(d.verified_at) : '—' })}
+        </Callout>
+      )
+    }
+    {isDeprecated && <Callout variant="danger" title="deprecated">{CP_068_CALLOUT_DEPRECATED}</Callout>}
+
+    <header class="flex flex-col gap-4">
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl" data-pagefind-weight="10">
+        {
+          named ? (
+            <>
+              <span class="font-mono">{named.character}</span>
+              <span aria-hidden="true" class="text-text-muted"> · </span>
+              <span>{named.role}</span>
+            </>
+          ) : (
+            d.name
+          )
+        }
+      </h1>
+      <p class="text-lg text-text-muted">{d.tagline}</p>
+      <div class="flex flex-wrap items-center gap-2">
+        {d.verified_at && d.status === 'live' && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
+        <Chip variant="setup-time" label={setupLabel(d.setup_minutes)} />
+        <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+        {d.source_tweets.length > 0 && (
+          <Chip variant="scouted" label="scouted on x" href={d.source_tweets[0].url} />
+        )}
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        {d.integrations.map((tool) => (
+          <Chip variant="integration" label={tool} href={`/integrations/${integrationSlug(tool)}/`} />
+        ))}
+      </div>
+    </header>
+
+    <div class="flex flex-wrap items-center gap-4">
+      <InstallModal id={d.slug} variant="entry" prompt={prompt ?? undefined} entryName={d.name} />
     </div>
 
-    <div class="prose-body flex flex-col gap-4 text-base text-text">
+    <section class="flex flex-col gap-4">
+      <SectionHeading title="what it does" variant="sub" />
+      <p class="max-w-prose text-base text-text">{d.what_it_does}</p>
+    </section>
+
+    {/* The body carries "## How it's set up", "## Prompt" and "## Why it's cool" (§5.3).
+        Its single fenced block is hidden and re-rendered below through PromptBlock, so the
+        prompt gets its copy button, microhint and the canonical CTA rather than appearing
+        twice on the page. */}
+    <div class="prose-body prose-body--prompt-hoisted flex max-w-prose flex-col gap-4 text-base text-text">
       <Content />
     </div>
+
+    {
+      prompt && (
+        <div class="flex max-w-prose flex-col gap-4">
+          <PromptBlock prompt={prompt} />
+          <p class="text-base text-text">{CP_112_CTA_SENTENCE}.</p>
+        </div>
+      )
+    }
+
+    <Callout variant="info" title={CP_032_REPLICABILITY_LABEL}>{d.replicability}</Callout>
+
+    {
+      d.source_tweets.length > 0 && (
+        <section class="flex flex-col gap-4">
+          <SectionHeading title="as seen on x" variant="sub" />
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+            {d.source_tweets.map((tweet) => (
+              <TweetEmbed
+                tweetUrl={tweet.url}
+                authorHandle={tweet.author_handle}
+                excerpt={tweet.excerpt}
+                postedAt={tweet.posted_at}
+              />
+            ))}
+          </div>
+          <p class="font-mono text-sm">
+            <a href="/wall/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">
+              {CP_100_WALL_BACKLINK}
+            </a>
+          </p>
+        </section>
+      )
+    }
+
+    <section class="flex flex-wrap items-center gap-4 font-mono text-sm text-text-muted">
+      {d.author && (
+        <span>
+          by <a href={d.author.url} rel={rel} target="_blank" class="hover:text-accent-text">@{d.author.handle}</a>
+        </span>
+      )}
+      {d.scouted_by && <span>scouted by @{d.scouted_by.handle}</span>}
+      {d.cost_note && <span>{d.cost_note}</span>}
+    </section>
+
+    <RelatedList entries={inCollections.map((c) => c.data) as never} variant="appears-in" />
+    <RelatedList entries={related.map((r) => r.data) as never} />
+
+    <NewsletterRow source="use-case-detail" />
   </article>
 </BaseLayout>
+
+<style is:global>
+  /* The prompt is hoisted into PromptBlock (§4.3.5 region 5); §5.3 guarantees the body
+     has exactly one fenced block, so hiding `pre` here can never hide anything else. */
+  .prose-body--prompt-hoisted pre {
+    display: none;
+  }
+</style>

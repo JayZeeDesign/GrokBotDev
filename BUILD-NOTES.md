@@ -380,3 +380,80 @@ ordering, §6.10 related/appears-in selection and the §5.6 rule 8 dofollow-by-s
 
 `data-pagefind-body` removed from the home page (§4.2.8a). The remaining M0 stubs lose it as
 phase 2 rewrites them.
+
+## 2026-08-21 — M3 phase 2 (pages, SEO artifacts, gates) — M3 COMPLETE
+
+Phase 1 shipped the hero, home, the 83-hub system and the SEO head. Phase 2 adds every
+remaining page plus the SEO artifacts and gates.
+
+**Built:** lane indexes (`/plugins/`, `/use-cases/`, `/collections/` + their paginated
+routes, 24/page) · the full §4.3.3 / §4.3.5 / §4.3.7 entry templates · `/wall/` (B2) ·
+`/agent/` (§7.3 verbatim contract + CP-042 intro + copyable endpoint table + MCP section) ·
+`/contribute/` · `/submit/` · `/plugin-builder/` · `/about/` · `/search/` (Pagefind
+page-mode) · `404` · `/subscribed/` · `/categories/` and `/integrations/` indexes ·
+`llms.txt` + `llms-full.txt` · per-entry OG images · the sitemap `serialize()` + `filter()`
+hooks · `check-keyword-placements.mjs` · `list-urls.mjs` · `check-hub-intros.mjs`.
+
+Hub intros are **not** in this commit: a content executor is drafting them into
+`documents/grokbot-dev/hub-intros-draft/`, and the gate stays report-only until they land.
+
+### Decisions worth reading
+
+- **The use-case prompt is hoisted out of the body.** §5.3 guarantees exactly one fenced
+  block per use-case body and §4.3.5 wants it rendered through `PromptBlock` (copy button,
+  microhint, canonical CTA). Rendering `<Content />` *and* a PromptBlock would print the
+  prompt twice, so the body's single `pre` is hidden by a scoped rule and the extracted
+  prompt is re-rendered properly below. Deterministic: the schema forbids a second block.
+- **`llms.txt` / `llms-full.txt` are Astro endpoints, not a postbuild script.** §3.2's repo
+  layout lists `src/pages/llms.txt.ts` and `llms-full.txt.ts`; §6.7 calls for
+  `scripts/build-llms.mjs`. §3.2 owns repo layout, so the endpoints win — same `dist` output,
+  and they read the content collections directly instead of re-parsing frontmatter.
+- **OG fonts are a stand-in.** §6.6 wants the §4 mono + sans as committed subsets, but
+  `@fontsource` ships woff2 only and satori needs TTF/OTF. DejaVu Sans/Mono are committed
+  under `src/assets/og-fonts/` so the cards render now; the composition, tokens and layout
+  are final and the typeface is a one-line swap once Geist/Inter TTF subsets exist.
+  **Open item for M7.**
+- **Empty hubs had to be seeded into the sitemap exclusion set.** A hub with zero entries
+  never appeared in the per-hub bucket, so the thin-hub filter skipped it and it slipped into
+  the sitemap. `sitemap-data.mjs` now enumerates all 83 hub URLs up front.
+- **`build-og.mjs` defaults every node to `display: flex`** — satori throws on any div with
+  more than one child and no explicit display, and a layout tweak would otherwise break the
+  build long after the fact.
+
+### §11 M3 exit criteria — evidence (2026-08-21, 8 live entries)
+
+1. **Every §6 URL builds.** `node scripts/list-urls.mjs` enumerates **110** URLs (106 HTML
+   pages + `llms.txt`, `llms-full.txt`, `robots.txt`, `sitemap-index.xml`, `rss.xml`); the
+   enumeration is taken from `dist` itself, so every listed URL exists by construction.
+   `check-links` walks all 106 pages: **0 broken internal links**.
+2. **Sitemaps.** `dist/sitemap-index.xml` + `dist/sitemap-0.xml` exist and are well-formed
+   (`xmllint` is not installed on this box; parsed with Node instead). **22 `<url>` entries,
+   22 `<lastmod>`** — equal and non-zero. Entry lastmod is the real `updated_at`
+   (`/plugins/compound-engineering/` → `2026-08-20T23:45:00.000Z`), hubs carry
+   `max(updated_at)`, everything else the build stamp. Thin hubs are excluded
+   (`/categories/data/` → 0 hits); indexable hubs are present (`/categories/engineering/`).
+3. **`robots.txt`, `llms.txt`, `llms-full.txt`, redirects** all emitted;
+   `build-redirects.mjs` runs clean on an empty redirect map.
+4. **Structured data.** Plugin page: `SoftwareApplication`, `Offer`, `Person`,
+   `BreadcrumbList`, `ListItem`, `WebSite`, `Organization`. Hub: `CollectionPage`,
+   `ItemList`, `BreadcrumbList`, + sitewide. Home: `CollectionPage`, `ItemList`, + sitewide.
+   Use-case pages additionally carry `HowTo` + `CreativeWork`.
+5. **Per-entry OG images.** `build-og.mjs` emits **10** PNGs: one per entry (8), plus
+   `default.png` and the `logo-512.png` `Organization.logo` raster. Each entry page's
+   `og:image` points at its own file (`/og/use-cases/grok-ship.png`).
+6. **Thin-hub rule, both ways.** `/categories/support/` (1 entry) → `noindex` present.
+   `/categories/engineering/` (4 entries) → no `noindex`. **Recomputed at 8 entries: two
+   hubs qualify as indexable** — `/categories/engineering/` and
+   `/categories/engineering/agents-ops/`; the other 81 are `noindex,follow` and flip
+   automatically as M2b lands.
+7. **Pagefind.** `dist/pagefind/pagefind-entry.json` reports **`page_count: 9`** = 8 entry
+   detail pages + `/plugin-builder/`, exactly matching §4.2.8a. The M0 `data-pagefind-body`
+   carry-over is now resolved: it appears only on entry pages and the builder page.
+8. **Wireframe QA at the §4 breakpoints:** manual pass NOT run (no browser session here) —
+   this is the one M3 criterion outstanding, along with the hero's multi-seed visual sweep.
+   Both belong with M7.1's QA pass and are flagged there.
+
+**Also green:** `astro check` 0 errors / 0 warnings · `npm run build` exit 0 ·
+`check-keyword-placements` **OK** (all four §6.11 placements present: hero subline,
+`/use-cases/` intro, `/agent/` intro, `llms.txt` blockquote) · `validate` OK ·
+`check-contrast` OK · `audit-scripts` OK (8 island bundles, 0 inline JS, ld+json allowed).

@@ -1,10 +1,72 @@
 ---
+// Addendum B2 — Wall of Posts. Grid of the REAL source X posts behind live entries,
+// newest first (entry `added_at` desc, slug asc — §5.6 rule 11), click-to-load embeds
+// (§10.3 consent model), each with a mono link chip to its entry.
+// Integrity rule (B2): an item exists ONLY where a live entry has a real source_tweets[]
+// post. No fabrication, no placeholders; `status: demo` is excluded by `allUseCases()`.
+// Copy: CP-097 h1 · CP-098 intro · CP-099 (KEEP) link chip · CP-101 empty state.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import WallCard from '../../components/WallCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import Pagination from '../../components/Pagination.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import { allUseCases, sortForLatest, urlOf } from '../../lib/entries';
+import type { UseCaseDoc } from '../../lib/entries';
+import { CP_101_WALL_EMPTY } from '../../lib/copy';
+import { META, breadcrumbList, collectionPage, itemList } from '../../lib/seo';
+
+const useCases = sortForLatest(await allUseCases()) as UseCaseDoc[];
+const items = useCases.flatMap((entry) =>
+  entry.data.source_tweets.map((tweet) => ({ tweet, entry }))
+);
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'wall' }];
+const graph = [
+  collectionPage('/wall/', META.wall.title, META.wall.description),
+  itemList(items.map((item) => ({ url: urlOf(item.entry), name: item.entry.data.name }))),
+  breadcrumbList(crumbs),
+];
 ---
 
-<BaseLayout title="wall of posts — grokbot.dev" description="wall on grokbot.dev.">
-  <section class="container-page py-20" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">wall</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">wall of posts</h1>
-  </section>
+<BaseLayout title={META.wall.title} description={META.wall.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">Wall of Posts</h1>
+      <p class="max-w-prose text-base text-text-muted">
+        every entry here started as someone's post on X. this is the wall of them, newest first
+        — and the credit stays with whoever built it.
+      </p>
+    </header>
+
+    {
+      items.length > 0 ? (
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {items.map((item) => (
+            <WallCard
+              tweet={{
+                url: item.tweet.url,
+                authorHandle: item.tweet.author_handle,
+                excerpt: item.tweet.excerpt,
+                postedAt: item.tweet.posted_at,
+              }}
+              entryName={item.entry.data.name}
+              entryHref={urlOf(item.entry)}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyState variant="generic" heading="nothing on the wall yet" body={CP_101_WALL_EMPTY} action={{ label: 'submit one', href: '/submit/' }} />
+      )
+    }
+
+    {
+      items.length > 24 && (
+        <Pagination page={{ current: 1, total: Math.ceil(items.length / 24), baseUrl: '/wall/' }} />
+      )
+    }
+
+    <NewsletterRow source="home" />
+  </div>
 </BaseLayout>

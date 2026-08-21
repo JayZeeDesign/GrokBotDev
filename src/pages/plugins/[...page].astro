@@ -1,0 +1,44 @@
+---
+// §4.3.2 `/plugins/` + `/plugins/<n>/` (24 per page, §6.1).
+// Copy: CP-019 h1 `Plugins` (§6.3 wins over the wireframe, C3.3) · CP-020 intro ·
+// CP-021 — the "money phrase appears in intro copy" note is DELETED, not implemented:
+// §6.11 requires the phrase at exactly four surfaces and this is not one of them.
+import type { GetStaticPaths, Page } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import LaneIndexPage from '../../components/LaneIndexPage.astro';
+import { allPlugins, sortForIndex, urlOf } from '../../lib/entries';
+import type { AnyDoc } from '../../lib/entries';
+import { META, breadcrumbList, collectionPage, itemList, paginate } from '../../lib/seo';
+
+export const getStaticPaths = (async ({ paginate: paginateFn }) => {
+  const plugins = sortForIndex(await allPlugins());
+  return paginateFn(plugins, { pageSize: 24 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props as { page: Page<AnyDoc> };
+const pool = sortForIndex(await allPlugins());
+
+const meta = paginate(META.plugins, page.currentPage, page.lastPage);
+const url = page.currentPage === 1 ? '/plugins/' : `/plugins/${page.currentPage}/`;
+const crumbs = [{ label: 'home', href: '/' }, { label: 'plugins' }];
+const graph = [
+  collectionPage(url, meta.title, meta.description),
+  breadcrumbList(crumbs),
+  itemList(page.data.map((entry) => ({ url: urlOf(entry), name: entry.data.name }))),
+];
+---
+
+<BaseLayout title={meta.title} description={meta.description} graph={graph} laneFeed="plugins">
+  <LaneIndexPage
+    h1="Plugins"
+    intro="every plugin people have built for Grok Bot. anyone can add one, and it gets its own page."
+    entries={page.data}
+    page={page}
+    baseUrl="/plugins/"
+    variant="plugin"
+    facets={['category', 'integration']}
+    source="plugins-index"
+    pool={pool}
+    laneLabel="plugins"
+  />
+</BaseLayout>

@@ -1,10 +1,61 @@
 ---
+// §4.3.14 — /about/: the engine story, the independence disclaimer prominently (§10.5,
+// FENCED CP-110), the CRHQ cross-link and StatBar full. A7 comms rules bind this page:
+// Scouts / the Curator / the Builder, and "always on" — never a cadence.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Callout from '../../components/Callout.astro';
+import StatBar from '../../components/StatBar.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import { siteStats } from '../../lib/entries';
+import { CP_110_DISCLAIMER } from '../../lib/copy';
+import { META, breadcrumbList, webPage } from '../../lib/seo';
+
+const stats = await siteStats();
+const crumbs = [{ label: 'home', href: '/' }, { label: 'about' }];
+const graph = [webPage('/about/', META.about.title, META.about.description), breadcrumbList(crumbs)];
 ---
 
-<BaseLayout title="about — grokbot.dev" description="about on grokbot.dev.">
-  <section class="container-page py-20" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">about</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">about</h1>
-  </section>
+<BaseLayout title={META.about.title} description={META.about.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">About</h1>
+      <p class="max-w-prose text-base text-text-muted">
+        grokbot.dev is a directory of what people actually get their Grok Bot to do — kept
+        current by a small team of bots, in the open.
+      </p>
+    </header>
+
+    <StatBar stats={stats} variant="full" />
+
+    <section class="flex max-w-prose flex-col gap-4">
+      <SectionHeading title="who keeps it current" variant="sub" />
+      <p class="text-base text-text-muted">
+        The <strong>Scouts</strong> watch X for people posting real setups. The
+        <strong>Curator</strong> decides what earns a page and pairs entries into collections.
+        The <strong>Builder</strong> maintains the site itself. They are always on, and every
+        change they make arrives as a pull request you can read.
+      </p>
+      <p class="text-base text-text-muted">
+        Nothing gets a verification date unless a maintainer or the verifying agent has
+        actually read it. If an entry is stale, it says so on the page.
+      </p>
+    </section>
+
+    <section id="privacy" class="flex max-w-prose flex-col gap-4">
+      <SectionHeading title="privacy" variant="sub" />
+      <p class="text-base text-text-muted">
+        Analytics is cookieless and the dashboard is public — no cookies are set by this site
+        and there is no cross-site tracking. If you join the waitlist we store your email
+        address and the page you signed up from, nothing else, and we use it only to send the
+        weekly email. Ask us to delete it and we will.
+      </p>
+    </section>
+
+    <Callout variant="info" title="independence">{CP_110_DISCLAIMER}</Callout>
+
+    <NewsletterRow source="home" />
+  </div>
 </BaseLayout>

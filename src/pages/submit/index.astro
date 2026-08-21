@@ -1,12 +1,89 @@
 ---
-// Route stub — §4.2.2's header links here (the solid submit Button), so the route must
-// resolve. The real page (§4.3.10 chooser + CP-057…CP-061) is built in M3.
+// §4.3.10 — the submit chooser. Three tiles (§8.3 GitHub prefill CTAs) + the no-account
+// anchor sections. Copy: CP-057 (KEEP both) · CP-058 · CP-059 · CP-060 · CP-061 (KEEP).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import MarkGlyph from '../../components/MarkGlyph.astro';
+import Button from '../../components/Button.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import ContributeSteps from '../../components/ContributeSteps.astro';
+import { META, breadcrumbList, webPage } from '../../lib/seo';
+
+const REPO = 'https://github.com/ZeroPointRepo/GrokBotDev';
+const tiles = [
+  {
+    title: 'a plugin',
+    body: 'you built something Grok Bots can use. you get your own page and a dofollow link.',
+    cta: 'submit a plugin',
+    href: `${REPO}/new/main/content/plugins`,
+    variant: 'solid' as const,
+  },
+  {
+    title: 'a use case',
+    body: 'you made your Grok Bot do something great. you get a page, and the credit stays yours.',
+    cta: 'submit a use case',
+    href: `${REPO}/new/main/content/use-cases`,
+    variant: 'outline' as const,
+  },
+  {
+    title: 'found it on x?',
+    body: 'someone else built it. put it up and you get scout credit.',
+    cta: 'how to scout',
+    href: '/contribute/#scouting',
+    variant: 'outline' as const,
+  },
+];
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'submit' }];
+const graph = [webPage('/submit/', META.submit.title, META.submit.description), breadcrumbList(crumbs)];
 ---
 
-<BaseLayout title="submit — grokbot.dev" description="submit on grokbot.dev.">
-  <section class="container-page py-24" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">submit</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">submit</h1>
-  </section>
+<BaseLayout title={META.submit.title} description={META.submit.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">submit</h1>
+      <p class="max-w-prose text-base text-text-muted">what are you sharing?</p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+      {
+        tiles.map((tile) => (
+          <div class="flex flex-col gap-3 rounded-sm border border-border bg-surface p-4">
+            <span class="flex items-center gap-2 font-mono text-sm lowercase text-text">
+              <MarkGlyph size={10} class="text-accent" />
+              {tile.title}
+            </span>
+            <p class="flex-1 text-base text-text-muted">{tile.body}</p>
+            <Button
+              variant={tile.variant}
+              href={tile.href}
+              label={tile.cta}
+              external={tile.href.startsWith('http')}
+            />
+          </div>
+        ))
+      }
+    </div>
+
+    <section id="plugin" class="flex flex-col gap-4">
+      <SectionHeading title="no github account? — a plugin" variant="sub" />
+      <ContributeSteps
+        steps={[
+          { title: 'copy the frontmatter template', body: 'every field is documented in the repo README.', code: 'content/plugins/<your-slug>.md' },
+          { title: 'open an issue instead', body: 'No GitHub account? Open an issue with the link and we’ll take it from there.' },
+        ]}
+      />
+    </section>
+
+    <section id="use-case" class="flex flex-col gap-4">
+      <SectionHeading title="no github account? — a use case" variant="sub" />
+      <ContributeSteps
+        steps={[
+          { title: 'copy the frontmatter template', body: 'named-character title, what it does, the prompt, and the post you found it in.', code: 'content/use-cases/<your-slug>.md' },
+          { title: 'prefer the long version?', body: 'Read /contribute/.' },
+        ]}
+      />
+    </section>
+  </div>
 </BaseLayout>

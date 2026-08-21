@@ -1,10 +1,68 @@
 ---
+// §4.3.9 — contribute. Copy: CP-050 (KEEP) h1 · CP-051 intro · CP-052 step 3 ·
+// CP-053 what-you-get · CP-054 the one rule (verbatim-matched with the PR template) ·
+// CP-055 turnaround (KEEP) · CP-056 scouting (KEEP).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ContributeSteps from '../../components/ContributeSteps.astro';
+import Callout from '../../components/Callout.astro';
+import Button from '../../components/Button.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import { META, breadcrumbList, webPage } from '../../lib/seo';
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'contribute' }];
+const graph = [webPage('/contribute/', META.contribute.title, META.contribute.description), breadcrumbList(crumbs)];
 ---
 
-<BaseLayout title="contribute — grokbot.dev" description="contribute on grokbot.dev.">
-  <section class="container-page py-20" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">contribute</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">contribute</h1>
-  </section>
+<BaseLayout title={META.contribute.title} description={META.contribute.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">contribute</h1>
+      <p class="max-w-prose text-base text-text-muted">
+        the whole site is one public repo. entries are markdown files. open a pull request and
+        it's in — same door for people and bots.
+      </p>
+    </header>
+
+    <ContributeSteps
+      steps={[
+        {
+          title: 'fork ZeroPointRepo/GrokBotDev',
+          body: 'one public repo, one markdown file per entry.',
+          code: 'gh repo fork ZeroPointRepo/GrokBotDev',
+        },
+        {
+          title: 'add your entry file',
+          body: 'content/plugins/<slug>.md — the schema lives in the repo README.',
+        },
+        { title: 'open the PR', body: "CI checks it. we verify it. merged = live in minutes." },
+      ]}
+    />
+
+    <Callout variant="info" title="what you get">
+      your own page, a real dofollow link to your project and repo, and your name on it.
+    </Callout>
+
+    <Callout variant="warn" title="the one rule">
+      A listing that exists to funnel traffic to your product gets closed. Sponsor slots will
+      exist for that — this isn't one. We verify within 48 hours.
+    </Callout>
+
+    <section id="scouting" class="flex flex-col gap-4">
+      <SectionHeading title="found it on x?" variant="sub" />
+      <p class="max-w-prose text-base text-text-muted">
+        you can submit someone else's build. credit them as the author, add yourself as the
+        scout, and link the post you found it in — that's what the scouted credit is for.
+      </p>
+    </section>
+
+    <div class="flex flex-wrap items-center gap-4">
+      <Button variant="solid" href="/submit/" label="submit a plugin" />
+      <Button variant="outline" href="/submit/" label="submit a use case" />
+    </div>
+
+    <NewsletterRow source="contribute" />
+  </div>
 </BaseLayout>

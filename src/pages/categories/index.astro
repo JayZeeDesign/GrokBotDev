@@ -1,10 +1,57 @@
 ---
+// §6.1 `/categories/` — the all-categories index (10 cards with counts).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Chip from '../../components/Chip.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import categories from '../../data/categories.json';
+import { hubEligible } from '../../lib/entries';
+import { META, breadcrumbList, collectionPage, itemList } from '../../lib/seo';
+
+const pool = await hubEligible();
+const rows = categories.map((category) => ({
+  ...category,
+  count: pool.filter((entry) => entry.data.category === category.slug).length,
+}));
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'categories' }];
+const graph = [
+  collectionPage('/categories/', META.categories.title, META.categories.description),
+  itemList(rows.map((row) => ({ url: `/categories/${row.slug}/`, name: row.label }))),
+  breadcrumbList(crumbs),
+];
 ---
 
-<BaseLayout title="categories — grokbot.dev" description="categories on grokbot.dev.">
-  <section class="container-page py-20" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">categories</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">categories</h1>
-  </section>
+<BaseLayout title={META.categories.title} description={META.categories.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">Categories</h1>
+      <p class="max-w-prose text-base text-text-muted">{META.categories.description}</p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+      {
+        rows.map((row, index) => (
+          <div class="flex flex-col gap-2">
+            <span class="font-mono text-xs text-text-muted">{String(index + 1).padStart(2, '0')}</span>
+            <a
+              href={`/categories/${row.slug}/`}
+              class="flex flex-col gap-2 rounded-sm border border-border bg-surface p-4 hover:border-border-strong hover:bg-surface-raised"
+            >
+              <span class="font-sans text-lg font-medium text-text">{row.label}</span>
+              <span class="font-mono text-sm text-text-muted">{row.count} entries</span>
+            </a>
+            <div class="flex flex-wrap gap-2">
+              {row.subcategories.slice(0, 4).map((sub) => (
+                <Chip variant="category" label={sub.label} href={`/categories/${row.slug}/${sub.slug}/`} />
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <NewsletterRow source="hub" />
+  </div>
 </BaseLayout>

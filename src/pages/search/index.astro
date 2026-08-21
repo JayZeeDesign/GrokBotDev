@@ -1,10 +1,26 @@
 ---
+// §4.3.11 — /search/. Permanently noindex,follow (§6.2). SearchInput page-mode is the
+// Pagefind island; the <noscript> fallback is CP-064.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SearchInput from '../../components/SearchInput.astro';
+import { META, breadcrumbList, webPage } from '../../lib/seo';
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'search' }];
+const graph = [webPage('/search/', META.search.title, META.search.description), breadcrumbList(crumbs)];
 ---
 
-<BaseLayout title="search — grokbot.dev" description="search on grokbot.dev.">
-  <section class="container-page py-20" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">search</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">search</h1>
-  </section>
+<BaseLayout
+  title={META.search.title}
+  description={META.search.description}
+  robots="noindex,follow"
+  graph={graph}
+>
+  <div class="container-page flex flex-col gap-8 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">search</h1>
+    </header>
+    <SearchInput mode="page" />
+  </div>
 </BaseLayout>

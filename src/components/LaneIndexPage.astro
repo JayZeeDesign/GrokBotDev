@@ -1,0 +1,116 @@
+---
+// §4.3.2 / §4.3.4 / §4.3.6 — the shared lane-index page body.
+// §6.3 short H1s (Plugins / Awesome Use Cases / Collections) per CP-019/029/036 + C3.3;
+// the descriptor lives in the intro. A9 density: every row carries a two-digit mono index.
+import Breadcrumbs from './Breadcrumbs.astro';
+import SearchInput from './SearchInput.astro';
+import FilterBar from './FilterBar.astro';
+import EntryCard from './EntryCard.astro';
+import EmptyState from './EmptyState.astro';
+import Pagination from './Pagination.astro';
+import NewsletterRow from './NewsletterRow.astro';
+import { integrationSlug, integrationsOf, kindOf } from '../lib/entries';
+import type { AnyDoc } from '../lib/entries';
+import type { WaitlistSource } from '../lib/types';
+
+interface Props {
+  h1: string;
+  intro: string;
+  entries: AnyDoc[];
+  /** Astro paginate() page data. */
+  page: { currentPage: number; lastPage: number; url: { prev?: string; next?: string } };
+  baseUrl: string;
+  variant: 'plugin' | 'use-case' | 'collection';
+  facets: Array<'category' | 'integration' | 'type'>;
+  source: WaitlistSource;
+  /** Whole-lane pool, so facet counts do not shrink page by page. */
+  pool: AnyDoc[];
+  laneLabel: string;
+}
+
+const { h1, intro, entries, page, baseUrl, variant, facets, source, pool, laneLabel } = Astro.props;
+
+const categoryCounts = new Map<string, number>();
+const integrationCounts = new Map<string, number>();
+for (const entry of pool) {
+  categoryCounts.set(entry.data.category, (categoryCounts.get(entry.data.category) ?? 0) + 1);
+  for (const tool of integrationsOf(entry)) {
+    integrationCounts.set(tool, (integrationCounts.get(tool) ?? 0) + 1);
+  }
+}
+
+const options = {
+  categories: [...categoryCounts.entries()].map(([label, count]) => ({
+    label,
+    href: `/categories/${label}/`,
+    count,
+    current: false,
+  })),
+  integrations: [...integrationCounts.entries()].map(([label, count]) => ({
+    label,
+    href: `/integrations/${integrationSlug(label)}/`,
+    count,
+    current: false,
+  })),
+  types: [
+    { label: 'plugin', href: '/plugins/', count: 0, current: variant === 'plugin' },
+    { label: 'use case', href: '/use-cases/', count: 0, current: variant === 'use-case' },
+  ],
+};
+
+const offset = (page.currentPage - 1) * 24;
+const crumbs = [{ label: 'home', href: '/' }, { label: laneLabel }];
+const searchScope = variant === 'collection' ? undefined : { type: variant };
+---
+
+<div class="container-page flex flex-col gap-12 py-12 md:py-16">
+  <header class="flex flex-col gap-4">
+    <Breadcrumbs items={crumbs} />
+    <h1 class="display-track font-display text-3xl text-text md:text-4xl">{h1}</h1>
+    <p class="max-w-prose text-base text-text-muted">{intro}</p>
+  </header>
+
+  <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+    {
+      searchScope ? (
+        <SearchInput mode="link" hiddenFields={searchScope} class="md:max-w-md md:flex-1" />
+      ) : (
+        <span />
+      )
+    }
+    <FilterBar facets={facets} options={options} clearHref={baseUrl} />
+  </div>
+
+  {
+    entries.length > 0 ? (
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+        {entries.map((entry, index) => (
+          <div class="flex flex-col gap-2">
+            <span class="font-mono text-xs text-text-muted">
+              {String(offset + index + 1).padStart(2, '0')}
+            </span>
+            <EntryCard entry={entry.data as never} variant={kindOf(entry)} />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <EmptyState variant="hub" />
+    )
+  }
+
+  {
+    page.lastPage > 1 && (
+      <Pagination
+        page={{
+          current: page.currentPage,
+          total: page.lastPage,
+          prevUrl: page.url.prev,
+          nextUrl: page.url.next,
+          baseUrl,
+        }}
+      />
+    )
+  }
+
+  <NewsletterRow source={source} />
+</div>

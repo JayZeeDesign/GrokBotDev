@@ -50,3 +50,13 @@ export function memberSummary(counts: { plugins: number; useCases: number }): st
 export function isCardEligible(entry: Entry): boolean {
   return entry.status !== 'deprecated';
 }
+
+/**
+ * §5.3 guarantees a use-case body carries EXACTLY ONE ```text fenced block, inside
+ * `## Prompt`. Pull it out so the page can render it through PromptBlock (copy button,
+ * microhint, canonical CTA) instead of leaving it as a bare markdown code block.
+ */
+export function extractPrompt(body: string): string | null {
+  const match = body.match(/```text\n([\s\S]*?)```/);
+  return match ? match[1].trim() : null;
+}

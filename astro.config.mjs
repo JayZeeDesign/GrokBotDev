@@ -2,8 +2,14 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import rehypeSanitize from 'rehype-sanitize';
 import tailwindcss from '@tailwindcss/vite';
+import { sitemapData } from './scripts/sitemap-data.mjs';
 
 const devPort = Number(process.env.PORT ?? 4380);
+
+// §6.5 — real lastmod per URL + the exclusion set, computed from content/ at config load.
+const { lastmod: SITEMAP_LASTMOD, noindex: SITEMAP_NOINDEX, hubUrls: SITEMAP_HUBS } = sitemapData();
+const BUILD_STAMP = new Date().toISOString();
+const pathOf = (url) => new URL(url).pathname;
 
 export default defineConfig({
   site: 'https://grokbot.dev',
@@ -16,10 +22,19 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
-      serialize: (item) => item,
-      // §6.5 owns the full exclusion rules (noindex + thin hubs, wired in M3).
-      // §11 M1.2: /dev/components/ is never in the sitemap, even when it is built.
-      filter: (page) => !page.includes('/dev/'),
+      // §6.5: entry pages carry their `updated_at`; hubs carry max(updated_at) of their
+      // entries; static, editorial and paginated pages carry the build timestamp.
+      // priority/changefreq stay unset deliberately — Google ignores them.
+      serialize: (item) => ({ ...item, lastmod: SITEMAP_LASTMOD.get(pathOf(item.url)) ?? BUILD_STAMP }),
+      // §6.5 drops every URL that must not be indexed: thin hubs, /search/, deprecated and
+      // demo entries, /subscribed/, /dev/*, plus the machine surfaces and OG images (which
+      // the integration never discovers anyway).
+      filter: (page) => {
+        const path = pathOf(page);
+        if (path.includes('/dev/')) return false;
+        if (path.startsWith('/api/') || path.startsWith('/og/')) return false;
+        return !SITEMAP_NOINDEX.has(path);
+      },
     }),
   ],
   server: { host: true, port: devPort },

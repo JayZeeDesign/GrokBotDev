@@ -1,10 +1,79 @@
 ---
+// §4.3.8 + §7.3 — the machine door. h1 with the mark prefix, the VERBATIM intro (CP-042,
+// which carries §6.11's money phrase and is checked by the postbuild grep), the contract in
+// AgentContractBlock, the endpoint table (each row copyable), the MCP section, and the
+// humans Callout (CP-045). No NewsletterRow — machine audience (§4.3.8).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import MarkGlyph from '../../components/MarkGlyph.astro';
+import AgentContractBlock from '../../components/AgentContractBlock.astro';
+import CopyButton from '../../components/CopyButton.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import Callout from '../../components/Callout.astro';
+import {
+  AGENT_CONTRACT,
+  AGENT_ENDPOINTS,
+  AGENT_INTRO,
+  MCP_CLOSING,
+  MCP_INTRO,
+  MCP_STEPS,
+} from '../../lib/agentContract';
+import { META, breadcrumbList, webPage } from '../../lib/seo';
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'agent' }];
+const graph = [webPage('/agent/', META.agent.title, META.agent.description), breadcrumbList(crumbs)];
 ---
 
-<BaseLayout title="agent — grokbot.dev" description="agent on grokbot.dev.">
-  <section class="container-page py-20" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">agent</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">agent</h1>
-  </section>
+<BaseLayout title={META.agent.title} description={META.agent.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="flex items-center gap-3 font-display text-3xl text-text display-track md:text-4xl">
+        <MarkGlyph size={20} class="text-accent" />
+        /agent
+      </h1>
+      <p class="max-w-prose text-base text-text-muted">{AGENT_INTRO}</p>
+    </header>
+
+    <AgentContractBlock contractMarkdown={AGENT_CONTRACT} />
+
+    <section class="flex flex-col gap-4">
+      <SectionHeading title="endpoints" variant="sub" />
+      <ul class="flex flex-col divide-y divide-border border-y border-border">
+        {
+          AGENT_ENDPOINTS.map((endpoint) => (
+            <li class="flex flex-wrap items-center justify-between gap-4 py-3">
+              <span class="flex flex-col gap-1">
+                <code class="font-mono text-sm break-all text-text">{endpoint.url}</code>
+                <span class="font-mono text-xs text-text-muted">{endpoint.label}</span>
+              </span>
+              <CopyButton text={endpoint.url} size="sm" />
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="flex flex-col gap-4">
+      <SectionHeading title="mcp" variant="sub" />
+      <p class="max-w-prose text-base text-text-muted">{MCP_INTRO}</p>
+      <ol class="flex flex-col gap-2 border-l border-border pl-4">
+        {
+          MCP_STEPS.map((step, index) => (
+            <li class="flex gap-3">
+              <span class="font-mono text-sm text-accent-text">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span class="text-base text-text-muted">{step}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="text-base text-text-muted">{MCP_CLOSING}</p>
+    </section>
+
+    <Callout variant="info" title="humans">
+      you probably want <a href="/plugins/" class="underline underline-offset-4">/plugins/</a> instead
+    </Callout>
+  </div>
 </BaseLayout>

@@ -1,12 +1,33 @@
 ---
-// M2 route stub — §11 M2.4 requires `dist/plugins/<slug>/index.html` for every seed.
-// The full §4.3.3 landing-page template (breadcrumbs, status side card, PromptBlock,
-// InstallModal trigger, related/appears-in, OG + schema.org) is M3's job.
-// `data-pagefind-body` belongs here per §4.2.8a: entry detail pages are indexed.
+// §4.3.3 — plugin LANDING page.
+// [2] Breadcrumbs (five-level, §6.10) · [3] header block + chips · [4] status side card
+// (lg only; merges into the chip row below) · [5] install/how-to + InstallModal amber
+// primary (B3) + inline PromptBlock + the FENCED CTA sentence · [6] works with ·
+// [7] editorial links, dofollow by status (§5.6 #8) · [8] related · [8a] appears in ·
+// [9] NewsletterRow.
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Chip from '../../components/Chip.astro';
+import Callout from '../../components/Callout.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import PromptBlock from '../../components/PromptBlock.astro';
+import InstallModal from '../../components/InstallModal.astro';
+import RelatedList from '../../components/RelatedList.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import categories from '../../data/categories.json';
+import {
+  allCollections,
+  allPlugins,
+  appearsIn,
+  editorialRel,
+  integrationSlug,
+  relatedTo,
+  urlOf,
+} from '../../lib/entries';
 import { isoToDate, setupLabel } from '../../lib/format';
+import { CP_067_CALLOUT_NEEDS_UPDATE, CP_068_CALLOUT_DEPRECATED, CP_112_CTA_SENTENCE, fillCopy } from '../../lib/copy';
+import { SITE, breadcrumbList, entryDescription, entryTitle } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const plugins = await getCollection('plugins');
@@ -16,22 +37,155 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const d = entry.data;
+
+const [pool, collections] = await Promise.all([allPlugins(), allCollections()]);
+const related = relatedTo(entry as never, pool as never);
+const inCollections = appearsIn(d.slug, collections);
+
+const category = categories.find((c) => c.slug === d.category);
+const sub = category?.subcategories.find((s) => s.slug === d.subcategory);
+const url = `/plugins/${d.slug}/`;
+const rel = editorialRel(entry as never);
+const isDeprecated = d.status === 'deprecated';
+
+const crumbs = [
+  { label: 'home', href: '/' },
+  { label: 'plugins', href: '/plugins/' },
+  { label: category?.label ?? d.category, href: `/categories/${d.category}/` },
+  { label: sub?.label ?? d.subcategory, href: `/categories/${d.category}/${d.subcategory}/` },
+  { label: d.name },
+];
+
+const graph = [
+  {
+    '@type': 'SoftwareApplication',
+    name: d.name,
+    description: d.tagline,
+    url: `${SITE}${url}`,
+    applicationCategory: category?.label ?? d.category,
+    softwareRequirements: 'Grok Bot',
+    author: { '@type': 'Person', name: d.author.handle, url: d.author.url },
+    sameAs: [d.project_url, d.repo_url].filter(Boolean),
+    datePublished: d.added_at,
+    dateModified: d.updated_at,
+    isAccessibleForFree: true,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+    },
+  },
+  breadcrumbList(crumbs),
+];
 ---
 
-<BaseLayout title={`${d.name} — grokbot.dev`} description={d.tagline}>
-  <article class="container-page flex flex-col gap-6 py-16" data-pagefind-body>
-    <h1 class="display-track font-display text-3xl text-text md:text-4xl">{d.name}</h1>
-    <p class="text-lg text-text-muted">{d.tagline}</p>
+<BaseLayout
+  title={entryTitle(d.name, 'plugin')}
+  description={entryDescription(d.tagline, 'plugin')}
+  robots={isDeprecated ? 'noindex,follow' : undefined}
+  ogImage={`${SITE}/og/plugins/${d.slug}.png`}
+  graph={graph}
+>
+  <article class="container-page flex flex-col gap-12 py-12 md:py-16" data-pagefind-body>
+    <Breadcrumbs items={crumbs} />
 
-    <div class="flex flex-wrap items-center gap-2">
-      {d.verified_at && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
-      {d.setup_minutes && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)} />}
-      {/* No href yet: the /categories/ hubs are M3. The chip links there once they exist. */}
-      <Chip variant="category" label={d.category} />
+    {
+      d.status === 'needs-update' && (
+        <Callout variant="warn" title="needs update">
+          {fillCopy(CP_067_CALLOUT_NEEDS_UPDATE, { verified_at: d.verified_at ? isoToDate(d.verified_at) : '—' })}
+        </Callout>
+      )
+    }
+    {isDeprecated && <Callout variant="danger" title="deprecated">{CP_068_CALLOUT_DEPRECATED}</Callout>}
+
+    <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+      <header class="flex flex-col gap-4">
+        <h1 class="display-track font-display text-3xl text-text md:text-4xl" data-pagefind-weight="10">
+          {d.name}
+        </h1>
+        <p class="text-lg text-text-muted">{d.tagline}</p>
+        <div class="flex flex-wrap items-center gap-2">
+          {d.verified_at && d.status === 'live' && (
+            <Chip variant="verified" date={isoToDate(d.verified_at)} />
+          )}
+          {d.setup_minutes && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)} />}
+          <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+        </div>
+      </header>
+
+      <aside class="hidden w-70 shrink-0 flex-col gap-2 rounded-sm border border-border bg-surface p-4 font-mono text-sm lg:flex">
+        <span class="text-text-muted">status</span>
+        <span class="text-text">{d.status}</span>
+        {d.verified_at && <span class="text-text-muted">verified {isoToDate(d.verified_at)}</span>}
+        {d.pricing_note && <span class="text-text-muted">{d.pricing_note}</span>}
+      </aside>
     </div>
 
-    <div class="prose-body flex flex-col gap-4 text-base text-text">
-      <Content />
-    </div>
+    <section class="flex flex-col gap-6">
+      <SectionHeading title="install / how to use" variant="sub" />
+
+      <div class="flex flex-wrap items-center gap-4">
+        <InstallModal
+          id={d.slug}
+          variant="entry"
+          prompt={d.prompt}
+          installSteps={d.install_steps}
+          entryName={d.name}
+        />
+      </div>
+
+      <ol class="flex flex-col gap-2 border-l border-border pl-4">
+        {
+          d.install_steps.map((step, index) => (
+            <li class="flex gap-3">
+              <span class="font-mono text-sm text-accent-text">{String(index + 1).padStart(2, '0')}</span>
+              <span class="text-base text-text-muted">{step}</span>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="prose-body flex max-w-prose flex-col gap-4 text-base text-text">
+        <Content />
+      </div>
+
+      {
+        d.prompt && (
+          <>
+            <PromptBlock prompt={d.prompt} />
+            <p class="text-base text-text">{CP_112_CTA_SENTENCE}.</p>
+          </>
+        )
+      }
+    </section>
+
+    {
+      d.works_with.length > 0 && (
+        <section class="flex flex-col gap-4">
+          <SectionHeading title="works with:" variant="sub" />
+          <div class="flex flex-wrap items-center gap-2">
+            {d.works_with.map((tool) => (
+              <Chip variant="integration" label={tool} href={`/integrations/${integrationSlug(tool)}/`} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="flex flex-wrap items-center gap-4 font-mono text-sm text-text-muted">
+      <a href={d.project_url} rel={rel} target="_blank" class="hover:text-accent-text">project ↗</a>
+      {d.repo_url && <a href={d.repo_url} rel={rel} target="_blank" class="hover:text-accent-text">repo ↗</a>}
+      <span>
+        by <a href={d.author.url} rel={rel} target="_blank" class="hover:text-accent-text">@{d.author.handle}</a>
+      </span>
+      {d.scouted_by && <span>scouted by @{d.scouted_by.handle}</span>}
+      {d.source_url && <a href={d.source_url} rel={rel} target="_blank" class="hover:text-accent-text">source ↗</a>}
+    </section>
+
+    <RelatedList entries={related.map((r) => r.data) as never} />
+    <RelatedList entries={inCollections.map((c) => c.data) as never} variant="appears-in" />
+
+    <NewsletterRow source="plugin-detail" />
   </article>
 </BaseLayout>

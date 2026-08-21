@@ -1,10 +1,22 @@
 ---
-// M2 route stub — §11 M2.4. The full §4.3.7 template (member cards with per-member
-// reason lines, combined setup steps, PromptBlock, OG + schema.org) is M3's job.
+// §4.3.7 — collection detail. [4] rationale body · [5] member cards, each followed by its
+// mono `members[].reason` line · [6] combined setup (ContributeSteps + the optional
+// collection `prompt` via PromptBlock + the FENCED CTA) · [7] related · [8] NewsletterRow.
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Chip from '../../components/Chip.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import EntryCard from '../../components/EntryCard.astro';
+import PromptBlock from '../../components/PromptBlock.astro';
+import InstallModal from '../../components/InstallModal.astro';
+import RelatedList from '../../components/RelatedList.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import categories from '../../data/categories.json';
+import { allCollections, allPlugins, allUseCases, kindOf, relatedTo } from '../../lib/entries';
 import { isoToDate } from '../../lib/format';
+import { CP_112_CTA_SENTENCE } from '../../lib/copy';
+import { SITE, breadcrumbList, collectionPage, entryDescription, entryTitle, itemList } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const collections = await getCollection('collections');
@@ -14,31 +26,95 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const d = entry.data;
+
+const [plugins, useCases, collections] = await Promise.all([allPlugins(), allUseCases(), allCollections()]);
+const memberPool = [...plugins, ...useCases];
+const members = d.members
+  .map((member) => ({
+    reason: member.reason,
+    doc: memberPool.find((candidate) => candidate.data.slug === member.slug),
+  }))
+  .filter((row): row is { reason: string; doc: (typeof memberPool)[number] } => Boolean(row.doc));
+
+const related = relatedTo(entry as never, collections as never);
+const category = categories.find((c) => c.slug === d.category);
+const sub = category?.subcategories.find((s) => s.slug === d.subcategory);
+const url = `/collections/${d.slug}/`;
+const isDeprecated = d.status === 'deprecated';
+
+const crumbs = [
+  { label: 'home', href: '/' },
+  { label: 'collections', href: '/collections/' },
+  { label: category?.label ?? d.category, href: `/categories/${d.category}/` },
+  { label: sub?.label ?? d.subcategory, href: `/categories/${d.category}/${d.subcategory}/` },
+  { label: d.name },
+];
+
+const graph = [
+  collectionPage(url, entryTitle(d.name, 'collection'), entryDescription(d.tagline, 'collection')),
+  itemList(members.map((m) => ({ url: `/${kindOf(m.doc) === 'plugin' ? 'plugins' : 'use-cases'}/${m.doc.data.slug}/`, name: m.doc.data.name }))),
+  breadcrumbList(crumbs),
+];
 ---
 
-<BaseLayout title={`${d.name} — grokbot.dev`} description={d.tagline}>
-  <article class="container-page flex flex-col gap-6 py-16" data-pagefind-body>
-    <h1 class="display-track font-display text-3xl text-text md:text-4xl">{d.name}</h1>
-    <p class="text-lg text-text-muted">{d.tagline}</p>
+<BaseLayout
+  title={entryTitle(d.name, 'collection')}
+  description={entryDescription(d.tagline, 'collection')}
+  robots={isDeprecated ? 'noindex,follow' : undefined}
+  ogImage={`${SITE}/og/collections/${d.slug}.png`}
+  graph={graph}
+>
+  <article class="container-page flex flex-col gap-12 py-12 md:py-16" data-pagefind-body>
+    <Breadcrumbs items={crumbs} />
 
-    <div class="flex flex-wrap items-center gap-2">
-      {d.verified_at && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
-      {/* No href yet: the /categories/ hubs are M3. The chip links there once they exist. */}
-      <Chip variant="category" label={d.category} />
+    <header class="flex flex-col gap-4">
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl" data-pagefind-weight="10">
+        {d.name}
+      </h1>
+      <p class="text-lg text-text-muted">{d.tagline}</p>
+      <div class="flex flex-wrap items-center gap-2">
+        {d.verified_at && d.status === 'live' && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
+        <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
+      </div>
+    </header>
+
+    <div class="flex flex-wrap items-center gap-4">
+      <InstallModal id={d.slug} variant="entry" prompt={d.prompt} entryName={d.name} installSteps={[]} />
     </div>
 
-    <div class="prose-body flex flex-col gap-4 text-base text-text">
-      <Content />
-    </div>
+    <section class="flex flex-col gap-4">
+      <SectionHeading title="why these together" variant="sub" />
+      <div class="prose-body flex max-w-prose flex-col gap-4 text-base text-text">
+        <Content />
+      </div>
+    </section>
 
-    <ul class="flex flex-col gap-2 font-mono text-sm text-text-muted">
-      {
-        d.members.map((member) => (
-          <li>
-            <span class="text-text">{member.slug}</span> — {member.reason}
-          </li>
-        ))
-      }
-    </ul>
+    <section class="flex flex-col gap-6">
+      <SectionHeading title="in this collection" variant="sub" />
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+        {
+          members.map((member) => (
+            <div class="flex flex-col gap-2">
+              <EntryCard entry={member.doc.data as never} variant={kindOf(member.doc)} />
+              <p class="font-mono text-xs text-text-muted">{member.reason}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    {
+      d.prompt && (
+        <section class="flex max-w-prose flex-col gap-4">
+          <SectionHeading title="combined setup" variant="sub" />
+          <PromptBlock prompt={d.prompt} />
+          <p class="text-base text-text">{CP_112_CTA_SENTENCE}.</p>
+        </section>
+      )
+    }
+
+    <RelatedList entries={related.map((r) => r.data) as never} />
+
+    <NewsletterRow source="collection-detail" />
   </article>
 </BaseLayout>

@@ -1,10 +1,53 @@
 ---
+// §6.1 `/integrations/` — the all-integrations index.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import integrations from '../../data/integrations.json';
+import { hubEligible, integrationSlug, integrationsOf } from '../../lib/entries';
+import { META, breadcrumbList, collectionPage, itemList } from '../../lib/seo';
+
+const pool = await hubEligible();
+const rows = integrations
+  .map((tool) => ({
+    ...tool,
+    slug: integrationSlug(tool.canonical_name),
+    count: pool.filter((entry) => integrationsOf(entry).includes(tool.canonical_name)).length,
+  }))
+  .sort((a, b) => b.count - a.count || a.canonical_name.localeCompare(b.canonical_name));
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'integrations' }];
+const graph = [
+  collectionPage('/integrations/', META.integrations.title, META.integrations.description),
+  itemList(rows.map((row) => ({ url: `/integrations/${row.slug}/`, name: row.canonical_name }))),
+  breadcrumbList(crumbs),
+];
 ---
 
-<BaseLayout title="integrations — grokbot.dev" description="integrations on grokbot.dev.">
-  <section class="container-page py-20" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">integrations</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">integrations</h1>
-  </section>
+<BaseLayout title={META.integrations.title} description={META.integrations.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">Integrations</h1>
+      <p class="max-w-prose text-base text-text-muted">{META.integrations.description}</p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+      {
+        rows.map((row) => (
+          <a
+            href={`/integrations/${row.slug}/`}
+            class="flex flex-col gap-2 rounded-sm border border-border bg-surface p-4 hover:border-border-strong hover:bg-surface-raised"
+          >
+            <span class="font-sans text-lg font-medium text-text">{row.canonical_name}</span>
+            <span class="font-mono text-sm text-text-muted">
+              {row.count} entries · signs in with {row.auth_type}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+
+    <NewsletterRow source="hub" />
+  </div>
 </BaseLayout>

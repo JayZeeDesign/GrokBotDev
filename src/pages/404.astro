@@ -1,11 +1,22 @@
 ---
+// §4.3.13 — served as dist/404.html by nginx (§3.8).
+// Copy: CP-070 heading (KEEP) · CP-071 body (KEEP — punctuation-only fix already applied).
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MarkGlyph from '../components/MarkGlyph.astro';
+import SearchInput from '../components/SearchInput.astro';
+import Button from '../components/Button.astro';
+import { CP_070_404_HEADING, CP_071_404_BODY } from '../lib/copy';
 ---
 
-<BaseLayout title="404 — not found" description="Page not found.">
-  <section class="container-page py-24" data-pagefind-body>
-    <p class="mb-3 font-mono text-sm text-text-muted">404 — not found</p>
-    <h1 class="display-track font-display text-3xl font-semibold text-text md:text-4xl">this page doesn't exist.</h1>
-    <p class="mt-4 max-w-2xl text-base text-text-muted">the bots have been notified. (they haven't. it's a static site.)</p>
-  </section>
+<BaseLayout title="404 — not found | grokbot.dev" description="This page doesn't exist." robots="noindex,follow">
+  <div class="container-page flex flex-col items-center gap-6 py-24 text-center">
+    <MarkGlyph size={24} class="text-danger" />
+    <h1 class="display-track font-display text-3xl text-text md:text-4xl">{CP_070_404_HEADING}</h1>
+    <p class="max-w-prose text-base text-text-muted">{CP_071_404_BODY}</p>
+    <div class="w-full max-w-md"><SearchInput mode="link" /></div>
+    <div class="flex flex-wrap items-center justify-center gap-4">
+      <Button variant="outline" href="/plugins/" label="browse plugins" />
+      <Button variant="outline" href="/" label="home" />
+    </div>
+  </div>
 </BaseLayout>

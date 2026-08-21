@@ -1,0 +1,45 @@
+---
+// §4.3.4 `/use-cases/` + `/use-cases/<n>/`.
+// Copy: CP-029 h1 `Awesome Use Cases` (§6.3, C3.3) · CP-030 intro — the BUILD-BREAKER row:
+// §6.11 requires the money phrase in this intro's FIRST SENTENCE and
+// `check-keyword-placements.mjs` fails the build without it. The AFTER string below carries
+// it verbatim.
+import type { GetStaticPaths, Page } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import LaneIndexPage from '../../components/LaneIndexPage.astro';
+import { allUseCases, sortForIndex, urlOf } from '../../lib/entries';
+import type { AnyDoc } from '../../lib/entries';
+import { META, breadcrumbList, collectionPage, itemList, paginate } from '../../lib/seo';
+
+export const getStaticPaths = (async ({ paginate: paginateFn }) => {
+  const useCases = sortForIndex(await allUseCases());
+  return paginateFn(useCases, { pageSize: 24 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props as { page: Page<AnyDoc> };
+const pool = sortForIndex(await allUseCases());
+
+const meta = paginate(META.useCases, page.currentPage, page.lastPage);
+const url = page.currentPage === 1 ? '/use-cases/' : `/use-cases/${page.currentPage}/`;
+const crumbs = [{ label: 'home', href: '/' }, { label: 'use cases' }];
+const graph = [
+  collectionPage(url, meta.title, meta.description),
+  breadcrumbList(crumbs),
+  itemList(page.data.map((entry) => ({ url: urlOf(entry), name: entry.data.name }))),
+];
+---
+
+<BaseLayout title={meta.title} description={meta.description} graph={graph} laneFeed="use-cases">
+  <LaneIndexPage
+    h1="Awesome Use Cases"
+    intro="ready-to-use Grok Bot prompts, lifted from real setups people posted on X. rewritten, verified, and credited to whoever built it."
+    entries={page.data}
+    page={page}
+    baseUrl="/use-cases/"
+    variant="use-case"
+    facets={['category', 'integration']}
+    source="use-cases-index"
+    pool={pool}
+    laneLabel="use cases"
+  />
+</BaseLayout>
