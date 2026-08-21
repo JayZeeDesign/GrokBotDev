@@ -1,0 +1,91 @@
+---
+// F11 — the product mark in a plugin row. Row anatomy per the Grok Bot plugins modal:
+// icon + name + one-line tagline + category.
+//
+// The icon is a LOCAL static file committed to `public/icons/plugins/<slug>.<ext>` by
+// `scripts/fetch-plugin-icons.mjs`. Never a runtime third-party favicon service: that would
+// leak every visitor's browsing of this directory to that service and would need a new
+// `img-src` host in the §10.7 CSP. Neither is acceptable for the privacy line F5 tightened.
+//
+// FALLBACK = mono letter tile, and it is the common case rather than an edge case. Of five
+// live plugins exactly one has a usable mark: three are GitHub-hosted and all resolved to
+// the identical octocat, which the fetch script now rejects structurally (a byte-identical
+// icon shared by two or more plugins belongs to the HOST, not to a product — it tells a
+// reader nothing and makes a product directory look broken). The Grok Bot modal has the same
+// problem and answers it the same way.
+import { readdirSync, existsSync } from 'node:fs';
+
+interface Props {
+  slug: string;
+  /** Used for the letter and for the accessible name. */
+  name: string;
+  size?: 'sm' | 'md';
+  class?: string;
+}
+
+const { slug, name, size = 'md', class: className = '' } = Astro.props;
+
+// Resolved at BUILD time by looking at what the fetch script actually committed, so the
+// extension never has to be guessed and a missing file can never 404 in the page.
+const ICON_DIR = 'public/icons/plugins';
+const iconFile = existsSync(ICON_DIR)
+  ? readdirSync(ICON_DIR).find((f) => f.replace(/\.[a-z]+$/, '') === slug)
+  : undefined;
+
+const letter = (name.trim()[0] ?? '?').toUpperCase();
+const px = size === 'sm' ? 24 : 32;
+---
+
+{
+  iconFile ? (
+    <img
+      src={`/icons/plugins/${iconFile}`}
+      alt=""
+      width={px}
+      height={px}
+      loading="lazy"
+      decoding="async"
+      class:list={['pluginIcon', `pluginIcon--${size}`, className]}
+    />
+  ) : (
+    <span
+      class:list={['pluginIcon pluginIcon--tile', `pluginIcon--${size}`, className]}
+      aria-hidden="true"
+    >
+      {letter}
+    </span>
+  )
+}
+
+<style>
+  .pluginIcon {
+    flex: none;
+    border-radius: var(--radius-sm);
+    /* A fetched mark is someone else's artwork on our surface — the hairline keeps a
+       white-on-white icon from dissolving into the row. */
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    object-fit: contain;
+  }
+
+  .pluginIcon--tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .pluginIcon--sm {
+    inline-size: 24px;
+    block-size: 24px;
+    font-size: var(--text-xs);
+  }
+  .pluginIcon--md {
+    inline-size: 32px;
+    block-size: 32px;
+    font-size: var(--text-sm);
+  }
+</style>

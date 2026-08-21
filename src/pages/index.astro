@@ -1,99 +1,46 @@
 ---
-// §4.3.1 Home. Regions: [2] hero (A4 physics island) · [3] StatBar full · [4] featured ·
-// [5] "what's in here" lane tiles · [6] latest · [7] NewsletterRow.
-// Copy: CP-113/CP-002/CP-003/CP-004 live inside HeroStage's #content (A4 requirement 2);
-// CP-007 (StatBar, KEEP) · CP-008 (KEEP) · CP-009 "what's in here" · CP-010 · CP-011 (KEEP)
-// · CP-012 · CP-013 (KEEP). Meta: CP-072 title, CP-073 description.
-// No `data-pagefind-body` here — §4.2.8a indexes entry detail pages + /plugin-builder/ only.
+// §4.3.1 Home — REDESIGNED at F11 by operator directive: "less is more, home page is
+// everything." The home page IS the directory now.
+//
+// SUPERSESSIONS (logged in BUILD-NOTES M8 · F11):
+//   · §4.3.1 region [4] "featured", [5] the "what's in here" lane tiles (CP-009/010/011/012)
+//     and [6] "latest" are REMOVED. The full listing replaces all three.
+//   · The hero's search input is removed (HeroStage `#content`).
+//   · Collections leave home entirely. `/collections/` still builds, is still in the sitemap,
+//     and is still reachable from entry breadcrumbs — it is only unlinked from home chrome.
+//   · KEPT exactly as specified: the header, the A4 physics hero with its h1 + subline + CTAs
+//     (CP-113 / CP-002 / CP-003 / CP-004), StatBar, NewsletterRow. The §6.11 money phrase
+//     lives in the hero subline, so `check-keyword-placements` is unaffected — verified.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroStage from '../components/HeroStage.astro';
 import StatBar from '../components/StatBar.astro';
-import SectionHeading from '../components/SectionHeading.astro';
-import EntryCard from '../components/EntryCard.astro';
+import HomeDirectory from '../components/HomeDirectory.astro';
 import NewsletterRow from '../components/NewsletterRow.astro';
-import { allListable, kindOf, siteStats, sortForIndex, sortForLatest, urlOf, toCardEntry } from '../lib/entries';
+import { allPlugins, allUseCases, siteStats, sortForIndex, urlOf } from '../lib/entries';
 import { META, collectionPage, itemList } from '../lib/seo';
 
 const stats = await siteStats();
-const entries = await allListable();
+const plugins = sortForIndex(await allPlugins());
+const useCases = sortForIndex(await allUseCases());
 
-const featured = sortForIndex(entries.filter((e) => e.data.featured)).slice(0, 3);
-const latest = sortForLatest(entries).slice(0, 3);
-
-// CP-010 / CP-012 carry a live `{n}` — never hard-code a number in copy (pack §1 note).
-const lanes = [
-  {
-    href: '/plugins/',
-    title: 'plugins',
-    body: `every plugin people ship for Grok Bot, in one place. ${stats.plugins} →`,
-  },
-  {
-    href: '/use-cases/',
-    title: 'awesome use cases',
-    body: `what people actually built, with receipts. ${stats.useCases} →`,
-  },
-  {
-    href: '/collections/',
-    title: 'collections',
-    body: `whole setups, not single prompts. ${stats.collections} →`,
-  },
-];
-
+// The ItemList now describes what the page actually lists — the whole directory — rather
+// than the featured/latest slices that no longer exist.
 const graph = [
   collectionPage('/', META.home.title, META.home.description),
-  itemList([...featured, ...latest].map((e) => ({ url: urlOf(e), name: e.data.name }))),
+  itemList([...useCases, ...plugins].map((e) => ({ url: urlOf(e), name: e.data.name }))),
 ];
 ---
 
 <BaseLayout title={META.home.title} description={META.home.description} graph={graph}>
   <HeroStage />
 
-  <div class="container-page flex flex-col gap-12 py-12 md:gap-16 md:py-16">
+  <div class="container-page py-8">
     <StatBar stats={stats} variant="full" />
+  </div>
 
-    {
-      featured.length > 0 && (
-        <section class="flex flex-col gap-6">
-          <SectionHeading title="featured" action={{ label: 'view all →', href: '/plugins/' }} />
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {featured.map((entry) => (
-              <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} />
-            ))}
-          </div>
-        </section>
-      )
-    }
+  <HomeDirectory plugins={plugins} useCases={useCases} />
 
-    <section class="flex flex-col gap-6">
-      <SectionHeading title="what's in here" />
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-        {
-          lanes.map((lane) => (
-            <a
-              href={lane.href}
-              class="flex flex-col gap-2 rounded-sm border border-border bg-surface p-4 transition-[background-color,border-color] duration-150 hover:border-border-strong hover:bg-surface-raised"
-            >
-              <span class="font-mono text-sm lowercase text-text">{lane.title}</span>
-              <span class="text-base text-text-muted">{lane.body}</span>
-            </a>
-          ))
-        }
-      </div>
-    </section>
-
-    {
-      latest.length > 0 && (
-        <section class="flex flex-col gap-6">
-          <SectionHeading title="latest" action={{ label: 'view all →', href: '/use-cases/' }} />
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {latest.map((entry) => (
-              <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} />
-            ))}
-          </div>
-        </section>
-      )
-    }
-
+  <div class="container-page pb-12 md:pb-16">
     <NewsletterRow source="home" />
   </div>
 </BaseLayout>

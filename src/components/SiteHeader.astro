@@ -27,7 +27,6 @@
 // JS-dependent interaction is load-bearing.
 import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
-import SearchInput from './SearchInput.astro';
 import Button from './Button.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
@@ -39,13 +38,14 @@ const { currentPath } = Astro.props;
 const isCurrent = (href: string) =>
   href === '/' ? currentPath === '/' : currentPath.startsWith(href);
 
-const nav = [
-  { href: '/plugins/', label: 'plugins' },
-  { href: '/use-cases/', label: 'use cases' },
-  { href: '/collections/', label: 'collections' },
-  { href: '/plugin-builder/', label: 'builder bot' },
-  { href: '/wall/', label: 'wall' },
-];
+// F11 — operator: "Just keep the wall." plugins / use cases / collections / builder bot and
+// the header SEARCH are all removed from chrome at every viewport. Those routes still BUILD
+// and stay in the sitemap; they are unlinked from the header only.
+// SEO note (BUILD-NOTES): every hub keeps at least one internal link path — entry
+// breadcrumbs link `/plugins/`, `/use-cases/` and `/collections/` (F14), the footer's browse
+// column links all of them plus `/categories/` and `/integrations/`, and the home table's
+// category chips link the category hubs. Nothing is orphaned.
+const nav = [{ href: '/wall/', label: 'wall' }];
 ---
 
 <header class="border-b border-border bg-bg" data-pagefind-ignore>
@@ -65,9 +65,6 @@ const nav = [
     </nav>
 
     <div class="hidden flex-wrap items-center gap-x-6 gap-y-2 md:flex">
-      <SearchInput mode="link" class="hidden lg:flex" />
-      <NavLink href="/search/" label="search" current={isCurrent('/search/')} class="lg:hidden" />
-
       <span class="inline-flex items-center gap-1">
         <span aria-hidden="true" class="agent-glyph text-accent">▪</span>
         <NavLink href="/agent/" label="/agent" current={isCurrent('/agent/')} />
@@ -120,13 +117,6 @@ const nav = [
           <span class="navDrawer__rule my-3" aria-hidden="true"></span>
 
           <a
-            href="/search/"
-            class:list={['navDrawer__link', isCurrent('/search/') && 'navDrawer__link--current']}
-            aria-current={isCurrent('/search/') ? 'page' : undefined}
-          >
-            search
-          </a>
-          <a
             href="/agent/"
             class:list={['navDrawer__link', isCurrent('/agent/') && 'navDrawer__link--current']}
             aria-current={isCurrent('/agent/') ? 'page' : undefined}
@@ -169,13 +159,17 @@ const nav = [
   .brand-word {
     font-size: var(--text-lg);
   }
+  /* F15 — operator: "login should be larger a bit. It's very small, too small." There is no
+     login on this site; read as the DESKTOP lockup, which was the smallest thing in that
+     corner. Mark 18px → 22px and wordmark --text-sm → --text-base, one notch up. Mobile
+     keeps F2's 26px/--text-lg. Flagged in the report in case something else was meant. */
   @media (min-width: 1024px) {
     :global(.brand-mark) {
-      inline-size: 18px !important;
-      block-size: 18px !important;
+      inline-size: 22px !important;
+      block-size: 22px !important;
     }
     .brand-word {
-      font-size: var(--text-sm);
+      font-size: var(--text-base);
     }
   }
 

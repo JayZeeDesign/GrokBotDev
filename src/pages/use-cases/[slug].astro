@@ -60,13 +60,14 @@ const named = splitNamedCharacter(d.name);
 // §5.3: exactly one fenced block per use-case body, and it is the prompt.
 const prompt = extractPrompt(entry.body ?? '');
 
-const crumbs = [
-  { label: 'home', href: '/' },
-  { label: 'use cases', href: '/use-cases/' },
-  { label: category?.label ?? d.category, href: `/categories/${d.category}/` },
-  { label: sub?.label ?? d.subcategory, href: `/categories/${d.category}/${d.subcategory}/` },
-  { label: d.name },
-];
+// F14 — SHORTENED breadcrumbs (operator directive; supersedes §6.10's five-level trail and
+// §4.3.3/§4.3.5/§4.3.7's `home / lane / category / subcategory / name`). Now exactly
+// `{lane} / {name}`: no home crumb, no category, no subcategory. The BreadcrumbList JSON-LD
+// is built from this same array, so rendered and structured data cannot disagree —
+// consistency over depth, per the brief.
+// SEO: this is still the internal link that keeps `/plugins/`, `/use-cases/` and
+// `/collections/` reachable now that the header no longer links them (F11).
+const crumbs = [{ label: 'use cases', href: '/use-cases/' }, { label: d.name }];
 
 const graph = [
   {
@@ -114,7 +115,7 @@ const graph = [
   ogImage={`${SITE}/og/use-cases/${d.slug}.png`}
   graph={graph}
 >
-  <article class="container-page flex flex-col gap-12 py-12 md:py-16" data-pagefind-body>
+  <article class="container-page flex flex-col gap-8 py-12 md:py-16" data-pagefind-body>
     <Breadcrumbs items={crumbs} />
 
     {
@@ -133,6 +134,14 @@ const graph = [
       verifiedAt={d.verified_at ?? null}
       url={url}
     />
+
+    {/* F13 — the right column beside the title/content was EMPTY on desktop while "as seen on
+        x" sat below the fold. A6 already builds the page rails-capable, so the slot exists;
+        this uses it WITHOUT enabling anything sponsor-shaped (§12.6 / Ruling 7 stand).
+        Below lg the grid collapses to one column and the source block returns to its
+        documented stacked position (§4.3.5 region [8]), so mobile order is unchanged. */}
+    <div class="entryGrid">
+      <div class="entryGrid__main flex flex-col gap-12">
 
     <header class="flex flex-col gap-4">
       <h1
@@ -209,28 +218,31 @@ const graph = [
 
     <Callout variant="info" title={CP_032_REPLICABILITY_LABEL}>{d.replicability}</Callout>
 
-    {
-      d.source_tweets.length > 0 && (
-        <section class="flex flex-col gap-4">
-          <SectionHeading title="as seen on x" variant="sub" level={2} />
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-            {d.source_tweets.map((tweet) => (
-              <TweetEmbed
-                tweetUrl={tweet.url}
-                authorHandle={tweet.author_handle}
-                excerpt={tweet.excerpt}
-                postedAt={tweet.posted_at}
-              />
-            ))}
-          </div>
-          <p class="font-mono text-sm">
-            <a href="/wall/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">
-              {CP_100_WALL_BACKLINK}
-            </a>
-          </p>
-        </section>
-      )
-    }
+      </div>
+
+      {
+        d.source_tweets.length > 0 && (
+          <aside class="entryGrid__rail flex flex-col gap-4" aria-label="source posts">
+            <SectionHeading title="as seen on x" variant="sub" level={2} />
+            <div class="flex flex-col gap-4">
+              {d.source_tweets.map((tweet) => (
+                <TweetEmbed
+                  tweetUrl={tweet.url}
+                  authorHandle={tweet.author_handle}
+                  excerpt={tweet.excerpt}
+                  postedAt={tweet.posted_at}
+                />
+              ))}
+            </div>
+            <p class="font-mono text-sm">
+              <a href="/wall/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">
+                {CP_100_WALL_BACKLINK}
+              </a>
+            </p>
+          </aside>
+        )
+      }
+    </div>
 
     <section class="flex flex-wrap items-center gap-4 font-mono text-sm text-text-muted">
       {d.author && (
@@ -254,5 +266,26 @@ const graph = [
      has exactly one fenced block, so hiding `pre` here can never hide anything else. */
   .prose-body--prompt-hoisted pre {
     display: none;
+  }
+
+  /* F13 — one column below lg (the documented stacked order, §4.3.5 region [8]), two from
+     lg with the source-post rail beside the content. A6 already builds the page
+     rails-capable so the slot exists; nothing sponsor-shaped is enabled (§12.6 stands).
+     `align-items: start` + sticky keeps the posts in view while the prose scrolls, which is
+     the whole point of moving them up here. */
+  .entryGrid { display: grid; gap: 3rem; }
+  @media (min-width: 1024px) {
+    .entryGrid { grid-template-columns: minmax(0, 1fr) 22rem; align-items: start; }
+    .entryGrid__rail {
+      position: sticky;
+      inset-block-start: 1.5rem;
+      /* never taller than the viewport, or sticky silently stops working */
+      max-block-size: calc(100vh - 3rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .entryGrid__rail { position: static; }
   }
 </style>

@@ -23,7 +23,6 @@
 //
 // Copy: CP-113 (FENCED h1) · CP-002 (subline, money phrase) · CP-003 (primary CTA) ·
 // CP-004 (friction line) · CP-005 + CP-006 (KEEP).
-import SearchInput from './SearchInput.astro';
 import Button from './Button.astro';
 import InstallModal from './InstallModal.astro';
 import { CP_113_HOME_H1 } from '../lib/copy';
@@ -51,10 +50,9 @@ const SUBLINE =
     </div>
 
     <p class="hero-friction">copy one prompt. your Bot does the rest.</p>
-
-    <div class="hero-search">
-      <SearchInput mode="link" />
-    </div>
+    {/* F11 — the hero search input is REMOVED by operator directive; the directory sits
+        directly below the hero now, so a search box above it was asking the reader to
+        describe what is already on screen. #content MARKUP ONLY — no bot JS, no .s-* rules. */}
   </div>
 
   <span class="hero-seed" id="seedLabel">assembly ····</span>

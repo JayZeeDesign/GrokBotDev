@@ -1,0 +1,307 @@
+---
+// F11 — HOME = THE DIRECTORY. Operator: "less is more, home page is everything."
+//
+// SUPERSESSIONS (operator directive, logged in BUILD-NOTES):
+//   · §4.3.1 home regions [4] featured, [5] lane tiles ("what's in here") and [6] latest are
+//     REMOVED, along with the hero's search input. The full listing replaces them.
+//   · Collections leave the home page entirely. `/collections/` still builds and stays in the
+//     sitemap; it is simply unlinked from home.
+//
+// ZERO NEW ISLANDS. Tabs, the table/cards view switch and the category filter are all
+// radio + `:has()` — the same mechanism F10 landed on for the schedule picker, for the same
+// reason: it keys off real form state and ignores DOM order, so every control works with JS
+// disabled and there is no hydration to wait for. The operator allowed new islands here;
+// none were needed, which is a better outcome than spending them.
+import EntryCard from './EntryCard.astro';
+import Chip from './Chip.astro';
+import PluginIcon from './PluginIcon.astro';
+import { toCardEntry, kindOf } from '../lib/entries';
+import type { AnyDoc } from '../lib/entries';
+import categories from '../data/categories.json';
+
+interface Props {
+  plugins: AnyDoc[];
+  useCases: AnyDoc[];
+}
+
+const { plugins, useCases } = Astro.props;
+
+const labelOf = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
+
+/** Only categories that actually have entries — a filter offering an empty result is noise. */
+const catsFor = (docs: AnyDoc[]) =>
+  [...new Set(docs.map((d) => d.data.category))].sort().map((slug) => ({ slug, label: labelOf(slug) }));
+
+const pluginCats = catsFor(plugins);
+const useCaseCats = catsFor(useCases);
+
+// The category filter needs ONE rule per slug (`:has()` cannot compare two attributes), so
+// the rules are generated here from the same list that renders the chips — they can never
+// drift apart. Emitted as a static <style> in the built page; nothing runs at runtime.
+// Re-show uses the right display per context: table rows are `table-row`, cards are `block`.
+const filterCss = [
+  // hide-half: with any specific category selected, hide every row in that panel…
+  `.homeDirectory:not(:has(#plugin-cat-all:checked)) [data-home-panel='plugins'] [data-row-cat]{display:none}`,
+  `.homeDirectory:not(:has(#uc-cat-all:checked)) [data-home-panel='use-cases'] [data-row-cat]{display:none}`,
+  // …then re-show the match, with the display each context needs.
+  ...pluginCats.map(
+    (c) => `.homeDirectory:has(#plugin-cat-${c.slug}:checked) [data-home-panel='plugins'] tr[data-row-cat='${c.slug}']{display:table-row}
+.homeDirectory:has(#plugin-cat-${c.slug}:checked) [data-home-panel='plugins'] div[data-row-cat='${c.slug}']{display:block}`
+  ),
+  ...useCaseCats.map(
+    (c) => `.homeDirectory:has(#uc-cat-${c.slug}:checked) [data-home-panel='use-cases'] div[data-row-cat='${c.slug}']{display:block}`
+  ),
+  ...pluginCats.map(
+    (c) => `.homeDirectory:has(#plugin-cat-${c.slug}:checked) [data-plugin-cat='${c.slug}'],
+.homeDirectory:has(#uc-cat-${c.slug}:checked) [data-uc-cat='${c.slug}']{border-color:var(--color-accent-strong);background:var(--color-accent-strong);color:var(--color-accent-contrast)}`
+  ),
+  ...useCaseCats.map(
+    (c) => `.homeDirectory:has(#uc-cat-${c.slug}:checked) [data-uc-cat='${c.slug}']{border-color:var(--color-accent-strong);background:var(--color-accent-strong);color:var(--color-accent-contrast)}`
+  ),
+].join('\n');
+---
+
+<section class="homeDirectory container-page flex flex-col gap-6 py-12 md:py-16" aria-label="directory">
+  {/* ── TAB SWITCHER ──────────────────────────────────────────────────────────────────
+      Default is "Awesome Use Cases": the operator listed it first and it is the brand's
+      primacy noun. Plugins are one tap away. */}
+  <input type="radio" name="home-tab" id="home-tab-use-cases" class="sr-only" checked />
+  <input type="radio" name="home-tab" id="home-tab-plugins" class="sr-only" />
+
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="homeTabs flex flex-wrap items-center gap-2" role="presentation">
+      <label for="home-tab-use-cases" data-home-tab="use-cases" class="homeTab">Awesome Use Cases</label>
+      <label for="home-tab-plugins" data-home-tab="plugins" class="homeTab">Plugins</label>
+    </div>
+
+    {/* Table|Cards — plugins only, per the BotDirectory pattern. */}
+    <div class="homeView flex items-center gap-2" data-home-view-switch>
+      <input type="radio" name="home-view" id="home-view-table" class="sr-only" checked />
+      <input type="radio" name="home-view" id="home-view-cards" class="sr-only" />
+      <span class="font-mono text-xs lowercase text-text-muted">view</span>
+      <label for="home-view-table" data-home-view="table" class="homeViewBtn">table</label>
+      <label for="home-view-cards" data-home-view="cards" class="homeViewBtn">cards</label>
+    </div>
+  </div>
+
+  {/* ── PLUGINS ─────────────────────────────────────────────────────────────────────── */}
+  <div data-home-panel="plugins" class="flex flex-col gap-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <input type="radio" name="plugin-cat" id="plugin-cat-all" class="sr-only" checked />
+      <label for="plugin-cat-all" data-plugin-cat="all" class="homeFilter">all</label>
+      {
+        pluginCats.map((c) => (
+          <>
+            <input type="radio" name="plugin-cat" id={`plugin-cat-${c.slug}`} class="sr-only" />
+            <label for={`plugin-cat-${c.slug}`} data-plugin-cat={c.slug} class="homeFilter">
+              {c.label}
+            </label>
+          </>
+        ))
+      }
+    </div>
+
+    {/* TABLE — full width, the BotDirectory anatomy: name (linked) · tagline · category. */}
+    <div data-home-view-panel="table" class="homeTableWrap">
+      <table class="homeTable">
+        <thead>
+          <tr>
+            <th scope="col">Plugin</th>
+            <th scope="col" class="homeTable__tagline">What it does</th>
+            <th scope="col">Category</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            plugins.map((doc) => (
+              <tr data-row-cat={doc.data.category}>
+                <td>
+                  <span class="flex items-center gap-3">
+                    <PluginIcon slug={doc.data.slug} name={doc.data.name} size="sm" />
+                    <a href={`/plugins/${doc.data.slug}/`} class="homeTable__name">
+                      {doc.data.name}
+                    </a>
+                  </span>
+                </td>
+                <td class="homeTable__tagline">{doc.data.tagline}</td>
+                <td>
+                  <Chip variant="category" label={labelOf(doc.data.category)} href={`/categories/${doc.data.category}/`} />
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    {/* CARDS */}
+    <div data-home-view-panel="cards" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+      {
+        plugins.map((doc) => (
+          <div data-row-cat={doc.data.category}>
+            <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  {/* ── USE CASES ───────────────────────────────────────────────────────────────────── */}
+  <div data-home-panel="use-cases" class="flex flex-col gap-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <input type="radio" name="uc-cat" id="uc-cat-all" class="sr-only" checked />
+      <label for="uc-cat-all" data-uc-cat="all" class="homeFilter">all</label>
+      {
+        useCaseCats.map((c) => (
+          <>
+            <input type="radio" name="uc-cat" id={`uc-cat-${c.slug}`} class="sr-only" />
+            <label for={`uc-cat-${c.slug}`} data-uc-cat={c.slug} class="homeFilter">
+              {c.label}
+            </label>
+          </>
+        ))
+      }
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+      {
+        useCases.map((doc) => (
+          <div data-row-cat={doc.data.category}>
+            <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ---------- tabs ---------- */
+  .homeTab,
+  .homeViewBtn,
+  .homeFilter {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    padding-inline: 0.75rem;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+  .homeTab {
+    font-size: var(--text-base);
+  }
+  .homeViewBtn,
+  .homeFilter {
+    font-size: var(--text-xs);
+    min-block-size: 32px;
+  }
+  .homeTab:hover,
+  .homeViewBtn:hover,
+  .homeFilter:hover {
+    color: var(--color-text);
+  }
+
+  /* Selected states — same `:has()` mechanism as F10's picker: real form state, order
+     independent, and it survives JS being off. */
+  .homeDirectory:has(#plugin-cat-all:checked) [data-plugin-cat='all'],
+  .homeDirectory:has(#uc-cat-all:checked) [data-uc-cat='all'],
+  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'],
+  .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'],
+  .homeDirectory:has(#home-view-table:checked) [data-home-view='table'],
+  .homeDirectory:has(#home-view-cards:checked) [data-home-view='cards'] {
+    border-color: var(--color-accent-strong);
+    background: var(--color-accent-strong);
+    color: var(--color-accent-contrast);
+  }
+
+  /* ---------- panel visibility ---------- */
+  .homeDirectory [data-home-panel] {
+    display: none;
+  }
+  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-panel='use-cases'],
+  .homeDirectory:has(#home-tab-plugins:checked) [data-home-panel='plugins'] {
+    display: flex;
+  }
+  /* The table/cards switch is a plugins-only affordance. */
+  .homeDirectory:has(#home-tab-use-cases:checked) .homeView {
+    display: none;
+  }
+
+  .homeDirectory [data-home-view-panel] {
+    display: none;
+  }
+  .homeDirectory:has(#home-view-table:checked) [data-home-view-panel='table'] {
+    display: block;
+  }
+  .homeDirectory:has(#home-view-cards:checked) [data-home-view-panel='cards'] {
+    display: grid;
+  }
+
+  /* The category filter lives ENTIRELY in the generated block below — see `filterCss`.
+     Splitting it was a real bug: Astro scopes this block by appending `[data-astro-cid-…]`
+     to every selector, which outranks the unscoped generated rules, so the hide-half won
+     and a filtered view rendered ZERO rows. Hide and show must share one specificity. */
+
+  /* ---------- table ---------- */
+  .homeTableWrap {
+    /* C4 table rule: a genuinely tabular block may scroll WITHIN its own container. The page
+       still cannot move — F6's `body { overflow-x: clip }` guarantees that. */
+    overflow-x: auto;
+    max-inline-size: 100%;
+  }
+  .homeTable {
+    inline-size: 100%;
+    border-collapse: collapse;
+    text-align: start;
+  }
+  .homeTable th {
+    padding: 0.5rem 0.75rem;
+    border-block-end: 1px solid var(--color-border);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    text-align: start;
+    white-space: nowrap;
+  }
+  .homeTable td {
+    padding: 0.75rem;
+    border-block-end: 1px solid var(--color-border);
+    vertical-align: middle;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .homeTable tbody tr:hover {
+    background: var(--color-surface);
+  }
+  .homeTable__name {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--color-text);
+  }
+  .homeTable__name:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  /* Below sm the tagline column is what makes the table too wide to read; the name and its
+     category still carry the row, and the tagline is one tap away on the entry page. */
+  @media (max-width: 639px) {
+    .homeTable__tagline {
+      display: none;
+    }
+  }
+</style>
+
+{/* Generated per-category rules — see `filterCss` above. Static CSS in the built page. */}
+<style is:inline set:html={filterCss}></style>

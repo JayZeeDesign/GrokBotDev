@@ -50,13 +50,14 @@ const url = `/plugins/${d.slug}/`;
 const rel = editorialRel(entry as never);
 const isDeprecated = d.status === 'deprecated';
 
-const crumbs = [
-  { label: 'home', href: '/' },
-  { label: 'plugins', href: '/plugins/' },
-  { label: category?.label ?? d.category, href: `/categories/${d.category}/` },
-  { label: sub?.label ?? d.subcategory, href: `/categories/${d.category}/${d.subcategory}/` },
-  { label: d.name },
-];
+// F14 — SHORTENED breadcrumbs (operator directive; supersedes §6.10's five-level trail and
+// §4.3.3/§4.3.5/§4.3.7's `home / lane / category / subcategory / name`). Now exactly
+// `{lane} / {name}`: no home crumb, no category, no subcategory. The BreadcrumbList JSON-LD
+// is built from this same array, so rendered and structured data cannot disagree —
+// consistency over depth, per the brief.
+// SEO: this is still the internal link that keeps `/plugins/`, `/use-cases/` and
+// `/collections/` reachable now that the header no longer links them (F11).
+const crumbs = [{ label: 'plugins', href: '/plugins/' }, { label: d.name }];
 
 const graph = [
   {
