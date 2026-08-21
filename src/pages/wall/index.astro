@@ -15,11 +15,18 @@ import { allUseCases, sortForLatest, urlOf } from '../../lib/entries';
 import type { UseCaseDoc } from '../../lib/entries';
 import { CP_101_WALL_EMPTY } from '../../lib/copy';
 import { META, breadcrumbList, collectionPage, itemList } from '../../lib/seo';
+import { SSR_COUNT } from './data.json';
 
 const useCases = sortForLatest(await allUseCases()) as UseCaseDoc[];
 const items = useCases.flatMap((entry) =>
   entry.data.source_tweets.map((tweet) => ({ tweet, entry }))
 );
+
+// F12 — only the first SSR_COUNT render server-side: enough for SEO and for a no-JS reader,
+// while a wall that will hold "a LOT" does not ship hundreds of embeds in the HTML. The tail
+// comes from /wall/data.json via the sentinel island below.
+const ssrItems = items.slice(0, SSR_COUNT);
+const hasMore = items.length > SSR_COUNT;
 
 const crumbs = [{ label: 'home', href: '/' }, { label: 'wall' }];
 const graph = [
@@ -42,8 +49,8 @@ const graph = [
 
     {
       items.length > 0 ? (
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {items.map((item) => (
+        <div class="wallMasonry" data-wall-masonry data-tweet-root-margin="100px">
+          {ssrItems.map((item) => (
             <WallCard
               tweet={{
                 url: item.tweet.url,
@@ -61,12 +68,121 @@ const graph = [
       )
     }
 
+    {/* F12 — the sentinel the island watches. With JS off it is inert and the Pagination
+        below is the real navigation, which is why that stays rendered rather than being
+        replaced by the island. */}
+    {hasMore && <div data-wall-sentinel aria-hidden="true"></div>}
+    <p class="sr-only" role="status" data-wall-status></p>
+
     {
-      items.length > 24 && (
-        <Pagination page={{ current: 1, total: Math.ceil(items.length / 24), baseUrl: '/wall/' }} />
+      hasMore && (
+        <div data-wall-pagination>
+          <Pagination
+            page={{
+              current: 1,
+              total: Math.ceil(items.length / SSR_COUNT),
+              nextUrl: '/wall/2/',
+              baseUrl: '/wall/',
+            }}
+          />
+        </div>
       )
     }
 
     <NewsletterRow source="home" />
   </div>
 </BaseLayout>
+
+{/* Masonry CSS is defined once, globally, in `wall/[page].astro` so both the first page
+    and the paginated ones share exactly one rule set. */}
+
+<script>
+  // F12 — infinite scroll. ENHANCEMENT ONLY: the first page is server-rendered and the
+  // Pagination links below stay in the DOM, so with JS off the wall is a normal paginated
+  // page. This is not a new island in spirit — it is the wall page's own progressive
+  // enhancement — but it IS new client JS, so it is logged in BUILD-NOTES with the count.
+  const masonry = document.querySelector<HTMLElement>('[data-wall-masonry]');
+  const sentinel = document.querySelector<HTMLElement>('[data-wall-sentinel]');
+  const status = document.querySelector<HTMLElement>('[data-wall-status]');
+  const pagination = document.querySelector<HTMLElement>('[data-wall-pagination]');
+
+  if (masonry && sentinel && 'IntersectionObserver' in window) {
+    type Item = {
+      url: string;
+      authorHandle: string;
+      excerpt: string;
+      postedAt: string | null;
+      entryName: string;
+      entryHref: string;
+      tweetId: string;
+    };
+
+    let pages: Item[][] = [];
+    let next = 0;
+    let loading = false;
+    let loaded = false;
+
+    const esc = (v: string) =>
+      v.replace(/[&<>"']/g, (c) =>
+        c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '"' ? '&quot;' : '&#39;'
+      );
+
+    // Mirrors WallCard + TweetEmbed's markup. Kept deliberately small and in one place; the
+    // server-rendered cards remain the reference, and the shared CSS classes mean a style
+    // change lands on both at once.
+    const card = (it: Item) => `
+<article class="flex flex-col gap-3">
+  <figure class="tweet-embed flex flex-col gap-3 border border-border-interactive bg-surface p-4"
+    data-tweet-embed data-tweet-url="${esc(it.url)}" data-tweet-id="${esc(it.tweetId)}" data-tweet-state="pending">
+    <div class="tweet-embed__mount" data-tweet-mount></div>
+    <blockquote class="tweet-embed__fallback border-l-2 border-l-border-strong pl-4 text-base text-text" data-tweet-fallback>
+      <p>${esc(it.excerpt)}</p>
+    </blockquote>
+    <figcaption class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-text-muted">
+      <a href="${esc(it.url)}" target="_blank" rel="noopener" class="hover:text-accent-text">@${esc(it.authorHandle)} on x <span aria-hidden="true">↗</span></a>
+      ${it.postedAt ? `<time datetime="${esc(it.postedAt)}">${esc(it.postedAt.slice(0, 10))}</time>` : ''}
+    </figcaption>
+  </figure>
+  <a href="${esc(it.entryHref)}" class="inline-flex min-h-6 items-center self-start rounded-sm border border-border-interactive px-2 py-1 font-mono text-xs text-text hover:border-accent hover:text-accent-text">→ posted on grokbot.dev: ${esc(it.entryName)}</a>
+</article>`;
+
+    const append = () => {
+      if (next >= pages.length) {
+        observer.unobserve(sentinel);
+        if (status) status.textContent = 'end of the wall';
+        return;
+      }
+      const batch = pages[next++];
+      masonry.insertAdjacentHTML('beforeend', batch.map(card).join(''));
+      // Appended figures are invisible to the observer TweetEmbed set up at load, so it has
+      // to be told to look again — that hook is why the embeds in these cards ever render.
+      (window as unknown as { grokbotScanTweets?: (r?: ParentNode) => void }).grokbotScanTweets?.(masonry);
+      if (status) status.textContent = `loaded ${masonry.children.length} posts`;
+    };
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (!entries.some((e) => e.isIntersecting) || loading) return;
+        loading = true;
+        try {
+          if (!loaded) {
+            const res = await fetch('/wall/data.json');
+            if (res.ok) pages = (await res.json()).pages ?? [];
+            loaded = true;
+            // The island owns navigation from here; the no-JS links would now be misleading.
+            pagination?.remove();
+          }
+          append();
+        } catch {
+          // Leave the pagination in place — it is the honest fallback if the chunk 404s.
+          observer.unobserve(sentinel);
+        } finally {
+          loading = false;
+        }
+      },
+      { rootMargin: '600px' }
+    );
+
+    observer.observe(sentinel);
+  }
+</script>

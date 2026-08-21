@@ -84,7 +84,12 @@ const tweetId = tweetUrl.match(/status\/(\d+)/)?.[1] ?? '';
   // component that already owned the third-party embed, with the trigger changed from a
   // click to proximity.
   const WIDGETS_SRC = 'https://platform.twitter.com/widgets.js';
-  const NEAR_VIEWPORT = '200px';
+  // F12 — a page with MANY embeds (the wall) tightens this so only what is genuinely near
+  // the viewport fetches. `data-tweet-root-margin` on <body> is the opt-in; everything else
+  // keeps F5's 200px.
+  const NEAR_VIEWPORT =
+    document.querySelector<HTMLElement>('[data-tweet-root-margin]')?.dataset.tweetRootMargin ||
+    '200px';
   const RENDER_TIMEOUT_MS = 8000;
 
   interface Widgets {
@@ -196,23 +201,31 @@ const tweetId = tweetUrl.match(/status\/(\d+)/)?.[1] ?? '';
     }
   }
 
-  const figures = Array.from(document.querySelectorAll<HTMLElement>('[data-tweet-embed]'));
-  if (figures.length) {
-    if (!('IntersectionObserver' in window)) {
-      // No observer: render them all rather than showing nobody a post.
-      figures.forEach((figure) => void render(figure));
-    } else {
-      const observer = new IntersectionObserver(
+  const hasObserver = 'IntersectionObserver' in window;
+  const observer = hasObserver
+    ? new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
             if (!entry.isIntersecting) continue;
-            observer.unobserve(entry.target);
+            observer!.unobserve(entry.target);
             void render(entry.target as HTMLElement);
           }
         },
         { rootMargin: NEAR_VIEWPORT }
-      );
-      figures.forEach((figure) => observer.observe(figure));
+      )
+    : null;
+
+  /** Observe every not-yet-seen embed under `root`. Exposed so F12's wall island can call it
+   *  after appending cards — appended figures are invisible to an observer set up at load. */
+  const scan = (root: ParentNode = document) => {
+    for (const figure of root.querySelectorAll<HTMLElement>('[data-tweet-embed]')) {
+      if (figure.dataset.tweetSeen) continue;
+      figure.dataset.tweetSeen = '1';
+      if (observer) observer.observe(figure);
+      else void render(figure); // no observer: render rather than show nobody a post
     }
-  }
+  };
+
+  (window as unknown as { grokbotScanTweets?: typeof scan }).grokbotScanTweets = scan;
+  scan();
 </script>

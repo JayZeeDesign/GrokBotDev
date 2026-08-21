@@ -1,0 +1,121 @@
+---
+// F12 — the paginated wall, pages 2+.
+//
+// WHY THIS EXISTS: `/wall/` renders Pagination as the no-JS fallback for infinite scroll,
+// and those links pointed at `/wall/2/`, `/wall/3/` … which were never built. `check-links`
+// caught it the moment the item count crossed the SSR threshold — 2 broken internal links.
+// The bug predates F12 (the original page rendered Pagination at >24 items with the same
+// missing routes); it was invisible only because the wall holds 5 posts today. A "fallback"
+// made of 404s is not a fallback, so the routes are real now.
+//
+// These pages carry NO infinite-scroll island on purpose: they ARE the no-JS path. Page 1
+// keeps the island; from here on, pagination is the navigation.
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import WallCard from '../../components/WallCard.astro';
+import Pagination from '../../components/Pagination.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import { allUseCases, sortForLatest, urlOf } from '../../lib/entries';
+import type { UseCaseDoc } from '../../lib/entries';
+import { META, breadcrumbList, collectionPage, itemList } from '../../lib/seo';
+import { SSR_COUNT } from './data.json';
+
+export const getStaticPaths = (async () => {
+  const useCases = sortForLatest(await allUseCases()) as UseCaseDoc[];
+  const items = useCases.flatMap((entry) =>
+    entry.data.source_tweets.map((tweet) => ({ tweet, entry }))
+  );
+  const total = Math.max(1, Math.ceil(items.length / SSR_COUNT));
+
+  // Page 1 lives at `/wall/` — starting at 2 keeps a single canonical URL for it.
+  return Array.from({ length: Math.max(0, total - 1) }, (_, i) => {
+    const page = i + 2;
+    return {
+      params: { page: String(page) },
+      props: { items: items.slice((page - 1) * SSR_COUNT, page * SSR_COUNT), page, total },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const { items, page, total } = Astro.props;
+
+const crumbs = [
+  { label: 'home', href: '/' },
+  { label: 'wall', href: '/wall/' },
+  { label: `page ${page}` },
+];
+const graph = [
+  collectionPage(`/wall/${page}/`, META.wall.title, META.wall.description),
+  itemList(items.map((item) => ({ url: urlOf(item.entry), name: item.entry.data.name }))),
+  breadcrumbList(crumbs),
+];
+---
+
+<BaseLayout
+  title={`${META.wall.title} — page ${page}`}
+  description={META.wall.description}
+  robots="noindex,follow"
+  graph={graph}
+>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">
+        Wall of Posts — page {page}
+      </h1>
+    </header>
+
+    <div class="wallMasonry" data-tweet-root-margin="100px">
+      {
+        items.map((item) => (
+          <WallCard
+            tweet={{
+              url: item.tweet.url,
+              authorHandle: item.tweet.author_handle,
+              excerpt: item.tweet.excerpt,
+              postedAt: item.tweet.posted_at,
+            }}
+            entryName={item.entry.data.name}
+            entryHref={urlOf(item.entry)}
+          />
+        ))
+      }
+    </div>
+
+    <Pagination
+      page={{
+        current: page,
+        total,
+        prevUrl: page === 2 ? '/wall/' : `/wall/${page - 1}/`,
+        nextUrl: page < total ? `/wall/${page + 1}/` : undefined,
+        baseUrl: '/wall/',
+      }}
+    />
+
+    <NewsletterRow source="home" />
+  </div>
+</BaseLayout>
+
+<style is:global>
+  /* Shared with `/wall/` — see the masonry note there. Global so both pages get one rule. */
+  .wallMasonry {
+    columns: 1;
+    column-gap: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .wallMasonry {
+      columns: 2;
+    }
+  }
+  @media (min-width: 1280px) {
+    .wallMasonry {
+      columns: 3;
+    }
+  }
+  .wallMasonry > * {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-block-end: 1.5rem;
+  }
+</style>

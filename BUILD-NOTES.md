@@ -1949,6 +1949,101 @@ visible; slate button `rgb(78,93,110)` on white at 44px. Gates green including
 home hero, `/use-cases/`, `/agent/` and `llms.txt`, none of which the modal copy touches).
 Overflow guard 45/45, QA sweep 57/57.
 
+### F11 + F15 · home is the directory; header cut to `wall`
+
+**Operator directive: "less is more, home page is everything." Supersessions, all logged:**
+§4.3.1 regions [4] featured, [5] the "what's in here" lane tiles (CP-009/010/011/012) and
+[6] latest are REMOVED, along with the hero's search input; collections leave home entirely;
+§4.5's nav and §6's chrome IA are cut to `wall` + `/agent` + `submit` + the F9 toggle.
+`/plugins/`, `/use-cases/`, `/collections/` and `/search/` still BUILD and stay in the sitemap.
+
+Two tabs — **Awesome Use Cases (default)** and **Plugins**. Plugins default to a full-width
+table (BotDirectory anatomy: icon · linked name · one-line tagline · category chip) with a
+cards toggle; both tabs carry a category filter. Use Cases reuse `EntryCard`.
+
+**ZERO NEW ISLANDS — and that is the notable part.** The brief allowed them. Tabs, the
+table/cards switch and both filters are radio + `:has()`, the mechanism F10 arrived at for the
+schedule picker: real form state, order-independent, works with JS off, nothing to hydrate.
+Island count stays **ten**.
+
+**Favicons are local static files** from `scripts/fetch-plugin-icons.mjs` (build-prep, not part
+of `npm run build`). Never a runtime favicon service — that leaks every visitor's browsing of
+this directory to a third party and needs a new `img-src` host, one round after F5 tightened
+exactly that claim. The fetcher had to learn two things, both structural rather than hardcoded:
+
+- a **`-dark` variant** is drawn for a dark background and vanishes on ours, so those
+  candidates sink to the back of the list (`compound-engineering` was taking `favicon-dark.svg`;
+  it now takes `favicon-32x32.png`);
+- **a generic host icon is worse than none.** Three GitHub-hosted plugins all resolved to the
+  identical octocat. Detected by content hash — *if two or more plugins fetch byte-identical
+  icons, that file belongs to the host, not to a product* — and dropped. Net: **1 real mark,
+  4 letter tiles**, which is exactly what the Grok Bot plugins modal does with the same problem.
+
+**F15** — "login should be larger" read as the DESKTOP lockup (there is no login): mark
+18→22px, wordmark `--text-sm`→`--text-base`. Mobile keeps F2's 1.44×.
+
+**SEO — hubs are unlinked from chrome but NOT orphaned, and `check-links` did not need
+adjusting** (108 pages, 0 broken). Three surviving internal paths: entry breadcrumbs link the
+three lanes (F14); the footer's browse column links those plus `/categories/` and
+`/integrations/`; the home table's category chips link the category hubs.
+
+**Two bugs of mine, caught by measurement:** the category filter rendered **zero** rows,
+because the hide-half sat in Astro's *scoped* style block (which appends `[data-astro-cid-…]`
+and therefore outranks) while the generated per-slug show-half was unscoped — hide and show
+must share one specificity. And `:has()` cannot compare two attributes, so the per-category
+rules are generated at build time from the same list that renders the chips; they cannot drift.
+
+### F12 · wall masonry, tighter lazy-load, infinite scroll — and a latent 404 fallback
+
+**Masonry is CSS columns** (1 / 2 / 3 at base / md / xl), which the brief allowed. Chosen over
+a JS packer for a specific reason: every card changes height when its iframe arrives, so a
+packer would have to re-pack on every embed load. CSS columns need no measurement pass and no
+re-layout. `break-inside: avoid` + `page-break-inside: avoid` is the reliable pair.
+Measured: 3 distinct column origins at 1440, 1 at 390, no overflow.
+
+**Lazy-load tightened** from F5's 200px to **100px** on the wall only, via
+`data-tweet-root-margin` on the masonry container — no BaseLayout prop needed. Measured at 390:
+**3 of 5 embeds render at first paint** instead of all five.
+
+**Infinite scroll** renders the first 12 server-side (SEO + no-JS) and appends the tail from
+`/wall/data.json` through an IntersectionObserver sentinel. `TweetEmbed` gained a
+`grokbotScanTweets(root)` hook because **appended figures are invisible to an observer created
+at load** — without it the new cards would never render an embed.
+
+⚠️ **A latent bug this surfaced, which predates F12.** `/wall/` renders `Pagination` as the
+no-JS fallback, and those links pointed at `/wall/2/`, `/wall/3/` … **which were never built**.
+The original page had the same call at >24 items; it was invisible only because the wall holds
+5 posts. `check-links` caught it the instant I lowered the SSR threshold to exercise the path:
+**2 broken internal links**. A fallback made of 404s is not a fallback, so `wall/[page].astro`
+now builds those routes for real — no island on them, since they *are* the no-JS path.
+
+**Proven by lowering `SSR_COUNT` to 2 and rebuilding:** `/wall/2/` and `/wall/3/` build,
+`check-links` 110 pages 0 broken, the sentinel fires, 3 cards append to the 2 server-rendered
+ones, all 5 embeds render, the status region reads "end of the wall", and the island removes
+the pagination once it owns navigation. Restored to 12 afterwards.
+**Honest limitation:** at 5 live posts the sentinel never fires in production data — infinite
+scroll is built and proven, but not exercised by the real corpus until the wall grows.
+
+### F13 + F14 · entry detail desktop rail; breadcrumbs cut to two crumbs
+
+**F13** — the right column beside the title was empty while "as seen on x" sat below the
+content. The source-post block now occupies that rail from `lg`
+(`minmax(0, 1fr) 22rem`, measured 752 + 352), sticky, with `max-block-size` + `overflow` so a
+long rail cannot silently break sticky. Below `lg` the grid collapses and the block returns to
+its documented stacked position (§4.3.5 region [8]) — verified: one 358px column, rail static,
+below main. A6's rails-capable grid supplied the slot; nothing sponsor-shaped is enabled
+(§12.6 / Ruling 7 stand). `prefers-reduced-motion` drops the sticky.
+*My own bug: the CSS silently never landed the first time because the anchor did not match the
+file's `<style is:global>` tag. The layout read as one column at 1440 until I checked computed
+styles rather than trusting the edit.*
+
+**F14** — breadcrumbs are `{lane} / {name}` on all three entry types: no home crumb, no
+category, no subcategory. Supersedes §6.10's five-level trail and the §4.3.3/§4.3.5/§4.3.7
+wireframes. The `BreadcrumbList` JSON-LD is built from the **same array** the page renders, so
+the two cannot disagree — verified on a built page: `[1 "use cases", 2 "AgentOS · Blueprint
+Builder"]`, matching the rendered crumbs exactly. These crumbs are also what keeps the lane
+hubs internally linked now that the header does not.
+
 ### Verification
 
 - **Full gate suite green:** validate 10 entries · negative fixtures still rejected ·
@@ -1960,7 +2055,9 @@ Overflow guard 45/45, QA sweep 57/57.
   `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`,
   `F5-wall-embeds-{390,768,1440}.png`, `F5-entry-detail-embed-{390,1440}.png`,
   `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`, `F6-modal-390.png`,
-  `F3b-hero-drag-390.png`, `F7-drawer-390.png`, `F8-footer-{390,768}.png`, `F9-dark-{390,1440}.png`, `F10-modal-{390,1440}.png`.
+  `F3b-hero-drag-390.png`, `F7-drawer-390.png`, `F8-footer-{390,768}.png`, `F9-dark-{390,1440}.png`, `F10-modal-{390,1440}.png`, `F11-home-{table-1440,cards-390}.png`,
+  `F11-usecases-tab-390.png`, `F12-wall-masonry-{390,1440}.png`, `F13-entry-desktop-1440.png`,
+  `F14-breadcrumb.png`.
   **Screenshot caveat worth knowing:** a `--full` full-page capture does not repaint
   cross-origin iframes, so the wall's embeds photograph as blank boxes in a full-page shot even
   when they are rendering correctly. The F5 wall captures are therefore VIEWPORT shots, and the
