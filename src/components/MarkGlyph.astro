@@ -36,15 +36,20 @@ const WORDMARK = 'grokbot.dev';
 function grid(opts: { pulse?: boolean; skeleton?: boolean } = {}): string {
   const cell = (index: number) => (opts.skeleton ? ` style="--cell:${index}"` : '');
   const accentClass = `mark-accent fill-accent${opts.pulse ? ' mark-accent--pulse' : ''}`;
+  // Direct round, operator: "logo icon is off". Three fixes vs the reference board
+  // (gb3-mark-a-index-evolved.jpg): (1) the slash eyes leaned the WRONG WAY — SVG rotate()
+  // is clockwise-positive (y-down), so rotate(-20) drew backslashes; the board shows "/"
+  // slashes. (2) They were blobs (7x10, aspect 1.4) — the board's eyes are slender slashes
+  // (~4.5x11). (3) The grid was uneven (cols 9.5/18/27, rows 10/18/27) — now 9/18/27 both axes.
   return [
     '<g class="fill-current">',
-    `<rect x="6" y="5" width="7" height="10" rx="3.5" transform="rotate(-20 9.5 10)"${cell(0)} />`,
-    `<rect x="14.5" y="5" width="7" height="10" rx="3.5" transform="rotate(-20 18 10)"${cell(1)} />`,
-    `<circle cx="27" cy="10" r="3.25"${cell(2)} />`,
-    `<circle cx="9.5" cy="18" r="3.25"${cell(3)} />`,
+    `<rect x="6.75" y="3.5" width="4.5" height="11" rx="2.25" transform="rotate(38 9 9)"${cell(0)} />`,
+    `<rect x="15.75" y="3.5" width="4.5" height="11" rx="2.25" transform="rotate(38 18 9)"${cell(1)} />`,
+    `<circle cx="27" cy="9" r="3.25"${cell(2)} />`,
+    `<circle cx="9" cy="18" r="3.25"${cell(3)} />`,
     `<circle cx="18" cy="18" r="3.25"${cell(4)} />`,
     `<circle cx="27" cy="18" r="3.25"${cell(5)} />`,
-    `<circle cx="9.5" cy="27" r="3.25"${cell(6)} />`,
+    `<circle cx="9" cy="27" r="3.25"${cell(6)} />`,
     `<circle cx="27" cy="27" r="3.25"${cell(8)} />`,
     '</g>',
     `<circle class="${accentClass}" cx="18" cy="27" r="3.25"${cell(7)} />`,

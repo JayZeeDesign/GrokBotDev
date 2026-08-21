@@ -54,7 +54,9 @@ const nav = [{ href: '/wall/', label: 'wall' }];
         From md up the brand must shrink to its content or it steals width from the nav and
         forces a second row at 768 — measured at F1 QA. */}
     <a href="/" class="brand flex flex-1 items-center gap-3 md:flex-none" aria-label="grokbot.dev home">
-      <MarkGlyph size={26} class="brand-mark text-accent" />
+      {/* Direct round: mark is INK (grid) + the amber accent dot from grid() itself.
+          `text-accent` here painted the WHOLE grid amber — part of "logo icon is off". */}
+      <MarkGlyph size={30} class="brand-mark text-text" />
       <span class="brand-word display-track font-display font-semibold lowercase text-text">
         grokbot.dev
       </span>
@@ -152,24 +154,19 @@ const nav = [{ href: '/wall/', label: 'wall' }];
      component, so it never receives this component's scope attribute and a plain
      `.brand-mark` selector silently matches nothing. `.brand-word` is in this template and
      scopes normally. Caught at F2 QA — the lg step-down was a no-op without it. */
+  /* Direct round — operator: "it needs to be much larger in the header." One size at every
+     width now: 30px mark, --text-xl wordmark from lg (mobile keeps --text-lg for fit). The
+     F15 lg step-DOWN is gone — it was the wrong direction. */
   :global(.brand-mark) {
-    inline-size: 26px !important;
-    block-size: 26px !important;
+    inline-size: 30px !important;
+    block-size: 30px !important;
   }
   .brand-word {
     font-size: var(--text-lg);
   }
-  /* F15 — operator: "login should be larger a bit. It's very small, too small." There is no
-     login on this site; read as the DESKTOP lockup, which was the smallest thing in that
-     corner. Mark 18px → 22px and wordmark --text-sm → --text-base, one notch up. Mobile
-     keeps F2's 26px/--text-lg. Flagged in the report in case something else was meant. */
   @media (min-width: 1024px) {
-    :global(.brand-mark) {
-      inline-size: 22px !important;
-      block-size: 22px !important;
-    }
     .brand-word {
-      font-size: var(--text-base);
+      font-size: var(--text-xl);
     }
   }
 
