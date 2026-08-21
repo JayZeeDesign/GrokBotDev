@@ -92,12 +92,17 @@ const rows = FORMS_V2.map((f) => {
     hex: PALETTE_V2[f.color],
     svg: buildBotSVGV2(f, 84),
     pass: clashes.length === 0,
-    // why it survives: what the references DO pair with this shape / this colour
+    // Why it survives, stated from BOTH directions — what the references pair with this
+    // SHAPE, and what they pair with this COLOUR. A bot whose silhouette has no reference
+    // at all is cleared on the shape axis alone, but naming the colour's reference shapes
+    // still tells a reader what it was measured against instead of leaving them to assume.
     note: clashes.length
       ? `MATCHES a real avatar (${sil} + ${f.color}) — REDESIGN`
       : sameShape.length
         ? `refs pair ${sil} only with ${[...new Set(sameShape)].join('/')} — never ${f.color}`
-        : `no reference avatar uses a ${sil} at all`,
+        : sameColor.length
+          ? `no reference avatar is a ${sil}; refs use ${f.color} only as ${[...new Set(sameColor)].join('/')}`
+          : `no reference avatar uses a ${sil}, and none uses ${f.color} at all`,
   };
 });
 
