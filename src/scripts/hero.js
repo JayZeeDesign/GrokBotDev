@@ -47,6 +47,13 @@ var FORMS = FORMS_V2;
    two solid-ink bots never visually fuse into one blob when they rest together. */
 var INFLATE = 1.10;
 
+/* Operator: hold the hero empty for a beat after load, THEN let the bots drop in. This is a
+   global offset on the staggered release gate (releaseDue) measured from the sim boot
+   (startedAt), so the headline reads on its own for 2s and the cluster arrives as a group.
+   Live-sim only — the reduced-motion / no-JS static pile has no "drop" to delay, and the
+   manual "drop more bots" control stays instant (its bots enter directly, bypassing the gate). */
+var DROP_DELAY = 2000;
+
 /* ============================================================
    2. RANDOMISED ASSEMBLY  — a different cluster every visit
    ============================================================ */
@@ -259,7 +266,7 @@ function releaseDue(now){
   var M=window.Matter;
   bots.forEach(function(b){
     if(b.entered || !b.body) return;
-    if(now - startedAt < b.delay) return;
+    if(now - startedAt < b.delay + DROP_DELAY) return;
     b.entered=true;
     var z=dropZone(b.size);
     var x=rr(z.l, z.r);
@@ -378,7 +385,7 @@ function loop(now){
   while(acc>=16.666 && steps<3){ window.Matter.Engine.update(engine,16.666); acc-=16.666; steps++; }
   if(acc>50) acc=0;
 
-  if(now-startedAt > 2600) idleBehaviours(now);
+  if(now-startedAt > 2600 + DROP_DELAY) idleBehaviours(now);
   updateEyes(now, dt);
   render();
 }
