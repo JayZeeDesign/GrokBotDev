@@ -140,9 +140,8 @@ const SUBLINE =
   color:var(--muted); opacity:.75; text-transform:uppercase; white-space:nowrap;
 }
 @media(max-width:640px){ .hint{display:none} }
-/* "drag a bot" stopped being true on touch at F3 — hide it wherever the pointer is coarse,
-   not just under 640px, so a tablet is never told to do something that does nothing. */
-@media(pointer:coarse){ .hint{display:none} }
+/* F3b: dragging works on touch again, so the hint is true everywhere. It stays hidden under
+   640px purely for space (the <=640 rule above), not because the gesture is missing. */
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce){
@@ -176,8 +175,8 @@ const SUBLINE =
   font:500 11px/1 var(--mono); letter-spacing:.06em; color:var(--muted); opacity:.75;
 }
 @media(max-width:640px){ .stage .hero-seed{display:none} }
-/* Bot dragging is desktop-only since F3 (Matter's touch handlers preventDefault every
-   touch event and trapped page scroll). Don't promise a gesture that no longer exists. */
+/* F3b restored touch drag (hit-tested on touchstart), so the gesture is real again on a
+   phone — the cursor rule is only about not showing a grab cursor where there is no cursor. */
 @media(pointer:coarse){ .stage{cursor:auto} }
 
 </style>

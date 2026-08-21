@@ -75,29 +75,44 @@ const nav = [
       <Button href="/submit/" variant="solid" size="sm" label="submit" />
     </div>
 
-    {/* ── the mobile drawer (below md). Native <details>; the island only enhances it. ── */}
+    {/* ── the mobile drawer (below md). Native <details>; the island only enhances it. ──
+        F7: spacing is expressed as Tailwind utilities, NOT as `var(--spacing-N)` in the
+        scoped CSS. Tailwind v4 defines a single `--spacing` multiplier and computes
+        `calc(var(--spacing) * n)` inside each utility — it never emits `--spacing-6`, so my
+        first cut's `padding: var(--spacing-6)` resolved to nothing and the drawer shipped
+        with no padding at all. That is exactly what the operator saw. Utilities can't
+        silently evaluate to nothing. */}
     <details class="navDrawer md:hidden" data-nav-drawer>
       <summary class="navDrawer__toggle" aria-label="menu">
         <span class="navDrawer__word navDrawer__word--closed">menu</span>
-        <span class="navDrawer__word navDrawer__word--open">close</span>
+        <span class="navDrawer__word navDrawer__word--open" aria-hidden="true">✕</span>
       </summary>
 
-      {/* Tap-outside target. Enhancement only — without JS you close with `close`. */}
+      {/* Tap-outside target. Enhancement only — without JS you close with the same control. */}
       <span class="navDrawer__scrim" data-nav-scrim aria-hidden="true"></span>
 
-      <div class="navDrawer__panel" data-nav-panel>
-        <nav class="navDrawer__nav" aria-label="mobile">
+      <div
+        class="navDrawer__panel flex flex-col gap-8 p-6 pt-20"
+        data-nav-panel
+        tabindex="-1"
+        role="group"
+        aria-label="site menu"
+      >
+        <nav class="navDrawer__nav flex flex-col gap-1" aria-label="mobile">
           {nav.map((item) => (
             <a
               href={item.href}
-              class:list={['navDrawer__link', isCurrent(item.href) && 'navDrawer__link--current']}
+              class:list={[
+                'navDrawer__link',
+                isCurrent(item.href) && 'navDrawer__link--current',
+              ]}
               aria-current={isCurrent(item.href) ? 'page' : undefined}
             >
               {item.label}
             </a>
           ))}
 
-          <span class="navDrawer__rule" aria-hidden="true"></span>
+          <span class="navDrawer__rule my-3" aria-hidden="true"></span>
 
           <a
             href="/search/"
@@ -155,18 +170,22 @@ const nav = [
     }
   }
 
-  /* ---------- drawer ---------- */
+  /* ---------- drawer (F1, polished at F7) ---------- */
   .navDrawer {
     margin-inline-start: auto;
   }
+
+  /* The ONE control: `menu` in the header when closed, `✕` inside the panel when open.
+     Keeping it as the <summary> means the drawer still opens and closes with zero JS — a
+     second, JS-only close button would be a control that silently does nothing. */
   .navDrawer__toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* §4.6 target size, raised to the F1 mobile floor of 44px. */
+    /* §4.6 target size, raised to the F1/F7 mobile floor of 44px. */
     min-inline-size: 44px;
     min-block-size: 44px;
-    padding-inline: var(--spacing-3);
+    padding-inline: 0.75rem;
     border: 1px solid var(--color-border-interactive);
     border-radius: var(--radius-sm);
     font-family: var(--font-mono);
@@ -179,15 +198,20 @@ const nav = [
   .navDrawer__toggle::-webkit-details-marker {
     display: none;
   }
-  /* While open, the toggle sits at x≈330 — INSIDE the panel's box — so without this it is
-     painted under the drawer and `close` becomes invisible and untappable (elementFromPoint
-     returned a nav link). Lifting it above the panel puts `close` at the panel's top-right,
-     which is where a close control belongs anyway. Scrim tap and Escape already worked;
-     this restores the visible affordance. Caught at F1 QA. */
+
+  /* F7 — while open it becomes the X, pinned inside the panel's top-right padding box.
+     `fixed` (not `relative`) so it lands at a known inset rather than wherever the header
+     happens to have placed it; z-index 42 keeps it above the panel, which is what F1 QA
+     caught it failing to do. */
   .navDrawer[open] .navDrawer__toggle {
-    position: relative;
+    position: fixed;
+    inset-block-start: 1.5rem;
+    inset-inline-end: 1.5rem;
     z-index: 42;
+    inline-size: 44px;
+    padding-inline: 0;
     background: var(--color-surface);
+    font-size: var(--text-base);
   }
   .navDrawer__word--open,
   .navDrawer[open] .navDrawer__word--closed {
@@ -202,8 +226,8 @@ const nav = [
     inset: 0;
     z-index: 40;
     display: block;
-    background: var(--color-bg);
-    opacity: 0.72;
+    background: var(--color-text);
+    opacity: 0.45;
   }
 
   .navDrawer__panel {
@@ -211,29 +235,67 @@ const nav = [
     inset-block: 0;
     inset-inline-end: 0;
     z-index: 41;
-    /* ~80% width, capped so it never becomes a full-bleed sheet on a large phone. */
+    /* C4: ~80% width, capped so it never becomes a full-bleed sheet on a large phone. */
     inline-size: 80%;
     max-inline-size: 22rem;
     /* internally scrollable — a long nav must never be unreachable */
     overflow-y: auto;
     overscroll-behavior: contain;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-6);
-    padding: var(--spacing-6);
     background: var(--color-surface);
     border-inline-start: 1px solid var(--color-border);
+    /* C4 custom scrollbar — thin, in our own tokens, not the platform default. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+  .navDrawer__panel::-webkit-scrollbar {
+    inline-size: 6px;
+  }
+  .navDrawer__panel::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: var(--radius-sm);
+  }
+  .navDrawer__panel::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  .navDrawer__nav {
-    display: flex;
-    flex-direction: column;
+  /* F7 slide-in. The transform/opacity start state is applied ONLY when the island has
+     marked the drawer with `data-nav-animate`, so with JS off the panel simply appears in
+     place instead of being stranded off-screen at translateX(100%) forever. Transform and
+     opacity only — no layout is animated. */
+  [data-nav-animate] .navDrawer__panel {
+    transform: translateX(100%);
+    transition: transform 280ms ease-out;
   }
+  [data-nav-animate] .navDrawer__scrim {
+    opacity: 0;
+    transition: opacity 280ms ease-out;
+  }
+  [data-nav-animate] .navDrawer__toggle {
+    transition: opacity 280ms ease-out;
+  }
+  [data-nav-animate].is-open .navDrawer__panel {
+    transform: translateX(0);
+  }
+  [data-nav-animate].is-open .navDrawer__scrim {
+    opacity: 0.45;
+  }
+
+  /* §4.4 rule 6 — reduced motion gets the end state instantly, never a slide. The global
+     rule already crushes durations; this makes the intent local and explicit. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-nav-animate] .navDrawer__panel,
+    [data-nav-animate] .navDrawer__scrim,
+    [data-nav-animate] .navDrawer__toggle {
+      transition: none;
+    }
+  }
+
   .navDrawer__link {
     display: flex;
     align-items: center;
-    gap: var(--spacing-2);
+    gap: 0.5rem;
     min-block-size: 44px;
+    padding-block: 0.25rem;
     font-family: var(--font-mono);
     font-size: var(--text-base);
     text-transform: lowercase;
@@ -253,7 +315,6 @@ const nav = [
   .navDrawer__rule {
     display: block;
     block-size: 1px;
-    margin-block: var(--spacing-3);
     background: var(--color-border);
   }
 
@@ -294,17 +355,53 @@ const nav = [
     const scrim = drawer.querySelector<HTMLElement>('[data-nav-scrim]');
     const toggle = drawer.querySelector<HTMLElement>('summary');
 
+    // F7 — opt the CSS into the slide only now that JS is running. Without this attribute
+    // the panel has no transform, so a no-JS visitor gets it in place rather than parked
+    // off-screen at translateX(100%).
+    drawer.dataset.navAnimate = '';
+
+    const SLIDE_MS = 280;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+
     const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled])';
+
+    // A <details> hides its content the instant `open` flips, so a close transition would
+    // never be seen. Hold `open` true, play the slide-out, then drop it.
+    let closing = 0;
     const close = (returnFocus: boolean) => {
-      drawer.open = false;
-      if (returnFocus) toggle?.focus();
+      if (!drawer.open || closing) return;
+      drawer.classList.remove('is-open');
+      const finish = () => {
+        window.clearTimeout(closing);
+        closing = 0;
+        drawer.open = false;
+        document.documentElement.style.overflow = '';
+        if (returnFocus) toggle?.focus();
+      };
+      if (reduced?.matches) return finish();
+      closing = window.setTimeout(finish, SLIDE_MS);
     };
 
+    // Intercept the summary's own click for the CLOSE direction only; opening stays native.
+    toggle?.addEventListener('click', (event) => {
+      if (!drawer.open) return;
+      event.preventDefault();
+      close(true);
+    });
+
     drawer.addEventListener('toggle', () => {
+      if (!drawer.open) return;
       // Scroll lock on the root element, so the page behind cannot move while the drawer
       // is open. Paired with `overscroll-behavior: contain` on the panel.
-      document.documentElement.style.overflow = drawer.open ? 'hidden' : '';
-      if (drawer.open) panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+      document.documentElement.style.overflow = 'hidden';
+      // Next frame, so the browser has painted the off-screen start state and the
+      // transition to translateX(0) actually runs instead of being coalesced away.
+      requestAnimationFrame(() => drawer.classList.add('is-open'));
+      // Focus the PANEL, not the first link. Focus must enter the drawer for the trap and
+      // for screen readers, but landing it on a link paints the §4.6 focus ring around a
+      // full-width row that reads like a text input and collides with the X. A container
+      // with tabindex="-1" is the standard dialog answer: focus moves, nothing is styled.
+      panel?.focus({ preventScroll: true });
     });
 
     scrim?.addEventListener('click', () => close(true));

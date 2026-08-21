@@ -280,6 +280,26 @@ const groups = [
         five nav links (incl. <code>wall</code> per B2), link-mode search, the ▪ /agent door,
         and the single solid submit Button. No variants; sticky is off.
       </p>
+      <p class="text-base text-text-muted">
+        <strong>Three responsive bands (F1/F2/F7, operator directive — supersedes §4.5's
+        "no JS, no hamburger").</strong> Below <code>md</code>: one row, enlarged brand lockup
+        (mark 26px, wordmark <code>--text-lg</code>) plus a 44×44 <code>menu</code> toggle;
+        nav, search, /agent and submit move into a slide-in drawer. <code>md</code>–<code>lg</code>:
+        one row with the full nav and the compact <code>search</code> link. From
+        <code>lg</code>: unchanged, with the search input and the 18px mark.
+      </p>
+      <p class="text-base text-text-muted">
+        <strong>The drawer</strong> is a native <code>&lt;details&gt;</code>, so it opens,
+        closes and is keyboard-operable with zero JS — the island is enhancement only
+        (§4.2.9's FilterBar shape): background scroll lock, focus trap, scrim tap, Escape,
+        and the 280ms <code>translateX</code> slide, which is opted into via
+        <code>data-nav-animate</code> so a no-JS visitor never gets a panel stranded
+        off-screen. 80% width capped at 22rem, full height, internally scrollable with a
+        token-coloured thin scrollbar, 24px padding, every target ≥44px, and the one
+        <code>&lt;summary&gt;</code> serves as both the <code>menu</code> button and the
+        <code>✕</code> pinned inside the panel's top-right. Honours
+        <code>prefers-reduced-motion</code> by appearing instantly.
+      </p>
     </section>
 
     {/* ------------------------------------------------------------------- NavLink */}

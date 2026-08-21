@@ -469,23 +469,61 @@ function build(newSeed){
   // never hijack page scroll — wheel (desktop)
   if(mouse.mousewheel){ mouse.element.removeEventListener('wheel', mouse.mousewheel); mouse.element.removeEventListener('mousewheel', mouse.mousewheel); }
 
-  // never hijack page scroll — touch (mobile). integration-notes §5 says `touch-action:pan-y`
-  // on .stage is enough; it is NOT, and this was a real scroll trap on Android Chrome.
-  // Matter.Mouse.setElement registers touchmove/touchstart/touchend with {passive:false},
-  // and its own handlers do `e.changedTouches && (button=0, e.preventDefault())` — they
-  // preventDefault EVERY touch event unconditionally. That cancels the browser's pan gesture
-  // on the first touchmove, before touch-action:pan-y ever gets to apply, so the page cannot
-  // scroll while a finger starts inside the hero.
-  //
-  // Removing the three listeners is the same remedy, and the same one-line pattern, as the
-  // wheel removal directly above. Cost: MouseConstraint no longer receives touch positions,
-  // so bot DRAGGING becomes desktop-only. Everything else on touch is unchanged — the bots
-  // still drop, settle, collide and idle-nudge, and the eyes still track the finger, because
-  // eye tracking is our own passive `pointermove` listener and not Matter's.
-  // RULE (operator, Stage 5B F3): vertical page scroll ALWAYS wins on touch.
+  /* ---------- touch: hit-tested drag (F3 + F3b) ----------
+     F3 found the scroll trap: `Matter.Mouse.setElement` registers touchmove/touchstart/
+     touchend with {passive:false} and its handlers do
+     `e.changedTouches && (button=0, e.preventDefault())` — they preventDefault EVERY touch
+     event unconditionally, which cancels the browser's pan gesture on the first touchmove,
+     before `touch-action: pan-y` is ever consulted. The CSS was correct and inert.
+
+     F3 removed those listeners, which fixed scrolling but cost touch users the bots.
+     F3b restores the play WITHOUT giving the scroll back:
+
+       touchstart → hit-test the point against the bot bodies.
+         · lands ON a bot  → we own the gesture: call Matter's own handlers (they
+           preventDefault, which is now exactly what we want) and the bot follows the finger.
+         · lands on empty  → we do NOTHING. No listener calls preventDefault, `pan-y`
+           applies, and the page scrolls normally.
+
+     So the decision is made once, on touchstart, from geometry — not from a global flag.
+     Matter's handlers are reused rather than reimplemented so the constraint keeps its exact
+     coordinate/pixelRatio maths; only WHEN they run changes. Desktop mouse is untouched. */
   mouse.element.removeEventListener('touchmove', mouse.mousemove);
   mouse.element.removeEventListener('touchstart', mouse.mousedown);
   mouse.element.removeEventListener('touchend', mouse.mouseup);
+
+  var touchDragging = false;
+
+  function botBodies(){
+    var out=[];
+    for(var i=0;i<bots.length;i++){ if(bots[i].body) out.push(bots[i].body); }
+    return out;
+  }
+
+  stage.addEventListener('touchstart', function(e){
+    if(!engine || !e.changedTouches || !e.changedTouches.length) return;
+    var t = e.changedTouches[0];
+    var B = stageBox();
+    // Query.point uses world coords, which for this sim are stage-relative pixels.
+    var hits = M.Query.point(botBodies(), { x: t.clientX - B.left, y: t.clientY - B.top });
+    if(hits && hits.length){
+      touchDragging = true;
+      mouse.mousedown(e);   // engages the constraint AND preventDefaults — intended here
+    }
+    // no bot under the finger: fall through untouched so the page can pan
+  }, { passive:false });
+
+  stage.addEventListener('touchmove', function(e){
+    if(touchDragging) mouse.mousemove(e);
+  }, { passive:false });
+
+  function endTouch(e){
+    if(!touchDragging) return;
+    touchDragging = false;
+    mouse.mouseup(e);
+  }
+  stage.addEventListener('touchend', endTouch, { passive:false });
+  stage.addEventListener('touchcancel', endTouch, { passive:false });
   M.Events.on(mouseC,'startdrag',function(e){ stage.classList.add('dragging'); if(e.body) M.Sleeping.set(e.body,false); });
   M.Events.on(mouseC,'enddrag',function(){ stage.classList.remove('dragging'); });
 

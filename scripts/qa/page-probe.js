@@ -3,11 +3,26 @@
   const txt = (el) => (el ? el.textContent.replace(/\s+/g, ' ').trim().slice(0, 90) : null);
   const vw = window.innerWidth;
 
-  // elements that overflow the viewport horizontally
+  // elements that overflow the viewport horizontally.
+  //
+  // A CLOSED <details> is excluded (added at F7): the mobile nav drawer's panel is parked
+  // off-screen at `translateX(100%)` while closed — that IS the slide-in start state, and
+  // `body { overflow-x: clip }` (F6) means it can never move the page. Without this the
+  // probe flags all 19 templates at 390 while `documentElement.scrollWidth` is exactly the
+  // viewport width. `scripts/qa/overflow-probe.js` already carried this exclusion; the two
+  // disagreeing is what surfaced it.
+  const inClosedDetails = (el) => {
+    for (let n = el.parentElement; n; n = n.parentElement) {
+      if (n.tagName === 'DETAILS' && !n.open) return true;
+    }
+    return false;
+  };
+
   const overflowing = [];
   for (const el of q('body *')) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
+    if (inClosedDetails(el)) continue;
     if (r.right > vw + 1 || r.left < -1) {
       const cs = getComputedStyle(el);
       if (cs.position === 'fixed' && r.width === 0) continue;

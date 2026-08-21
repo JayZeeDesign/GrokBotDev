@@ -1586,6 +1586,104 @@ Restoring the rules returns 45/45.
 Screenshot: `images/grokbot-m7-qa/F6-modal-390.png` — modal open at 390, the long API URLs
 wrapping mid-token, nothing clipped at either edge, vertical scroll only.
 
+### F3b · touch play restored WITHOUT giving the scroll back
+
+F3 fixed the scroll trap by removing Matter's touch listeners, which cost touch users the
+bots entirely. The operator: *"now I can't play with bots at all. I should be able to play
+with them, but also still be able to scroll when interacting with rest of the area."*
+
+**The decision is made once, on `touchstart`, from geometry** — not from a mode or a flag:
+
+```
+touchstart → Matter.Query.point(botBodies, point)
+  · lands ON a bot  → we own the gesture: call Matter's own handlers (they preventDefault,
+                      which is now exactly what we want) and the bot follows the finger
+  · lands on empty  → do NOTHING. No listener preventDefaults, `touch-action: pan-y`
+                      applies, the page scrolls
+```
+
+Matter's `mousedown`/`mousemove`/`mouseup` are **reused, not reimplemented**, so the
+constraint keeps its exact coordinate/pixelRatio maths — only *when* they run changed.
+Desktop mouse is untouched. No physics constant was altered.
+
+**Measured, both directions, on the same build at 390×844:**
+
+| gesture | touchstart | touchmove | result |
+|---|---|---|---|
+| on a bot | `defaultPrevented: true` | `true` | we own it — bot moved **235px** following the finger, `stage.dragging` true |
+| on empty hero | `false` | `false` | nothing intercepts — page scrolls |
+
+Verdict string from the final check: **"PLAY on bot + SCROLL elsewhere"**.
+
+*Testing note worth keeping:* a synthetic `Touch` built with only `clientX/clientY` sends
+Matter's mouse to `{0, -77}`, because `Matter.Mouse._setMousePosition` reads **`pageX/pageY`**.
+The first functional test looked like a broken drag and was a broken test. With `pageX/pageY`
+set, `mouse.position {217,228}` matched `body.position {217,228}` exactly — which is also the
+proof that the hit-test and the constraint agree on coordinates.
+
+The `pointer: coarse` rules from F3 are re-scoped: the `drag a bot` hint is no longer
+suppressed on touch (the gesture is real again); only the `grab` **cursor** stays off, since
+there is no cursor to style.
+
+### F7 · drawer polish — and a defect of mine the operator caught
+
+**My F1 drawer shipped with no padding at all, and I did not catch it.** The operator did, on
+his phone: items flush against the left edge, the submit CTA running edge to edge.
+
+**Root cause, worth recording because it will bite again:** the scoped CSS used
+`padding: var(--spacing-6)`, `gap: var(--spacing-6)`, `gap: var(--spacing-2)`,
+`padding-inline: var(--spacing-3)`, `margin-block: var(--spacing-3)`. **Tailwind v4 never
+emits `--spacing-N`.** It defines a single `--spacing` multiplier and computes
+`calc(var(--spacing) * n)` *inside each utility*. So every one of those declarations resolved
+to nothing and was silently dropped — no error, no warning, no gate. `--text-*`, `--radius-*`
+and `--font-*` DO exist in `tokens.css`, which is exactly why the mistake looked plausible.
+Spacing in this component is now Tailwind utilities (`p-6`, `gap-8`, `gap-1`, `my-3`) or
+explicit rem in the mechanics; a utility cannot evaluate to nothing.
+
+Everything the operator asked for, measured with the drawer open at 390:
+
+| requirement | measured |
+|---|---|
+| inner padding ~24px | `padding: 24px` (was **none**) |
+| vertical rhythm | `gap: 32px` between nav block and CTA; links 44px min with 4px block padding; section rule kept |
+| slide-in | `transform: translateX(100%) → 0`, `transition-duration: 0.28s`, ease-out, **transform only** |
+| scrim fades in behind | ink at `opacity: 0 → 0.45`, same 280ms |
+| reverse on close | clicking ✕ caught mid-slide at `matrix(1,0,0,1,30.5,0)` while `open` was still true |
+| prefers-reduced-motion | `transition: none` on panel, scrim and toggle — verified in the shipped CSS |
+| ✕ top-right INSIDE the drawer | 44×44 at (322, 24); `xInsidePanel: true` |
+| ✕ is mono | `--font-mono`, inherits the toggle's chrome styling |
+| outside tap · Esc · scroll lock | all three close, unlock and return focus to the toggle |
+| ~80% width · full height | 312px of 390 = **80%**, 844px |
+| internally scrollable + custom scrollbar | `overflow-y: auto`, `scrollbar-width: thin`, thumb on `--color-border-strong` |
+
+**Two implementation decisions worth the ink:**
+
+1. **The ✕ IS the `<summary>`**, restyled and repositioned when open — not a second button.
+   A separate ✕ would only work with JS, i.e. a visible control that silently does nothing
+   for a no-JS visitor. One element keeps the native open/close contract intact.
+2. **A `<details>` hides its content the instant `open` flips**, so a close transition would
+   never be seen. The island holds `open` true, plays the slide-out, and drops it on a 280ms
+   timer (immediately under reduced motion). The start state lives behind `data-nav-animate`,
+   set by the island, so a no-JS visitor gets the panel in place rather than stranded
+   off-screen at `translateX(100%)` forever.
+
+**One more of my own, fixed before commit:** focus was landing on the first nav link, which
+painted the §4.6 focus ring around a full-width row — it read as a text input and collided
+with the ✕. Focus now goes to the panel itself (`tabindex="-1"`, `role="group"`,
+`aria-label="site menu"`), which is the standard dialog answer: focus moves for the trap and
+for screen readers, nothing gets styled. Panel top padding raised to 80px so the first item
+always clears the ✕ (`firstLinkClearsX: true`).
+
+`/dev/components/` documents all three header bands and the drawer's full contract.
+
+**QA harness correction (not a product defect).** After F7 the sweep probe flagged horizontal
+overflow on all 19 templates at 390. It was right that boxes sat past the viewport and wrong
+about what it meant: they are the **closed** drawer's panel and children, parked off-screen at
+`translateX(100%)` — the slide-in start state — while `documentElement.scrollWidth` was
+exactly 390 and `body` carries F6's `overflow-x: clip`. `overflow-probe.js` already excluded
+closed-`<details>` descendants; `page-probe.js` predates the drawer and did not. The two
+probes disagreeing is what surfaced it. Aligned, and the sweep is back to 57/57 clean.
+
 ### Verification
 
 - **Full gate suite green:** validate 10 entries · negative fixtures still rejected ·
@@ -1596,7 +1694,8 @@ wrapping mid-token, nothing clipped at either edge, vertical scroll only.
   landmark defects**. Screenshots refreshed in `images/grokbot-m7-qa/`, plus `F1-F4-home-*.png`,
   `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`,
   `F5-wall-embeds-{390,768,1440}.png`, `F5-entry-detail-embed-{390,1440}.png`,
-  `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`, `F6-modal-390.png`.
+  `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`, `F6-modal-390.png`,
+  `F3b-hero-drag-390.png`, `F7-drawer-390.png`.
   **Screenshot caveat worth knowing:** a `--full` full-page capture does not repaint
   cross-origin iframes, so the wall's embeds photograph as blank boxes in a full-page shot even
   when they are rendering correctly. The F5 wall captures are therefore VIEWPORT shots, and the
