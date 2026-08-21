@@ -2,27 +2,25 @@
 type: collection
 name: "Research You Can Trust"
 slug: research-you-can-trust
-tagline: Three research Bots that find, check, and label the receipts.
+tagline: Three research Bots that find the signal and show their receipts.
 category: work
 subcategory: research
 members:
-  - slug: x-to-notion-research-bot
-    reason: "The daily X-to-Notion Bot is the simple starting point for a living research database."
-  - slug: tiered-research-swarm
-    reason: "The tiered swarm adds scale: scouts, analysts, and a verifier with traceable numbers."
-  - slug: factored-digest
-    reason: "Factored Digest adds source-confidence tags so the output carries its own warning labels."
+  - slug: x-viral-tweet-scout
+    reason: "Scouts the posts actually breaking out in your niche, so your research starts from real signal, not a hunch."
+  - slug: youtube-outlier-researcher
+    reason: "Finds the YouTube outliers worth learning from and shows the numbers that make them outliers."
+  - slug: hourly-political-brief
+    reason: "Monitors the named topics you care about and briefs you hourly, keeping the source link on every claim."
 featured: false
-added_at: "2026-08-20T22:45:00Z"
-updated_at: "2026-08-21T11:00:00Z"
-verified_at: "2026-08-21T11:00:00Z"
+added_at: "2026-08-21T00:00:00Z"
+updated_at: "2026-08-21T12:00:00Z"
+verified_at: "2026-08-21T12:00:00Z"
 status: live
 ---
 
-Curator pick for the second launch collection: the 005/014/016 research family suggested in Addendum B4. These three seeds form a clear ladder. Seed 005 is the normal-user version: a Bot scans X daily and keeps a Notion research database fresh. Seed 014 is the advanced version: a tiered research swarm pulls many sources, removes duplicates, and runs a verifier. Seed 016 is the rigor layer: a digest format that labels sources as verified, plausible, or single-source before it synthesizes.
+A research stack built around one rule: the Bot should show you where it looked. Each of these three takes a different beat of the same job — find what matters, and keep the receipt attached.
 
-Together, they make a useful collection because the reader can choose a setup by risk and effort. Start with a daily database, move up to a larger swarm when the question matters, then copy the confidence-tagged output pattern so the Bot's answer does not look more certain than its sources.
+Start with the scout that watches your niche on X and surfaces what is actually breaking out, so you are not researching a topic nobody is reading. Add the outlier researcher that scans YouTube for the videos performing far above their channel's baseline, with the view and engagement numbers that flag them, so "worth studying" is a measurement and not a vibe. Then layer the hourly brief that monitors the named topics you told it to watch and comes back on a schedule with a short readout — every line carrying the link it came from.
 
-Two of the three ship a Curator reconstruction rather than the author's own prompt text, and each of those pages says so above its prompt. Factored Digest is the exception: that one is the author's verbatim template.
-
-Sources from the seed queue: https://x.com/DeryaTR_/status/2087371098920763631, https://x.com/0xMiraqle/status/2089118221190455784, and https://x.com/PlanetaryS936/status/2088828842542596115.
+Together they cover the honest version of research: find the signal, rank it by something you can check, and never hand you a claim without its source. Each page ships a Curator reconstruction of the original build rather than the author's exact prompt, and each one says so above its prompt block.

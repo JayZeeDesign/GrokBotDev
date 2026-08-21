@@ -6,9 +6,9 @@ tagline: Firstmate at the helm, Grok Ship as the software factory.
 category: engineering
 subcategory: agents-ops
 members:
-  - slug: firstmate
+  - slug: firstmate-front-door
     reason: "Firstmate is the chief Bot pattern that creates, routes, and improves the rest of the crew."
-  - slug: grok-ship
+  - slug: grok-ship-factory
     reason: "Grok Ship is the working software factory that turns the crew pattern into shipped work."
 featured: false
 added_at: "2026-08-20T22:45:00Z"
