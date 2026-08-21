@@ -1769,3 +1769,52 @@ for the same reason.
   moved (781ms → 291ms) — the signature of CPU starvation, not of a slower page. For scale,
   the change adds **931 bytes** of JS. The real measurement is M7-remote item 8, against
   production.
+
+## 2026-08-21 — M8 R1 rulings (design authority) — recorded, no code change
+
+Everything below was already shipped as described; this entry exists so none of it gets
+re-opened, and so the two contingency paths on F4 don't have to be re-derived by whoever
+executes them.
+
+**Approved as shipped:**
+
+1. **Drawer breakpoint `md`/768.** §4.5's "Tailwind defaults, used exclusively" law wins over
+   the brief's literal 720, and keeping a visible nav at 768–1023 is strictly better than
+   hiding it behind a toggle at a width with room. **Not a deviation to revisit.**
+2. **Native `<details>` drawer + island count NINE.** Approved as an operator directive and as
+   the enhancement-only shape §4.2.9 already sanctions. §12.5's list is now nine; M1's
+   "seven" and A4's eighth are both superseded.
+3. **The supersession notes** recorded against §4.5, §4.3.1, §10.3, §4.2.16, §2 Q16 and
+   decision #18 are correct as written.
+4. **F4 `--color-accent-strong: #867458`, white at 4.513:1** — approved as shipped.
+5. **Perf caveat accepted** — the box was at load average 154 on 12 cores; real Lighthouse
+   performance numbers come from M7-remote item 8, against production.
+
+**F4 — the two contingency paths, so they are unambiguous if the operator asks:**
+
+- *Wants margin:* swap to **`#847357` (4.594:1)**. One line, light block only, no other change;
+  the gated pair and the structural guard both keep working untouched.
+- *Insists on the undarkened `#8C7A5C` with white (4.156:1):* that is an **operator AA
+  overrule**, not a bug, and it must look like one. Re-exempt **only** that pair in
+  `check-contrast.mjs` behind an explicit `OPERATOR-OVERRULE` marker — the same shape as the
+  retired `A10-PENDING` row, so the report says out loud that a gate is being waived and
+  which one. Every other pair stays gated. **Do not remove the floor and do not widen the
+  exemption to cover future pairs.**
+- **In all three outcomes the structural `bg-accent` + `text-accent-contrast` guard stays.**
+  It is what stops a label drifting back onto the non-text accent token, and it is orthogonal
+  to whichever hex wins.
+
+**F3's "bot dragging is desktop-only" is dead.** F3b (commit `6f49d40`) replaced it with the
+hit-test: drag engages only when the touch STARTS on a bot; a touch on empty hero space is
+left alone so the page scrolls. The `defaultPrevented` root-cause work carried over intact —
+it is what made the conditional version possible at all.
+
+**Still open, awaiting a call (neither blocks anything):**
+
+- **§4.5's footer row now reads 2 / 2 / 4 / 4** after F8 took the four-column step from `lg`
+  down to `md`. Flagged in the F8 report; trivially revertible to `lg` if 768 should stay at
+  two columns.
+- **Dark mode is unreachable** — `[data-theme="dark"]` exists in `tokens.css` and is never
+  set: no toggle, no `prefers-color-scheme` fallback, so every dark token is dead code. A1
+  says dual mode is mandatory. Raised at F5; a theme toggle is a design decision and a new
+  control, not a polish item.
