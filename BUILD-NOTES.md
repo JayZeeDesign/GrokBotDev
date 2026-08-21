@@ -521,3 +521,25 @@ that nothing can ship as a reconstruction without saying so.
 - Sitemap 23 URLs (+1). Pagefind `page_count: 10` = 9 entry pages + `/plugin-builder/`.
   OG cards 9 + default + logo. `astro check` 0/0 · build exit 0 · validate, contrast,
   keyword, links, audit-scripts all OK.
+
+## 2026-08-21 — M3x hub intros import (83/83, WR-approved)
+
+All 83 WR-approved intros imported from `documents/grokbot-dev/hub-intros-draft/` into
+`src/data/hub-intros/` — 59 category/subcategory files (10 + 49) + 24 integration files.
+Filenames already matched the loader convention (`categories/<cat>.md`,
+`categories/<cat>--<subcat>.md`, `integrations/<tool>.md`), so nothing was renamed.
+
+`integrations/slack.md` — the reviewer's direct edit — imported **verbatim**, byte-identical
+to the draft (`diff -q` clean). It measures 87 words, inside §6.2's 60–160 band, declarative
+voice, no money-phrase stuffing. It breaks no gate.
+
+**Gate report (still report-only, per the standing plan):**
+- `check-hub-intros`: **83/83 present · 0 out of range**. Verified that the gate would also
+  pass when armed: `HUB_INTRO_GATE=1 node scripts/check-hub-intros.mjs` exits **0**. The M7
+  flip is now a formality rather than a risk.
+- `check-keyword-placements`: **OK** — 4 required placements + **83 hub intros compared, 0
+  shingle collisions** on the §6.2 40-character anti-boilerplate rule. This is the first run
+  where that half of the check had anything to compare, and the corpus is clean.
+
+All 83 hub pages now render their intro (verified by markup presence on 83/83). Build
+green: 107 HTML pages, 0 broken links, `astro check` 0/0, validate/contrast/OG/audit all OK.
