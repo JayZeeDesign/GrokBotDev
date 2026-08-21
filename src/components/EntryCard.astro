@@ -95,6 +95,11 @@ const typeLabel = entry.type === 'use-case' ? 'use case' : entry.type;
           the detail page, where the claim can carry its evidence. Cards stay taxonomy-only.
           `needs update` KEPT: it is an integrity warning, not decoration. */}
       <div class="relative z-10 flex flex-wrap items-center gap-2">
+        {entry.sponsor && (
+          <span class="inline-flex items-center rounded-sm border border-border-interactive px-2 py-0.5 font-mono text-xs lowercase text-text-muted">
+            sponsor
+          </span>
+        )}
         {needsUpdate && (
           <span class="inline-flex items-center rounded-sm px-2 py-0.5 font-mono text-xs lowercase text-warn">
             needs update

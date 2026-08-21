@@ -1,0 +1,137 @@
+---
+// SponsorBar — the mobile / narrow-viewport sponsor strip (operator). Sits just under the
+// header and shows the same sponsors as the desktop rails, as a horizontal tape that loops
+// when it overflows. Hidden on wide screens, where the fixed rails take over.
+import { SPONSORS, sponsorHref, sponsorIconPath } from '../lib/sponsors';
+const scroll = SPONSORS.length > 3;
+const items = scroll ? [...SPONSORS, ...SPONSORS] : SPONSORS;
+---
+
+{
+  SPONSORS.length > 0 && (
+    <aside class="sponsorBar" aria-label="sponsors" data-pagefind-ignore>
+      <a href="/sponsors/" class="sponsorBar__label">sponsors</a>
+      <div class="sponsorBar__viewport">
+        <ul class:list={['sponsorBar__tape', scroll && 'sponsorBar__tape--scroll']}>
+          {items.map((s, i) => (
+            <li>
+              <a
+                href={sponsorHref(s)}
+                target="_blank"
+                rel="sponsored noopener"
+                class="sponsorChip"
+                style={`--tint: var(--color-sponsor-${s.tint}-tint)`}
+                aria-hidden={scroll && i >= SPONSORS.length ? 'true' : undefined}
+                tabindex={scroll && i >= SPONSORS.length ? -1 : undefined}
+              >
+                {sponsorIconPath(s) ? (
+                  <img src={sponsorIconPath(s)!} alt="" width="18" height="18" class="sponsorChip__icon" loading="lazy" />
+                ) : (
+                  <span class="sponsorChip__tile" aria-hidden="true">{s.name.charAt(0)}</span>
+                )}
+                <span class="sponsorChip__name">{s.name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  )
+}
+
+<style>
+  .sponsorBar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 16px;
+    border-block-end: 1px solid var(--color-border);
+    background: var(--color-bg);
+    overflow: hidden;
+  }
+  /* The fixed rails take over on wide screens. */
+  @media (min-width: 1440px) {
+    .sponsorBar {
+      display: none;
+    }
+  }
+  .sponsorBar__label {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .sponsorBar__viewport {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  }
+  .sponsorBar__tape {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    inline-size: max-content;
+  }
+  .sponsorBar__tape--scroll {
+    animation: sponsorBarTape 30s linear infinite;
+  }
+  .sponsorBar__viewport:active .sponsorBar__tape--scroll,
+  .sponsorBar__viewport:hover .sponsorBar__tape--scroll {
+    animation-play-state: paused;
+  }
+  @keyframes sponsorBarTape {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sponsorBar__tape--scroll {
+      animation: none;
+    }
+    .sponsorBar__viewport {
+      overflow-x: auto;
+    }
+  }
+  .sponsorChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--tint);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .sponsorChip__icon,
+  .sponsorChip__tile {
+    inline-size: 18px;
+    block-size: 18px;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+  .sponsorChip__tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--color-text);
+  }
+  .sponsorChip__name {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--color-text);
+  }
+</style>

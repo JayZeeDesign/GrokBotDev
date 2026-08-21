@@ -4,7 +4,9 @@
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import Footer from '../components/Footer.astro';
-import { ENABLE_RAILS } from '../lib/buildFlags';
+import SponsorRail from '../components/SponsorRail.astro';
+import SponsorBar from '../components/SponsorBar.astro';
+import { ENABLE_RAILS, ENABLE_SPONSORS } from '../lib/buildFlags';
 import { siteStats } from '../lib/entries';
 import { SITE, baseGraph } from '../lib/seo';
 import geistDisplayUrl from '@fontsource/geist/files/geist-latin-600-normal.woff2?url';
@@ -83,6 +85,13 @@ const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...
   <body>
     <a class="skip-link" href="#main">skip to content</a>
     <SiteHeader currentPath={currentPath} />
+    {ENABLE_SPONSORS && <SponsorBar />}
+    {ENABLE_SPONSORS && (
+      <>
+        <SponsorRail side="left" />
+        <SponsorRail side="right" />
+      </>
+    )}
     <div class="site-grid" data-rails={ENABLE_RAILS ? 'true' : 'false'}>
       {ENABLE_RAILS && <aside class="hidden lg:block" aria-label="left rail"><slot name="rail-left" /></aside>}
       <main id="main" class="min-h-dvh">

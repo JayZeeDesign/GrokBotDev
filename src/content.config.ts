@@ -175,6 +175,7 @@ const plugins = defineCollection({
       pricing_note: z.string().max(120).optional(), // honest cost line, e.g. "Free tier; API key ~$5/mo"
       setup_minutes: z.number().int().min(1).max(240).optional(), // setup-time chip (§4.2.10, §4.3.3)
       featured: z.boolean().default(false),
+      sponsor: z.boolean().default(false), // operator: marks a sponsor tool — badged in listings
       added_at: isoDate,
       updated_at: isoDate,
       verified_at: isoDate.optional(), // MAINTAINER-SET ONLY on community PRs (§8.5 check 9)

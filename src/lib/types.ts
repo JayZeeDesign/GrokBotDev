@@ -75,6 +75,7 @@ interface EntryBase {
   category: string;
   subcategory: string;
   featured: boolean;
+  sponsor?: boolean;
   addedAt: string;
   updatedAt: string;
   verifiedAt?: string;

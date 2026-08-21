@@ -1,0 +1,176 @@
+---
+// SponsorRail — the desktop sponsorship rail (operator). Fixed in the side gutter so it never
+// squishes the centred content (the reference sites float their rails the same way). Shows
+// only on wide screens where the gutter is real. When a rail holds more cards than fit, it
+// becomes a seamless vertical "tape" (duplicated list + CSS marquee) — the "rotating slots"
+// behaviour; with few sponsors it sits static. A5 hue law: sponsor tint = paid, and it is the
+// ONLY place a sponsor tint renders. Links are rel="sponsored noopener" with attribution.
+import { splitRails, sponsorHref, sponsorIconPath, type Sponsor } from '../lib/sponsors';
+
+interface Props {
+  side: 'left' | 'right';
+}
+const { side } = Astro.props;
+const { left, right } = splitRails();
+const items: Sponsor[] = side === 'left' ? left : right;
+// Only tape-scroll when the rail would overflow (> 4 cards a side); otherwise static.
+const scroll = items.length > 4;
+const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless loop
+---
+
+{
+  items.length > 0 && (
+    <aside class:list={['sponsorRail', `sponsorRail--${side}`]} aria-label={`${side} sponsors`}>
+      <a href="/sponsors/" class="sponsorRail__label">sponsors</a>
+      <div class="sponsorRail__viewport">
+        <ul class:list={['sponsorRail__tape', scroll && 'sponsorRail__tape--scroll']}>
+          {cards.map((s, i) => (
+            <li>
+              <a
+                href={sponsorHref(s)}
+                target="_blank"
+                rel="sponsored noopener"
+                class="sponsorCard"
+                style={`--tint: var(--color-sponsor-${s.tint}-tint)`}
+                aria-hidden={scroll && i >= items.length ? 'true' : undefined}
+                tabindex={scroll && i >= items.length ? -1 : undefined}
+              >
+                {sponsorIconPath(s) ? (
+                  <img src={sponsorIconPath(s)!} alt="" width="28" height="28" class="sponsorCard__icon" loading="lazy" />
+                ) : (
+                  <span class="sponsorCard__tile" aria-hidden="true">{s.name.charAt(0)}</span>
+                )}
+                <span class="sponsorCard__name">{s.name}</span>
+                <span class="sponsorCard__tag">{s.tagline}</span>
+                <span class="sponsorCard__badge">sponsored</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  )
+}
+
+<style>
+  .sponsorRail {
+    display: none;
+    position: fixed;
+    inset-block-start: 96px;
+    inline-size: 160px;
+    max-block-size: calc(100vh - 140px);
+    z-index: 20;
+  }
+  /* Only when the viewport is wide enough to have a real gutter beside the content. */
+  @media (min-width: 1440px) {
+    .sponsorRail {
+      display: block;
+    }
+  }
+  .sponsorRail--left {
+    inset-inline-start: max(12px, calc((100vw - var(--container-max)) / 2 - 172px));
+  }
+  .sponsorRail--right {
+    inset-inline-end: max(12px, calc((100vw - var(--container-max)) / 2 - 172px));
+  }
+  .sponsorRail__label {
+    display: block;
+    margin-block-end: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .sponsorRail__label:hover {
+    color: var(--color-text);
+  }
+  .sponsorRail__viewport {
+    overflow: hidden;
+    max-block-size: 100%;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  }
+  .sponsorRail__tape {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sponsorRail__tape--scroll {
+    animation: sponsorTape 36s linear infinite;
+  }
+  .sponsorRail__viewport:hover .sponsorRail__tape--scroll {
+    animation-play-state: paused;
+  }
+  @keyframes sponsorTape {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sponsorRail__tape--scroll {
+      animation: none;
+    }
+  }
+
+  .sponsorCard {
+    position: relative;
+    display: block;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--tint);
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  .sponsorCard:hover {
+    border-color: var(--color-border-strong);
+  }
+  .sponsorCard__icon,
+  .sponsorCard__tile {
+    display: block;
+    inline-size: 28px;
+    block-size: 28px;
+    margin-block-end: 8px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+  .sponsorCard__tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text);
+  }
+  .sponsorCard__name {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .sponsorCard__tag {
+    display: block;
+    margin-block-start: 3px;
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    color: var(--color-text-muted);
+  }
+  .sponsorCard__badge {
+    display: block;
+    margin-block-start: 8px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+  }
+</style>

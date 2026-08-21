@@ -1,0 +1,58 @@
+[
+  {
+    "slug": "transcriptapi",
+    "name": "TranscriptAPI",
+    "url": "https://transcriptapi.com",
+    "tagline": "Audio & video to accurate transcripts in one API call.",
+    "tint": "sky",
+    "icon": "transcriptapi.ico"
+  },
+  {
+    "slug": "generatespecs",
+    "name": "GenerateSpecs",
+    "url": "https://generatespecs.com",
+    "tagline": "Turn a rough idea into a build-ready spec in minutes.",
+    "tint": "sand",
+    "icon": "generatespecs.png"
+  },
+  {
+    "slug": "crhq",
+    "name": "CRHQ",
+    "url": "https://crhq.ai",
+    "tagline": "Your AI control room \u2014 agents that run the work.",
+    "tint": "lilac",
+    "icon": null
+  },
+  {
+    "slug": "zillapi",
+    "name": "ZillAPI",
+    "url": "https://zillapi.com",
+    "tagline": "Fast, scalable data APIs for builders.",
+    "tint": "sage",
+    "icon": "zillapi.png"
+  },
+  {
+    "slug": "stayingapi",
+    "name": "StayingAPI",
+    "url": "https://stayingapi.com",
+    "tagline": "Uptime & canary monitoring as a simple API.",
+    "tint": "blush",
+    "icon": null
+  },
+  {
+    "slug": "recapio",
+    "name": "Recapio",
+    "url": "https://recapio.com",
+    "tagline": "Meeting recaps and action items, automatically.",
+    "tint": "sky",
+    "icon": "recapio.ico"
+  },
+  {
+    "slug": "youtube2transcript",
+    "name": "YouTube2Transcript",
+    "url": "https://youtube2transcript.com",
+    "tagline": "Any YouTube video to clean, usable text \u2014 instantly.",
+    "tint": "sand",
+    "icon": null
+  }
+]

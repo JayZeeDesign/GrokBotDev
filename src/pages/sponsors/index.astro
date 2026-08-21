@@ -1,0 +1,174 @@
+---
+// /sponsors/ — the sponsorship offer + the current sponsor showcase (operator).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import Button from '../../components/Button.astro';
+import { SPONSORS, sponsorHref, sponsorIconPath } from '../../lib/sponsors';
+import { webPage, breadcrumbList } from '../../lib/seo';
+
+const title = 'sponsor grokbot.dev — get in front of Grok Bot builders';
+const description =
+  'Sponsor the open Grok Bot directory: a featured slot on the rails, your tool featured in the plugin directory, and a mention where we talk about the best tools.';
+const crumbs = [{ label: 'home', href: '/' }, { label: 'sponsors' }];
+const graph = [webPage('/sponsors/', title, description), breadcrumbList(crumbs)];
+
+const perks = [
+  {
+    h: 'a featured slot on the rails',
+    p: 'Your card sits in the left/right sponsor rails on desktop and the sponsor strip on mobile — on every page of the site, tinted so it stands out without shouting. When there are more sponsors than slots, the rail rotates through them.',
+  },
+  {
+    h: 'featured in the plugin directory',
+    p: 'If your product is API-enabled and there is a prompt we can drop into a Grok Bot that works in one shot, we build it into the open plugin repository and mark it featured — so it shows up in the directory people actually browse, not just an ad.',
+  },
+  {
+    h: 'promoted where we talk about tools',
+    p: 'Sponsors are the tools we point people to. We also plan to mention sponsors in other places as we grow — our newsletter, social, and similar. Consider that an FYI, not a contractual promise; the two things above are what the slot guarantees.',
+  },
+];
+---
+
+<BaseLayout title={title} description={description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">sponsor grokbot.dev</h1>
+      <p class="max-w-prose text-base text-text-muted">
+        grokbot.dev is the open directory of everything people do with Grok Bot — awesome use
+        cases and the best plugins, in front of the builders wiring Grok Bot into real work. A
+        sponsor slot puts your tool right where they are looking.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <Button
+          href="mailto:hello@grokbot.dev?subject=Sponsoring%20grokbot.dev"
+          variant="solid"
+          size="sm"
+          label="become a sponsor"
+        />
+        <Button href="#current" variant="outline" size="sm" label="see the slots" />
+      </div>
+    </header>
+
+    <section class="flex flex-col gap-6">
+      <SectionHeading title="what you get" variant="sub" level={2} />
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+        {
+          perks.map((perk) => (
+            <div class="flex flex-col gap-2 rounded-sm border border-border bg-surface p-5">
+              <h3 class="font-sans text-lg font-medium text-text">{perk.h}</h3>
+              <p class="text-sm leading-relaxed text-text-muted">{perk.p}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section id="current" class="flex flex-col gap-6">
+      <SectionHeading title="the slots — live example" variant="sub" level={2} />
+      <p class="max-w-prose text-sm text-text-muted">
+        These are the tools in the slots right now. This is exactly how your product would
+        appear — card, logo and a one-line pitch, linked straight to your site.
+      </p>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+        {
+          SPONSORS.map((s) => (
+            <a
+              href={sponsorHref(s)}
+              target="_blank"
+              rel="sponsored noopener"
+              class="sponsorTile"
+              style={`--tint: var(--color-sponsor-${s.tint}-tint)`}
+            >
+              <span class="sponsorTile__head">
+                {sponsorIconPath(s) ? (
+                  <img src={sponsorIconPath(s)!} alt="" width="34" height="34" class="sponsorTile__icon" loading="lazy" />
+                ) : (
+                  <span class="sponsorTile__tile" aria-hidden="true">{s.name.charAt(0)}</span>
+                )}
+                <span class="sponsorTile__name">{s.name}</span>
+              </span>
+              <span class="sponsorTile__tag">{s.tagline}</span>
+              <span class="sponsorTile__badge">sponsored</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-4 rounded-sm border border-border bg-surface p-6">
+      <h2 class="font-display text-xl text-text">want a slot?</h2>
+      <p class="max-w-prose text-sm text-text-muted">
+        Email us and tell us about your tool. If it is API-enabled with a one-shot Grok Bot
+        prompt, we will also build it into the plugin directory as a featured entry.
+      </p>
+      <Button
+        href="mailto:hello@grokbot.dev?subject=Sponsoring%20grokbot.dev"
+        variant="solid"
+        size="sm"
+        label="hello@grokbot.dev"
+        class="self-start"
+      />
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .sponsorTile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--tint);
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  .sponsorTile:hover {
+    border-color: var(--color-border-strong);
+  }
+  .sponsorTile__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sponsorTile__icon,
+  .sponsorTile__tile {
+    inline-size: 34px;
+    block-size: 34px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  .sponsorTile__tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--color-text);
+  }
+  .sponsorTile__name {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .sponsorTile__tag {
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--color-text-muted);
+  }
+  .sponsorTile__badge {
+    margin-block-start: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+  }
+</style>

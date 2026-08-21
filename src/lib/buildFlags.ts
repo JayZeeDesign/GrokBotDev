@@ -12,4 +12,11 @@
  */
 export const ENABLE_RAILS = false;
 
+/**
+ * `ENABLE_SPONSORS` — the live sponsorship system (operator): fixed left/right sponsor rails
+ * on wide desktop, a sponsor strip in the mobile header, driven by src/data/sponsors.json.
+ * Independent of the grid rails above (those squish content); these float in the gutters.
+ */
+export const ENABLE_SPONSORS = true;
+
 export const INCLUDE_DEV_PAGES = import.meta.env.DEV || process.env.INCLUDE_DEV_PAGES === '1';

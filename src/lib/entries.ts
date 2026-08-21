@@ -159,6 +159,7 @@ export function toCardEntry(doc: AnyDoc): Entry {
     category: d.category as string,
     subcategory: d.subcategory as string,
     featured: Boolean(d.featured),
+    sponsor: Boolean(d.sponsor),
     addedAt: d.added_at as string,
     updatedAt: d.updated_at as string,
     verifiedAt: d.verified_at as string | undefined,
