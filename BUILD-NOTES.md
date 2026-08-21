@@ -722,3 +722,108 @@ no-JS landing), `tweet_embed_load` (only ever after a real click, §10.3), and
 Also verified: wrong method → **405** `method_not_allowed`; invalid email on the JSON path →
 **400** `invalid_email`; stored row shows `ip_hash` as a 64-char sha256 with no raw IP
 present.
+
+## 2026-08-21 — M5-LOCAL (§8 files) + the token-day runbook
+
+### Shipped
+
+- **`.github/workflows/ci.yml`** — three required checks (`validate`, `build`, `links`)
+  running the SAME gates as a local `npm run build`, so green CI and a green local build
+  mean the same thing. `validate` additionally asserts the golden fixtures still FAIL
+  (a validator that stops rejecting is a silent regression), runs the §4.6 contrast floors,
+  runs the hub-intro gate **ARMED** (`HUB_INTRO_GATE=1` — the corpus is complete, so it can
+  be armed in CI now even while local builds stay report-only), and re-runs the M0.4
+  raw-colour grep.
+- **`.github/workflows/labeler.yml`** — `pull_request_target`, `types: [opened, reopened]`,
+  `pull-requests: write`. **It checks out nothing and runs no repository code** — it reads
+  the author from the event payload and calls the labels API. That is the one safe use of
+  this trigger, and the file says so in a comment so nobody adds a checkout step later.
+  A plain `pull_request` trigger gets a read-only token on fork PRs and cannot label them,
+  which would leave every community PR unlabelled and therefore ungated.
+- **`.github/workflows/merge-gate.yml`** — **fails closed** on an unlabelled PR. Agent path:
+  `via-agent` + author allowlisted + content-only. Community path: ADDED files under
+  `content/**` only, `needs-verification` removed, and an APPROVED review whose `commit_id`
+  equals the current head SHA — **a stale approval does not count**, which is what backs the
+  branch-level stale-dismissal rule.
+- **`.github/CODEOWNERS`** — exactly §8.6's block. `content/**` is deliberately unowned so
+  agent content PRs merge unattended; everything else is maintainer-owned. No `*` catch-all.
+- **`.github/PULL_REQUEST_TEMPLATE.md`** — §8.4 verbatim **with one intended difference**:
+  the "not an ad" line takes CP-054/CP-062's rewrite ("Sponsor slots will exist for that —
+  this isn't one.") instead of the PRD's "(later)" parenthetical. Addendum C is binding on
+  copy and explicitly names this line, so **M5.1's `diff` against the PRD block will show
+  exactly this one line and no others** — that is expected, not a defect.
+
+### Deferred with reason
+
+- **`README.md` (§8.8)** — NOT written. §8.8's contents were not read in this session, and a
+  README that "teaches contribution in one read" is the repo's front door; guessing at its
+  required sections would be worse than leaving the M0 stub in place. It is the one M5-local
+  item outstanding and needs one focused pass over §8.7/§8.8.
+- **awesome-grok-bot diff (§8.9)** — prepared as a runbook item below rather than a diff
+  file, because the target is a separate remote repo that does not exist locally.
+
+### TOKEN-DAY RUNBOOK — paste-ready (M5 remote + M6.5)
+
+Everything below needs a GitHub token with org access and/or operator credentials. Nothing
+here can be done from this box today (§12.3).
+
+```bash
+# 0. Create the public repo and push full history (§12.3)
+gh repo create ZeroPointRepo/GrokBotDev --public --source=. --remote=origin --push
+
+# 1. Labels (§8.6)
+gh label create via-agent              --color 0e8a16 --description "agent-authored PR"
+gh label create community              --color 1d76db --description "human-authored PR"
+gh label create needs-verification     --color fbca04 --description "awaiting editorial verification"
+gh label create verified-by-maintainer --color 5319e7 --description "maintainer-set verified_at (fork-edit case)"
+
+# 2. Repo settings (§8.6): squash only, auto-merge on, delete head branches
+gh api -X PATCH repos/ZeroPointRepo/GrokBotDev \
+  -F allow_squash_merge=true -F allow_merge_commit=false -F allow_rebase_merge=false \
+  -F allow_auto_merge=true   -F delete_branch_on_merge=true
+
+# 3. Branch protection on main (§8.6). NOTE the pivot: approvals=0 WITH code-owner review
+#    ON — a blanket "1 approval" would break CONTEXT-locked agent auto-merge.
+gh api -X PUT repos/ZeroPointRepo/GrokBotDev/branches/main/protection \
+  --input - <<'JSON'
+{
+  "required_status_checks": { "strict": true, "contexts": ["validate", "build", "links", "merge-gate"] },
+  "enforce_admins": true,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 0,
+    "require_code_owner_reviews": true,
+    "dismiss_stale_reviews": true
+  },
+  "required_conversation_resolution": true,
+  "required_linear_history": true,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "restrictions": null
+}
+JSON
+
+# 4. Verify it took (this is M5.4's exact check)
+gh api repos/ZeroPointRepo/GrokBotDev/branches/main/protection
+
+# 5. Dry-run PRs (M5.5 + M5.7) — each must land on the stated outcome:
+#    a. valid entry           → all four checks green
+#    b. unknown integration   → validate FAILS with the closest-match message
+#    c. via-agent + a file outside content/ → merge-gate FAILS "split this PR"
+#    d. community PR editing package.json  → merge-gate FAILS with the path-scope message
+#    e. community PR approved, then pushed → approval no longer counts, merge blocked
+
+# 6. awesome-grok-bot (§8.9) — separate repo, prepare the entry then open the PR
+gh repo fork <awesome-grok-bot-owner>/awesome-grok-bot --clone
+# add grokbot.dev to the directories/registries section, one line, alphabetical
+gh pr create --title "Add grokbot.dev" --body "Open directory of Grok Bot prompts, plugins and collections."
+
+# 7. Vemetric (M6.5) — needs operator credentials
+#    - create the project, copy the token into .env as PUBLIC_VEMETRIC_TOKEN
+#    - rebuild, confirm prompt_copy / newsletter_signup / install_modal_open land
+#    - set the dashboard PUBLIC, put its URL in PUBLIC_STATS_URL
+#    - confirm the footer Stats link renders (it is gated on that var and hidden without it)
+```
+
+**Also pinned for cutover (from M4):** the §7.5 nginx `machine` log format on the
+`/api/v1/` and RSS locations, with a Cloudflare-resolved `$remote_addr`. It cannot be
+backfilled — if it is missing at cutover, that window of §1.6 metric #1 is gone.

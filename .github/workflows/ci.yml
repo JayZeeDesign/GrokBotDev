@@ -1,0 +1,65 @@
+# §8.5 — the PR validation pipeline. Runs the SAME gates as a local `npm run build`, so a
+# green CI and a green local build mean the same thing.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: validate content (§5.6 / §8.5)
+        run: node scripts/validate.mjs
+      - name: negative fixtures must still fail (§11 M2.5)
+        run: |
+          if node scripts/validate.mjs --root scripts/fixtures; then
+            echo "::error::the golden fixtures passed validation — the gate is broken"
+            exit 1
+          fi
+          echo "fixtures correctly rejected"
+      - name: contrast floors (§4.6)
+        run: node scripts/check-contrast.mjs
+      - name: hub intros complete (§6.2) — ARMED
+        run: HUB_INTRO_GATE=1 node scripts/check-hub-intros.mjs
+      - name: no raw colour literals outside tokens.css (§4.1.1)
+        run: |
+          if grep -rEn '#[0-9a-fA-F]{3,8}|rgb\(|hsl\(' src --include='*.astro' --include='*.css' \
+             | grep -v 'src/styles/tokens.css'; then
+            echo "::error::raw colour literal outside tokens.css"
+            exit 1
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: astro check
+        run: npx astro check
+      - name: build (runs validate, contrast, hub-intros, OG, keyword, pagefind, links, audit)
+        run: npm run build
+      - name: client JS only from sanctioned islands (§11 M1.3)
+        run: node scripts/audit-scripts.mjs
+
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - name: internal link walk (§8.5)
+        run: node scripts/check-links.mjs

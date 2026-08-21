@@ -1,0 +1,10 @@
+# Everything below is CODE SCOPE — a maintainer must review it.
+# content/** is intentionally absent so agent content PRs need no code-owner review.
+/.github/                 @ZeroPointRepo/maintainers
+/src/                     @ZeroPointRepo/maintainers   # includes src/data/redirects.json + integrations.json + hub-intros/
+/scripts/                 @ZeroPointRepo/maintainers
+/services/                @ZeroPointRepo/maintainers
+/infra/                   @ZeroPointRepo/maintainers
+/astro.config.mjs         @ZeroPointRepo/maintainers
+/package.json             @ZeroPointRepo/maintainers
+/package-lock.json        @ZeroPointRepo/maintainers

@@ -1,0 +1,75 @@
+# §8.6 — the merge gate. Fails CLOSED: an unlabelled PR never merges.
+name: merge-gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const AGENT_ALLOWLIST = ['grokbot-agent'];
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map((l) => l.name);
+            const author = pr.user.login;
+
+            // Unlabelled → fail closed.
+            if (!labels.includes('community') && !labels.includes('via-agent')) {
+              core.setFailed('unlabelled PR — a maintainer must apply community or via-agent');
+              return;
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.number,
+            });
+            const isContent = (f) => f.filename.startsWith('content/');
+            const codeScope = files.filter((f) => !isContent(f));
+
+            if (labels.includes('via-agent')) {
+              if (codeScope.length) {
+                core.setFailed('agent PRs are scoped to content/ — split this PR');
+                return;
+              }
+              if (!AGENT_ALLOWLIST.includes(author)) {
+                core.setFailed(`via-agent label on a PR from ${author}, who is not in the agent allowlist`);
+                return;
+              }
+              core.info('agent path: content-only, author allowlisted — gate passes');
+              return;
+            }
+
+            // Community path.
+            const mutated = files.filter((f) => isContent(f) && f.status !== 'added');
+            if (codeScope.length || mutated.length) {
+              core.setFailed(
+                'community PRs may only ADD new files under content/ — edits, deletes, integrations and code changes need a maintainer (open an issue)'
+              );
+              return;
+            }
+            if (labels.includes('needs-verification')) {
+              core.setFailed('needs-verification is still applied — a maintainer must verify this entry (§10.1)');
+              return;
+            }
+
+            // An approval only counts if it is against the CURRENT head SHA.
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.number,
+            });
+            const fresh = reviews.some((r) => r.state === 'APPROVED' && r.commit_id === pr.head.sha);
+            if (!fresh) {
+              core.setFailed('no maintainer approval against the current head SHA (a stale approval does not count)');
+              return;
+            }
+            core.info('community path: content-only ADDs, verified, fresh approval — gate passes');
