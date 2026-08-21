@@ -457,3 +457,67 @@ Hub intros are **not** in this commit: a content executor is drafting them into
 `check-keyword-placements` **OK** (all four §6.11 placements present: hero subline,
 `/use-cases/` intro, `/agent/` intro, `llms.txt` blockquote) · `validate` OK ·
 `check-contrast` OK · `audit-scripts` OK (8 island bundles, 0 inline JS, ld+json allowed).
+
+## 2026-08-21 — M2b-1 ungated capture import (3 of 4 imported, 1 held)
+
+Capture pass returned 4 PROMPT_CAPTURED seeds. **Three imported, one held** — see the 016
+finding below, which is the reason the total is 9 live entries and not 10.
+
+### Imported / enriched
+
+- **NEW `agentos-blueprint`** (seed 009, @iannuttall). The gist is a byte-concordant HTTP
+  artifact (two passes, matching sha256). It is ~51 KB — far past the schema's 8,000-char
+  prompt cap — so the shipped prompt points the Bot at the gist and quotes the author's own
+  framing and provenance lines verbatim, which is what the artifact is for. **The body says
+  out loud that the blueprint labels its own role contracts as reconstructed from Danny
+  Postma's talk rather than his verbatim files**, because the author put that warning in the
+  file himself and it is the most credible thing about the entry. `prompt_provenance: author`
+  — it is Ian Nuttall's published implementation prompt.
+- **`firstmate` enriched.** The composed prompt is **replaced by the author's real published
+  charter** (`GROK_BOT.md`, 4,091 chars, sha256-identical across two fetches). The
+  missing-excerpt gap from M2 is closed: the entry now carries its real `source_tweets`
+  excerpt, quoted verbatim from the captured post, so it appears on the wall and carries the
+  scouted chip. This is a straight upgrade — a reconstruction replaced by primary source.
+- **`grok-ship` enriched** with the capture's artifact inventory: the installer, both bot
+  charters and all four shipped workflow skills (`lavish-session`, `adversarial-review`,
+  `project-management`, `ahoy`) are named as readable-before-you-run-it files.
+
+### ⚠️ HELD: seed 016 factored-digest — the capture is OCR-degraded
+
+The captured "Factored digest schedule template" is **visibly character-corrupted**:
+`actuallv said` · `endina with its source` · `vour read` · `backqround knowledqe` ·
+`[SINGLE-SOURCE1` · `->$1` (should be `→S1`) · `nothing rea rather than filling space` ·
+`multi-agent process thar was really one pass`. Those are classic OCR substitutions (y→v,
+g→a, g→q, ]→1), not typing errors — the text was almost certainly read out of a screenshot.
+
+The author does say in the thread "There are a few grammatical errors as I wrote this by
+hand", which covers *some* of it, but not glyph-level substitutions. Both capture passes
+agree because both read the same degraded source; agreement between two passes of a
+corrupted original does not make it clean.
+
+Shipping it verbatim means publishing a broken copy-paste prompt under a real person's name
+with a `verified_at` on it, beneath a CTA that says "Copy the prompt and paste it into
+Grok". Silently repairing it means publishing my reconstruction of someone's text as if it
+were theirs — the exact thing the standing ruling forbids. So it is **held**, and it needs a
+clean re-capture (the post's own text, not an image) or the author's file. Flagged to the
+orchestrator rather than resolved locally.
+
+### Schema addition
+
+`prompt_provenance: 'author' | 'curator'` (optional) is now in the use-case Zod schema and
+in `validate.mjs`. The **render path is built**: when the value is `curator`, the use-case
+page prints a mono line above the PromptBlock — "prompt reconstructed by the Curator from
+@handle's published setup — not their verbatim text". **Zero entries ship `curator`**; the
+path exists so that if the operator sanctions option 2 the page is already honest, and so
+that nothing can ship as a reconstruction without saying so.
+
+### Counts + gates
+
+- **9 live entries**: 5 plugins · 3 use cases · 1 collection (0 demo). Expected 10; 016 held.
+- **Hub math unchanged at 9 entries**: still exactly two indexable hubs —
+  `/categories/engineering/` (now 5 entries) and `/categories/engineering/agents-ops/` (4).
+  `agentos-blueprint` is engineering/agents-ops, so it deepened the two hubs that already
+  qualified rather than tipping a new one over the ≥3 threshold.
+- Sitemap 23 URLs (+1). Pagefind `page_count: 10` = 9 entry pages + `/plugin-builder/`.
+  OG cards 9 + default + logo. `astro check` 0/0 · build exit 0 · validate, contrast,
+  keyword, links, audit-scripts all OK.

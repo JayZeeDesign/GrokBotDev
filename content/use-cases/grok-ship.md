@@ -27,10 +27,11 @@ replicability: >-
   You need a Grok Bot with its shared computer, a Cursor account for cloud agents, and
   source control connected. No code to write — the install is one instruction — but you
   should be comfortable reviewing PRs, because you approve every merge.
+prompt_provenance: author
 featured: true
 added_at: "2026-08-20T23:45:00Z"
-updated_at: "2026-08-20T23:45:00Z"
-verified_at: "2026-08-20T23:45:00Z"
+updated_at: "2026-08-21T00:30:00Z"
+verified_at: "2026-08-21T00:30:00Z"
 status: live
 ---
 
@@ -41,6 +42,8 @@ The install is one instruction, and everything else happens on the shared comput
 From there it registers four global skills — `lavish-session`, `adversarial-review`, `project-management` and `ahoy` — initialises a local SQLite database for projects and tasks, and drops in a crewmate template for per-project use. It then detects and authenticates source control (GitHub, GitLab, Bitbucket or Cursor Origin) on the shared computer, and confirms cloud agents have their own Cursor account connection.
 
 The last step matters more than it looks: the installer messages Firstmate with a task ID, waits for a ready reply, and tells you to talk only to Firstmate from then on. The bot you started with can be deleted from the sidebar.
+
+Everything the installer writes is published and readable before you run it: the installer itself (`GROK_SHIP.md`), the Firstmate and crewmate charters (`GROK_BOT_FIRSTMATE.md`, `GROK_BOT_CREWMATE.md`), and all four workflow skills — `lavish-session`, `adversarial-review`, `project-management` and `ahoy` — each ship as its own `SKILL.md` in the repo. If you want to know what a crewmate will be told to do before you create one, that file is right there.
 
 ## Prompt
 

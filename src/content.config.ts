@@ -157,6 +157,11 @@ const useCases = defineCollection({
       author: author.optional(),
       scouted_by: scoutedBy.optional(),
       replicability: z.string().min(40).max(300), // rendered as Callout info (§4.3.5 region 7)
+      // M2b: where the prompt text came from. `author` = the creator published this text
+      // (a repo file, a gist, or the post itself). `curator` = grokbot.dev reconstructed it
+      // from a documented setup, and the page says so above the prompt. Absent means
+      // `author` — nothing ships as `curator` until the operator sanctions that path.
+      prompt_provenance: z.enum(['author', 'curator']).optional(),
       featured: z.boolean().default(false),
       added_at: isoDate,
       updated_at: isoDate,

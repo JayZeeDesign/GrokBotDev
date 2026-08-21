@@ -283,6 +283,9 @@ for (const entry of entries) {
     ) {
       fail(file, '§5.2', 'replicability must be 40–300 chars');
     }
+    if (d.prompt_provenance && !['author', 'curator'].includes(d.prompt_provenance)) {
+      fail(file, '§5.2', `prompt_provenance must be "author" or "curator" (got "${d.prompt_provenance}")`);
+    }
     for (const field of ['schedule', 'autonomy', 'difficulty', 'setup_minutes']) {
       if (d[field] === undefined) fail(file, '§5.2', `use cases require \`${field}\``);
     }

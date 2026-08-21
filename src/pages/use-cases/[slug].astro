@@ -174,6 +174,15 @@ const graph = [
     {
       prompt && (
         <div class="flex max-w-prose flex-col gap-4">
+          {/* M2b provenance line: only rendered when the prompt is OUR reconstruction, so a
+              reader is never left guessing whether they are looking at the author's text.
+              Nothing ships as `curator` until the operator sanctions that path. */}
+          {d.prompt_provenance === 'curator' && (
+            <p class="font-mono text-xs text-text-muted">
+              prompt reconstructed by the Curator from {d.author ? `@${d.author.handle}` : 'the author'}'s
+              published setup — not their verbatim text
+            </p>
+          )}
           <PromptBlock prompt={prompt} />
           <p class="text-base text-text">{CP_112_CTA_SENTENCE}.</p>
         </div>
