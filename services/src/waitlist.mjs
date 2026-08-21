@@ -28,6 +28,50 @@ const RESEND_AUDIENCE_BY_SOURCE = {
 const RESEND_AUDIENCE_DEFAULT = process.env.RESEND_AUDIENCE_NEWSLETTER ?? '';
 const audienceFor = (source) => RESEND_AUDIENCE_BY_SOURCE[source] || RESEND_AUDIENCE_DEFAULT;
 
+// Confirmation email (operator). Sent server-side via Resend from the verified domain, ONCE
+// per genuinely-new signup, best-effort. The endpoint's honeypot + per-IP rate limit + dedup
+// keep it from becoming a subscription-bombing relay: an abuser is capped at the rate limit
+// and a re-submit of a known email sends nothing (info.changes === 0).
+const RESEND_FROM = process.env.RESEND_FROM ?? 'grokbot.dev <noreply@grokbot.dev>';
+const CONFIRMATIONS = {
+  'get-notified': {
+    subject: "you're on the list — grokbot.dev",
+    text:
+      "Thanks for signing up.\n\n" +
+      "grokbot.dev is launching soon — everything your Grok Bot could be doing: awesome use cases " +
+      "and the best plugins, delivered straight to your bot.\n\n" +
+      "We'll email you once, the day it goes live. That's the only thing you'll get from this list.\n\n" +
+      "— grokbot.dev",
+  },
+  default: {
+    subject: "you're subscribed — grokbot.dev",
+    text:
+      "You're on the list.\n\n" +
+      "Once a week we'll send the best new plugins, use cases and collections for Grok Bot — " +
+      "one email, no spam.\n\n" +
+      "— grokbot.dev",
+  },
+};
+const confirmationFor = (source) => CONFIRMATIONS[source] || CONFIRMATIONS.default;
+
+async function sendConfirmation(email, source) {
+  if (!RESEND_API_KEY) return;
+  const c = confirmationFor(source);
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: RESEND_FROM, to: [email], subject: c.subject, text: c.text }),
+    });
+    if (!r.ok) {
+      const t = await r.text().catch(() => '');
+      console.error('resend: confirmation send failed', r.status, t.slice(0, 200));
+    }
+  } catch (error) {
+    console.error('resend: confirmation send error', error.message);
+  }
+}
+
 /**
  * Best-effort push of one contact into the mapped Resend audience. Fired only on a genuinely
  * NEW insert (dedup already handled by SQLite), never awaited by the request path — a Resend
@@ -195,9 +239,13 @@ export function handleWaitlist(req, res) {
         : json(res, 500, { ok: false, error: 'server_error' });
     }
 
-    // Only a genuinely new row pushes to Resend — a re-submit of an existing email changes
-    // nothing (info.changes === 0) and must not re-hit the API. Fire-and-forget.
-    if (info.changes === 1) void pushToResend(email, source);
+    // Only a genuinely new row pushes to Resend + sends the confirmation — a re-submit of an
+    // existing email changes nothing (info.changes === 0) and must not re-hit the API or mail
+    // the person again. Fire-and-forget: neither can fail or slow the signup response.
+    if (info.changes === 1) {
+      void pushToResend(email, source);
+      void sendConfirmation(email, source);
+    }
 
     return isForm ? redirect(res, '/subscribed/?subscribed=1') : json(res, 200, { ok: true });
   });
