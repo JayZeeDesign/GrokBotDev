@@ -6,6 +6,7 @@
 // A5 glyph slot: the `glyph` prop is BUILT but unused — chips ship LABEL-ONLY until the
 // operator verdict on per-category signature glyphs lands (A11 item 1).
 import { monoLabel } from '../lib/format';
+import { categoryGlyphSvg, categorySlugFromLabel } from '../lib/categoryGlyphs';
 import type { EntryType } from '../lib/types';
 
 interface Props {
@@ -73,6 +74,15 @@ const typeShape =
 const interactive = isLink ? 'hover:border-accent hover:text-accent-text' : '';
 const classes = [shell, sizing, skin[variant], typeShape, interactive, className];
 
+// A5 glyph slot — LIVE (operator verdict, direct round). Category chips derive their 3×3
+// signature glyph from the slug (href wins, label as fallback); an explicit `glyph` prop
+// still overrides. Unknown slugs degrade to label-only — never invent a pattern.
+const derivedSlug =
+  variant === 'category'
+    ? (href?.match(/\/categories\/([a-z0-9-]+)/)?.[1] ?? categorySlugFromLabel(raw))
+    : '';
+const resolvedGlyph = glyph ?? (derivedSlug ? categoryGlyphSvg(derivedSlug) : undefined);
+
 // Accessible names for chip links inside cards (§4.6).
 const ariaLabel = isLink
   ? variant === 'category'
@@ -94,12 +104,12 @@ const ariaLabel = isLink
     </span>
   ) : isLink ? (
     <a class:list={classes} href={href} aria-label={ariaLabel} rel={variant === 'scouted' ? 'noopener' : undefined} target={variant === 'scouted' ? '_blank' : undefined}>
-      {glyph && <span aria-hidden="true" set:html={glyph} />}
+      {resolvedGlyph && <span aria-hidden="true" class="inline-flex" set:html={resolvedGlyph} />}
       <span>{text}</span>
     </a>
   ) : (
     <span class:list={classes}>
-      {glyph && <span aria-hidden="true" set:html={glyph} />}
+      {resolvedGlyph && <span aria-hidden="true" class="inline-flex" set:html={resolvedGlyph} />}
       <span>{text}</span>
     </span>
   )
