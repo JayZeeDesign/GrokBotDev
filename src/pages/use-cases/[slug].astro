@@ -37,7 +37,6 @@ import {
   CP_032_REPLICABILITY_LABEL,
   CP_067_CALLOUT_NEEDS_UPDATE,
   CP_068_CALLOUT_DEPRECATED,
-  CP_100_WALL_BACKLINK,
   CP_112_CTA_SENTENCE,
   fillCopy,
 } from '../../lib/copy';
@@ -266,11 +265,8 @@ const graph = [
                 )
               )}
             </div>
-            <p class="font-mono text-sm">
-              <a href="/wall/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">
-                {CP_100_WALL_BACKLINK}
-              </a>
-            </p>
+            {/* Direct round: the "see it on the wall →" backlink is removed — the operator
+                judged it adds no value on the entry page. CP-100 stays defined for the pack. */}
           </aside>
         )
       }
