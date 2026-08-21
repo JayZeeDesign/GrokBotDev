@@ -49,7 +49,7 @@ const nav = [{ href: '/wall/', label: 'wall' }];
 ---
 
 <header class="border-b border-border bg-bg" data-pagefind-ignore>
-  <div class="container-page flex min-h-16 flex-wrap items-center gap-x-8 gap-y-4 py-4">
+  <div class="container-page flex min-h-12 flex-wrap items-center gap-x-8 gap-y-4 py-2 md:min-h-16 md:py-4">
     {/* `flex-1` only below md, where it is what pushes the drawer toggle to the right edge.
         From md up the brand must shrink to its content or it steals width from the nav and
         forces a second row at 768 — measured at F1 QA. */}
@@ -86,6 +86,10 @@ const nav = [{ href: '/wall/', label: 'wall' }];
         first cut's `padding: var(--spacing-6)` resolved to nothing and the drawer shipped
         with no padding at all. That is exactly what the operator saw. Utilities can't
         silently evaluate to nothing. */}
+    {/* Direct round: light/dark is VISIBLE in the mobile header now, not inside the
+        drawer — moved, not duplicated. */}
+    <ThemeToggle variant="inline" class="md:hidden" />
+
     <details class="navDrawer md:hidden" data-nav-drawer>
       <summary class="navDrawer__toggle" aria-label="menu">
         <span class="navDrawer__word navDrawer__word--closed">menu</span>
@@ -126,10 +130,6 @@ const nav = [{ href: '/wall/', label: 'wall' }];
             <span aria-hidden="true" class="agent-glyph text-accent">▪</span> /agent
           </a>
         </nav>
-
-        {/* F9 — below the nav section, above the CTA. `chrome` variant carries the 44px
-            floor the drawer holds everything else to. */}
-        <ThemeToggle variant="chrome" class="self-start" />
 
         {/* A1 accent law: submit is the ONE amber element in the drawer. */}
         <a href="/submit/" class="navDrawer__cta">submit</a>
@@ -182,10 +182,11 @@ const nav = [{ href: '/wall/', label: 'wall' }];
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* §4.6 target size, raised to the F1/F7 mobile floor of 44px. */
-    min-inline-size: 44px;
-    min-block-size: 44px;
-    padding-inline: 0.75rem;
+    /* Direct round: slimmed from 44px — the header was spending too much vertical
+       space on it. 36px still clears SC 2.5.8's 24px floor comfortably. */
+    min-inline-size: 40px;
+    min-block-size: 36px;
+    padding-inline: 0.65rem;
     border: 1px solid var(--color-border-interactive);
     border-radius: var(--radius-sm);
     font-family: var(--font-mono);

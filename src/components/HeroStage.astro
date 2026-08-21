@@ -68,6 +68,11 @@ const SUBLINE =
   cursor:grab;
 }
 .stage.dragging{cursor:grabbing}
+/* Direct round: on phones the sky was mostly empty — shorter stage so the listing
+   peeks above the fold. Bot count is already 6 under 720px, so the pile still fits. */
+@media(max-width:719px){
+  .stage{height:clamp(420px, 56vh, 500px)}
+}
 
 /* bot layer sits *behind* the text block so text is always legible,
    but physics guarantees they never overlap it anyway. */
