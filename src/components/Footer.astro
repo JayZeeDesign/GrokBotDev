@@ -18,12 +18,13 @@ interface Props {
 const { stats = { plugins: 0, useCases: 0, collections: 0, generatedAt: new Date().toISOString() }, statsUrl = '' } = Astro.props;
 const builtStamp = stats.generatedAt.replace(/\.\d{3}Z$/, 'Z');
 const columns = [
+  // Direct round, operator: counts column REMOVED, collections links REMOVED,
+  // "use cases" renamed "awesome use cases". Three groups now.
   {
     title: 'browse',
     links: [
       { href: '/plugins/', label: 'plugins' },
-      { href: '/use-cases/', label: 'use cases' },
-      { href: '/collections/', label: 'collections' },
+      { href: '/use-cases/', label: 'awesome use cases' },
       { href: '/wall/', label: 'wall' },
       { href: '/categories/', label: 'categories' },
       { href: '/integrations/', label: 'integrations' },
@@ -48,14 +49,6 @@ const columns = [
       ...(statsUrl ? [{ href: statsUrl, label: 'stats', external: true }] : []),
     ],
   },
-  {
-    title: 'counts',
-    links: [
-      { href: '/plugins/', label: `${stats.plugins} plugins` },
-      { href: '/use-cases/', label: `${stats.useCases} use cases` },
-      { href: '/collections/', label: `${stats.collections} collections` },
-    ],
-  },
 ];
 ---
 
@@ -71,10 +64,13 @@ const columns = [
         Touch targets come from PADDING, not line-height: each link is a 44px flex row with
         the text vertically centred, so the §4.6 / WCAG 2.2 SC 2.5.8 target is real (all 17
         were 16px tall before) while the type keeps its tight `--text-xs` rhythm. */}
-    <nav aria-label="footer" class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
+    {/* Direct round, operator: "still way too big line height" — rows drop 44px → 32px
+        (still above SC 2.5.8's 24px floor). Three groups after the counts removal:
+        2-col phone (browse | machine, project below), 3-col from md. */}
+    <nav aria-label="footer" class="grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-3">
       {columns.map((column) => (
         <section aria-labelledby={`footer-${column.title.replaceAll(' ', '-')}`}>
-          <h2 id={`footer-${column.title.replaceAll(' ', '-')}`} class="mb-2 font-mono text-xs text-text">
+          <h2 id={`footer-${column.title.replaceAll(' ', '-')}`} class="mb-1.5 font-mono text-xs text-text">
             {column.title}
           </h2>
           <ul>
@@ -85,7 +81,7 @@ const columns = [
                   label={link.label}
                   external={link.external}
                   variant="footer"
-                  class="flex min-h-11 items-center"
+                  class="flex min-h-8 items-center"
                 />
               </li>
             ))}
