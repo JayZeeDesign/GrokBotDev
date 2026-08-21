@@ -20,7 +20,7 @@ import {
   CP_121_INSTALL_SECTION2,
   CP_122_INSTALL_STEP_1,
   CP_123_INSTALL_STEP_2,
-  CP_124_ROUTINE_ONE_LINER,
+  CP_124_ROUTINE_PROMPT,
   CP_124_CADENCE,
   CP_107_INSTALL_AGENT_LINK,
   CP_108_INSTALL_BROWSE_LINK,
@@ -87,7 +87,7 @@ const SCHEDULES = [
 // §7.3 machine contract is untouched and still lives on /agent/, which this modal links to
 // (CP-107) exactly as B3 specified — it moved audience, it was not deleted.
 const routinePrompt = (key: keyof typeof CP_124_CADENCE) =>
-  CP_124_ROUTINE_ONE_LINER(CP_124_CADENCE[key]);
+  CP_124_ROUTINE_PROMPT(CP_124_CADENCE[key]);
 
 const defaultTrigger =
   triggerLabel ?? (variant === 'site' ? CP_102_INSTALL_TITLE : CP_109_INSTALL_TRIGGER);
