@@ -61,27 +61,18 @@ const filterCss = [
 ].join('\n');
 ---
 
-<section class="homeDirectory container-page flex flex-col gap-6 py-12 md:py-16" aria-label="directory">
+<section class="homeDirectory container-page flex flex-col gap-6 pt-6 pb-12 md:pt-8 md:pb-16" aria-label="directory">
   {/* ── TAB SWITCHER ──────────────────────────────────────────────────────────────────
       Default is "Awesome Use Cases": the operator listed it first and it is the brand's
       primacy noun. Plugins are one tap away. */}
   <input type="radio" name="home-tab" id="home-tab-use-cases" class="sr-only" checked />
   <input type="radio" name="home-tab" id="home-tab-plugins" class="sr-only" />
 
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div class="homeTabs flex flex-wrap items-center gap-2" role="presentation">
-      <label for="home-tab-use-cases" data-home-tab="use-cases" class="homeTab">Awesome Use Cases</label>
-      <label for="home-tab-plugins" data-home-tab="plugins" class="homeTab">Plugins</label>
-    </div>
-
-    {/* Table|Cards — plugins only, per the BotDirectory pattern. */}
-    <div class="homeView flex items-center gap-2" data-home-view-switch>
-      <input type="radio" name="home-view" id="home-view-table" class="sr-only" checked />
-      <input type="radio" name="home-view" id="home-view-cards" class="sr-only" />
-      <span class="font-mono text-xs lowercase text-text-muted">view</span>
-      <label for="home-view-table" data-home-view="table" class="homeViewBtn">table</label>
-      <label for="home-view-cards" data-home-view="cards" class="homeViewBtn">cards</label>
-    </div>
+  {/* Direct round: tabs CENTERED, active state in the slate secondary (not amber);
+      the table|cards switch moves down into the plugins filter row (icons, no label). */}
+  <div class="homeTabs flex flex-wrap items-center justify-center gap-2" role="presentation">
+    <label for="home-tab-use-cases" data-home-tab="use-cases" class="homeTab">Awesome Use Cases</label>
+    <label for="home-tab-plugins" data-home-tab="plugins" class="homeTab">Plugins</label>
   </div>
 
   {/* ── PLUGINS ─────────────────────────────────────────────────────────────────────── */}
@@ -99,6 +90,30 @@ const filterCss = [
           </>
         ))
       }
+
+      {/* Table|Cards — icons only (operator). Same row as the categories from sm up;
+          its own full-width row below them on mobile. */}
+      <div class="homeView flex w-full items-center gap-2 sm:ml-auto sm:w-auto" data-home-view-switch>
+        <input type="radio" name="home-view" id="home-view-table" class="sr-only" checked />
+        <input type="radio" name="home-view" id="home-view-cards" class="sr-only" />
+        <label for="home-view-table" data-home-view="table" class="homeViewBtn" title="table view">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="currentColor">
+            <rect x="1" y="2.5" width="14" height="2.2" rx="0.6" />
+            <rect x="1" y="6.9" width="14" height="2.2" rx="0.6" />
+            <rect x="1" y="11.3" width="14" height="2.2" rx="0.6" />
+          </svg>
+          <span class="sr-only">table view</span>
+        </label>
+        <label for="home-view-cards" data-home-view="cards" class="homeViewBtn" title="cards view">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="currentColor">
+            <rect x="1" y="1" width="6.2" height="6.2" rx="1" />
+            <rect x="8.8" y="1" width="6.2" height="6.2" rx="1" />
+            <rect x="1" y="8.8" width="6.2" height="6.2" rx="1" />
+            <rect x="8.8" y="8.8" width="6.2" height="6.2" rx="1" />
+          </svg>
+          <span class="sr-only">cards view</span>
+        </label>
+      </div>
     </div>
 
     {/* TABLE — full width, the BotDirectory anatomy: name (linked) · tagline · category. */}
@@ -203,6 +218,12 @@ const filterCss = [
     font-size: var(--text-xs);
     min-block-size: 32px;
   }
+  /* icon-only square buttons for the view switch */
+  .homeViewBtn {
+    min-inline-size: 36px;
+    justify-content: center;
+    padding-inline: 0;
+  }
   .homeTab:hover,
   .homeViewBtn:hover,
   .homeFilter:hover {
@@ -213,13 +234,19 @@ const filterCss = [
      independent, and it survives JS being off. */
   .homeDirectory:has(#plugin-cat-all:checked) [data-plugin-cat='all'],
   .homeDirectory:has(#uc-cat-all:checked) [data-uc-cat='all'],
-  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'],
-  .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'],
   .homeDirectory:has(#home-view-table:checked) [data-home-view='table'],
   .homeDirectory:has(#home-view-cards:checked) [data-home-view='cards'] {
     border-color: var(--color-accent-strong);
     background: var(--color-accent-strong);
     color: var(--color-accent-contrast);
+  }
+  /* Direct round: the ACTIVE TAB wears the slate secondary, not the amber primary —
+     6.74:1 / 8.30:1, an already-gated pair (F10's secondary button uses the same one). */
+  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'],
+  .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'] {
+    border-color: var(--color-cat-solid);
+    background: var(--color-cat-solid);
+    color: var(--color-cat-on-solid);
   }
 
   /* ---------- panel visibility ---------- */

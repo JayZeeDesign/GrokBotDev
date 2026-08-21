@@ -23,7 +23,6 @@
 //
 // Copy: CP-113 (FENCED h1) · CP-002 (subline, money phrase) · CP-003 (primary CTA) ·
 // CP-004 (friction line) · CP-005 + CP-006 (KEEP).
-import Button from './Button.astro';
 import InstallModal from './InstallModal.astro';
 import { CP_113_HOME_H1 } from '../lib/copy';
 
@@ -43,9 +42,9 @@ const SUBLINE =
     <h1>{CP_113_HOME_H1}</h1>
     <p class="sub">{SUBLINE}</p>
 
+    {/* Direct round: "browse plugins" CTA removed — the directory IS the next screen. */}
     <div class="hero-actions">
       <InstallModal variant="site" id="site" renderTrigger={true} triggerLabel="plug your Grok Bot in" />
-      <Button variant="outline" href="/plugins/" label="browse plugins" />
     </div>
 
     <p class="hero-friction">copy one prompt. your Bot does the rest.</p>
@@ -55,14 +54,15 @@ const SUBLINE =
   </div>
 
   <span class="hero-seed" id="seedLabel">assembly ····</span>
-  <div class="hint" id="hint">drag a bot · they watch your cursor</div>
+  {/* Direct round: the "drag a bot" hint is removed — hero.js's hintEl lookups are
+      null-guarded, so no script change is needed. */}
 </section>
 
 <style is:global>
 /* ---------- stage ---------- */
 .stage{
   position:relative; width:100%;
-  height:clamp(520px, 82vh, 780px);
+  height:clamp(440px, 66vh, 620px); /* direct round: tightened from 82vh/780 — less void below the CTAs */
   overflow:hidden;
   touch-action:pan-y;
   cursor:grab;
@@ -110,7 +110,7 @@ const SUBLINE =
   /* sits ~6.5vh higher than the first cut — the pile reads as a group ABOVE the
      type rather than crowding its shoulders. Its live rect is re-measured into a
      static body on every build/resize, so the sim follows this value. */
-  bottom:clamp(74px,12.5vh,128px);
+  bottom:clamp(40px,7vh,72px);
   width:min(880px, calc(100% - 40px));
   text-align:center;
   pointer-events:auto;
@@ -140,14 +140,6 @@ const SUBLINE =
 }
 @media(max-width:640px){ .search{padding:12px 16px; font-size:13px} .chips{display:none} }
 
-.hint{
-  position:absolute; z-index:4; left:50%; transform:translateX(-50%);
-  bottom:8px; font:500 10.5px/1 var(--mono); letter-spacing:.09em;
-  color:var(--muted); opacity:.75; text-transform:uppercase; white-space:nowrap;
-}
-@media(max-width:640px){ .hint{display:none} }
-/* F3b: dragging works on touch again, so the hint is true everywhere. It stays hidden under
-   640px purely for space (the <=640 rule above), not because the gesture is missing. */
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce){

@@ -13,13 +13,11 @@
 //     lives in the hero subline, so `check-keyword-placements` is unaffected — verified.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroStage from '../components/HeroStage.astro';
-import StatBar from '../components/StatBar.astro';
 import HomeDirectory from '../components/HomeDirectory.astro';
 import NewsletterRow from '../components/NewsletterRow.astro';
-import { allPlugins, allUseCases, siteStats, sortForIndex, urlOf } from '../lib/entries';
+import { allPlugins, allUseCases, sortForIndex, urlOf } from '../lib/entries';
 import { META, collectionPage, itemList } from '../lib/seo';
 
-const stats = await siteStats();
 const plugins = sortForIndex(await allPlugins());
 const useCases = sortForIndex(await allUseCases());
 
@@ -34,10 +32,8 @@ const graph = [
 <BaseLayout title={META.home.title} description={META.home.description} graph={graph}>
   <HeroStage />
 
-  <div class="container-page py-8">
-    <StatBar stats={stats} variant="full" />
-  </div>
-
+  {/* Direct round: StatBar (counts row) REMOVED from home + dead space tightened —
+      the directory itself is the proof of size now. */}
   <HomeDirectory plugins={plugins} useCases={useCases} />
 
   <div class="container-page pb-12 md:pb-16">
