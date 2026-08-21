@@ -17,6 +17,42 @@ const RATE_WINDOW_S = Number(process.env.WAITLIST_RATE_LIMIT_WINDOW_S ?? 3600);
 const CORS_ORIGIN = process.env.CORS_ALLOWED_ORIGIN ?? 'https://grokbot.dev';
 const BODY_LIMIT = 4096;
 
+// Resend Audiences (operator, direct round). The API key is SERVER-SIDE ONLY — it never
+// reaches the browser; the form posts here and only this process talks to Resend. If the key
+// is unset (local dev), the push is a no-op and SQLite is still the record. `source` maps to
+// an audience: the landing's `get-notified` list vs the live-site newsletter list.
+const RESEND_API_KEY = process.env.RESEND_API_KEY ?? '';
+const RESEND_AUDIENCE_BY_SOURCE = {
+  'get-notified': process.env.RESEND_AUDIENCE_GET_NOTIFIED ?? '',
+};
+const RESEND_AUDIENCE_DEFAULT = process.env.RESEND_AUDIENCE_NEWSLETTER ?? '';
+const audienceFor = (source) => RESEND_AUDIENCE_BY_SOURCE[source] || RESEND_AUDIENCE_DEFAULT;
+
+/**
+ * Best-effort push of one contact into the mapped Resend audience. Fired only on a genuinely
+ * NEW insert (dedup already handled by SQLite), never awaited by the request path — a Resend
+ * outage must not fail or slow a signup, because SQLite already holds the record and a
+ * reconcile job can replay it. Adding an existing contact is idempotent on Resend's side.
+ */
+async function pushToResend(email, source) {
+  if (!RESEND_API_KEY) return;
+  const audienceId = audienceFor(source);
+  if (!audienceId) return;
+  try {
+    const r = await fetch(`https://api.resend.com/audiences/${audienceId}/contacts`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, unsubscribed: false }),
+    });
+    if (!r.ok) {
+      const t = await r.text().catch(() => '');
+      console.error('resend: contact push failed', r.status, t.slice(0, 200));
+    }
+  } catch (error) {
+    console.error('resend: contact push error', error.message);
+  }
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const SOURCE_RE = /^[a-z0-9_/-]{1,64}$/;
 
@@ -143,10 +179,11 @@ export function handleWaitlist(req, res) {
     const source = SOURCE_RE.test(rawSource) ? rawSource : 'unknown';
     const userAgent = String(req.headers['user-agent'] ?? '').slice(0, 256);
 
+    let info;
     try {
       // INSERT OR IGNORE keyed on email: a duplicate is indistinguishable from a new
       // signup in the response, so the endpoint is not an email-enumeration oracle.
-      database()
+      info = database()
         .prepare(
           'INSERT OR IGNORE INTO waitlist (email, source, ip_hash, user_agent) VALUES (?, ?, ?, ?)'
         )
@@ -157,6 +194,10 @@ export function handleWaitlist(req, res) {
         ? redirect(res, '/subscribed/?subscribed=0')
         : json(res, 500, { ok: false, error: 'server_error' });
     }
+
+    // Only a genuinely new row pushes to Resend — a re-submit of an existing email changes
+    // nothing (info.changes === 0) and must not re-hit the API. Fire-and-forget.
+    if (info.changes === 1) void pushToResend(email, source);
 
     return isForm ? redirect(res, '/subscribed/?subscribed=1') : json(res, 200, { ok: true });
   });
