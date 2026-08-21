@@ -466,8 +466,26 @@ function build(newSeed){
   var mouse=M.Mouse.create(stage);
   mouseC=M.MouseConstraint.create(engine,{ mouse:mouse, constraint:{ stiffness:0.16, damping:0.08, render:{visible:false} } });
   M.Composite.add(world, mouseC);
-  // never hijack page scroll
+  // never hijack page scroll — wheel (desktop)
   if(mouse.mousewheel){ mouse.element.removeEventListener('wheel', mouse.mousewheel); mouse.element.removeEventListener('mousewheel', mouse.mousewheel); }
+
+  // never hijack page scroll — touch (mobile). integration-notes §5 says `touch-action:pan-y`
+  // on .stage is enough; it is NOT, and this was a real scroll trap on Android Chrome.
+  // Matter.Mouse.setElement registers touchmove/touchstart/touchend with {passive:false},
+  // and its own handlers do `e.changedTouches && (button=0, e.preventDefault())` — they
+  // preventDefault EVERY touch event unconditionally. That cancels the browser's pan gesture
+  // on the first touchmove, before touch-action:pan-y ever gets to apply, so the page cannot
+  // scroll while a finger starts inside the hero.
+  //
+  // Removing the three listeners is the same remedy, and the same one-line pattern, as the
+  // wheel removal directly above. Cost: MouseConstraint no longer receives touch positions,
+  // so bot DRAGGING becomes desktop-only. Everything else on touch is unchanged — the bots
+  // still drop, settle, collide and idle-nudge, and the eyes still track the finger, because
+  // eye tracking is our own passive `pointermove` listener and not Matter's.
+  // RULE (operator, Stage 5B F3): vertical page scroll ALWAYS wins on touch.
+  mouse.element.removeEventListener('touchmove', mouse.mousemove);
+  mouse.element.removeEventListener('touchstart', mouse.mousedown);
+  mouse.element.removeEventListener('touchend', mouse.mouseup);
   M.Events.on(mouseC,'startdrag',function(e){ stage.classList.add('dragging'); if(e.body) M.Sleeping.set(e.body,false); });
   M.Events.on(mouseC,'enddrag',function(){ stage.classList.remove('dragging'); });
 

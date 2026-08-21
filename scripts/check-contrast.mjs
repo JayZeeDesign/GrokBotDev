@@ -6,7 +6,8 @@
 // Reads the hex values straight out of src/styles/tokens.css — the only file allowed to
 // contain them (§4.1.1) — so the table can never drift from what ships.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const css = readFileSync('src/styles/tokens.css', 'utf8');
 
@@ -68,8 +69,13 @@ const PAIRS = [
   ['muted on bg', '--color-text-muted', '--color-bg', 4.5],
   ['muted on surface', '--color-text-muted', '--color-surface', 4.5],
   ['accent-ink on bg (amber-as-text)', '--color-accent-ink', '--color-bg', 4.5],
-  ['accent-contrast on accent', '--color-accent-contrast', '--color-accent', 4.5],
+  // F4 — the label-bearing interactive fill. Light: white on #867458. Dark: ink on #C6AE85.
+  // This replaces the old `accent-contrast on accent` pair: since F4, text never sits on
+  // plain --color-accent, so gating that pair would measure a combination the site does not
+  // render. The BG_ACCENT_TEXT guard below is what stops it coming back.
+  ['accent-contrast on accent-strong', '--color-accent-contrast', '--color-accent-strong', 4.5],
   ['accent on bg (fill/glyph)', '--color-accent', '--color-bg', 3],
+  ['accent-strong on bg (fill/glyph)', '--color-accent-strong', '--color-bg', 3],
   ['border-interactive on bg (SC 1.4.11)', '--color-border-interactive', '--color-bg', 3],
   ['border-interactive on surface', '--color-border-interactive', '--color-surface', 3],
   ['border-strong on bg', '--color-border-strong', '--color-bg', 3],
@@ -113,8 +119,42 @@ for (const [mode, set] of [
   }
 }
 
+// F4 guard — `--color-accent` is a NON-TEXT token. The measured pairs above cannot catch a
+// regression that puts a label back on the undarkened amber (white on #8C7A5C = 4.16:1),
+// because that combination would simply stop being measured. So assert it structurally: no
+// element may carry `bg-accent` and `text-accent-contrast` at once. Interactive fills that
+// carry a label use `bg-accent-strong`.
+const SRC_FILES = [];
+(function walkSrc(dir) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) walkSrc(path);
+    else if (entry.isFile() && /\.(astro|css|ts)$/.test(path)) SRC_FILES.push(path);
+  }
+})('src');
+
+const accentTextOnFill = [];
+for (const file of SRC_FILES) {
+  for (const [i, line] of readFileSync(file, 'utf8').split('\n').entries()) {
+    // `bg-accent` exactly — NOT bg-accent-strong / bg-accent-tint. A plain \b would match
+    // those too, because a hyphen is a word boundary.
+    if (/bg-accent(?![\w-])/.test(line) && /text-accent-contrast(?![\w-])/.test(line)) {
+      accentTextOnFill.push(`${file}:${i + 1}`);
+    }
+  }
+}
+if (accentTextOnFill.length) {
+  console.error(
+    '\ncheck-contrast: text on --color-accent (a NON-TEXT token) — use bg-accent-strong:\n  ' +
+      accentTextOnFill.join('\n  ')
+  );
+  failures += accentTextOnFill.length;
+} else {
+  console.log('\ncheck-contrast: no label sits on the non-text accent fill (F4 guard)');
+}
+
 if (failures) {
   console.error(`\ncheck-contrast: ${failures} pair(s) below the §4.6 floor`);
   process.exit(1);
 }
-console.log('\ncheck-contrast: every gated pair clears its §4.6 floor');
+console.log('check-contrast: every gated pair clears its §4.6 floor');

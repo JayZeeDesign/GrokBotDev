@@ -1229,3 +1229,190 @@ accessibility is a clean **100**. The remote checklist's item 12 no longer carri
 **Status: M0 through M7-local are complete, with no held design items.** What remains is
 M7-remote, gated on the org token, operator credentials and production DNS — the checklist is
 section 6 of the M7-LOCAL entry above, and it starts by executing the TOKEN-DAY RUNBOOK.
+
+## 2026-08-21 — M8 · operator polish round 1 (Stage 5B, four F-items)
+
+Source: the operator's first mobile review — Samsung, Chrome, ~390px. Screenshot at
+`uploads/session-1787240183189-q07t3xt5j/1787293566356-Screenshot_20260821_082120_Chrome.jpg`.
+Two of the four supersede rulings that were already recorded as settled; both supersessions
+are noted where the old ruling lives so nobody applies the stale one.
+
+### F1 · mobile header — one row + slide-in drawer
+
+**Supersedes §4.5's "Nav collapse — no JS, no hamburger" and §4.3.1's "header wraps per §4.5
+(no hamburger)", and supersedes the M7x ruling that accepted the 3-row wrap.** The operator
+overruled it on sight: the header ate **77px → it was ~370px**, roughly a fifth of the fold,
+before a single word of content.
+
+Three bands now:
+
+| band | header |
+|---|---|
+| `< md` (<768) | **one row** — enlarged brand lockup left, `menu` toggle right. Nav, search, `/agent` and submit live in the drawer. |
+| `md`–`lg` | one row — brand + full nav + `search` LINK + `/agent` + submit. The search INPUT moved up to `lg` so this band stays a single row. |
+| `≥ lg` (1024) | **unchanged**, exactly as the brief required. Verified: 71px, mark 18px, wordmark 14px, search input present — identical to the pre-M8 header. |
+
+Measured header height: **390 → 77px · 768 → 81px · 1024 → 71px · 1440 → 71px**, no
+horizontal overflow at any of them.
+
+**Breakpoint deviation, deliberate:** the brief said `<720px`. §4.5 pins breakpoints to the
+Tailwind defaults "used exclusively", and 720 is not one — a `max-[720px]` variant would also
+be caught by §8.5 check 13's arbitrary-value grep. `md` (768) is the sanctioned breakpoint
+nearest the operator's intent, and it has the better side effect: 768–1023 keeps a fully
+visible nav instead of hiding it behind a toggle on a width that has room for it.
+
+**The drawer is a native `<details>`.** It opens, closes and is keyboard-operable with zero
+JS; the island adds only the four things markup cannot do. That is the exact shape §4.2.9
+already sanctions for `FilterBar`, so §4.4 rule 7 ("no JS-dependent interaction is load
+bearing") still holds — with JS off you get `menu` / `close` and every link.
+
+**§12.5 island-list amendment — the count is now NINE.** M1 amended it to seven, A4's hero
+made eight, and the drawer is the ninth. Added under an explicit operator directive, not an
+executor call. `audit-scripts` confirms 9 distinct `/_astro/*.js` bundles and **0 inline JS**;
+the drawer bundle is **931 bytes**, the third smallest on the site.
+
+Spec conformance, each verified in-browser rather than asserted:
+
+| requirement | result |
+|---|---|
+| ~80% width | panel 312px of 390 = **80%** |
+| full height | 844px = viewport height ✓ |
+| internally scrollable | `overflow-y: auto` + `overscroll-behavior: contain` ✓ |
+| background scroll locked | `documentElement.style.overflow === 'hidden'` while open, cleared on every close path ✓ |
+| outside tap closes | scrim spans 390×844; click closes and unlocks ✓ |
+| Esc closes | closes, unlocks, **and returns focus to the toggle** ✓ |
+| focus trapped | toggle + 8 panel items form the loop; focus moves to the first link on open ✓ |
+| touch targets ≥44px | 8 links + the toggle, **0 under 44px**; toggle is exactly 44×44 ✓ |
+| submit = the one amber element | `rgb(134,116,88)` = `--color-accent-strong`, white label, nothing else tinted ✓ |
+| A2 voice | every drawer string Geist Mono, lowercase ✓ |
+
+**Two defects found in my own first cut and fixed before commit** — both were invisible to the
+gates and only showed up under measurement:
+1. **`close` was painted underneath the drawer.** The toggle sits at x≈330, inside the panel's
+   box, so with the panel at `z-index: 41` the toggle was occluded — `elementFromPoint` at its
+   centre returned a nav link. Scrim tap and Escape still worked, but there was no *visible*
+   close control. `.navDrawer[open] .navDrawer__toggle` now lifts to `z-index: 42` with a
+   surface background, which also puts `close` at the panel's top-right where it belongs.
+2. **The brand stole width at 768.** `flex-1` on the lockup pushed the nav into a second row
+   (header 109px). It is now `flex-1 md:flex-none` — `flex-1` is only needed below `md`, where
+   it is what pushes the toggle to the right edge. 768 dropped to 81px, one clean row.
+
+### F2 · brand lockup enlarged on mobile
+
+Mark **18px → 26px** (1.44×) and wordmark `--text-sm` → `--text-lg` (14px → 18px, 1.29×) below
+`lg`, both stepping back to the desktop values at `lg`. Inside the brief's 1.3–1.5× target.
+A3 holds: same tilted-capsule 3×3 with the accent dot, never the plain grid, `.dev` unstyled.
+
+**`:global()` is required and is not stylistic.** The mark is rendered by the `MarkGlyph`
+CHILD component, so it never receives `SiteHeader`'s scope attribute — a plain `.brand-mark`
+selector silently matched nothing and the `lg` step-down was a no-op (measured 26px at 1440
+before the fix). `.brand-word` is in this template and scopes normally. The `!important` is
+load-bearing in one place only: §4.2.1 writes the glyph size as an **inline** style, which no
+class can outrank, and changing that documented prop API for a single caller would be the
+bigger change.
+
+### F3 · CRITICAL — the hero was a touch scroll trap. Root-caused and fixed.
+
+The operator could not scroll the home page on a phone. `integration-notes.md` §5 says
+`touch-action: pan-y` on `.stage` is what stops this, and **it was present and correct the
+whole time** — it simply is not sufficient.
+
+**Root cause, from the vendored source:** `Matter.Mouse.setElement` registers
+
+```js
+t.addEventListener("touchmove",  e.mousemove, {passive:false});
+t.addEventListener("touchstart", e.mousedown, {passive:false});
+t.addEventListener("touchend",   e.mouseup,   {passive:false});
+```
+
+and those handlers do `e.changedTouches && (t.button=0, e.preventDefault())` — they
+**preventDefault every touch event unconditionally**. A non-passive handler that cancels the
+first `touchmove` kills the browser's pan gesture *before* `touch-action` is ever consulted.
+So the CSS was right and inert.
+
+**Fix — resolution (a) from the brief:** remove the three touch listeners, which is the same
+remedy and the same one-line pattern as the wheel-listener removal already sitting directly
+above it in `hero.js` (and already blessed by §5 of the notes). **No physics constant was
+touched** — `INFLATE`, `dropZone`, `botCount`, gravity, stiffness all untouched.
+
+**Before / after, measured by dispatching a real cancelable `TouchEvent` at the stage centre
+and reading `defaultPrevented`:**
+
+| | touchstart | touchmove | touch-action |
+|---|---|---|---|
+| before | `defaultPrevented: **true**` | `defaultPrevented: **true**` | `pan-y` |
+| after | `defaultPrevented: false` | `defaultPrevented: false` | `pan-y` |
+
+That is the trap and its removal, on the same build, proven by reverting the fix and
+rebuilding rather than by reasoning about it.
+
+**Cost:** `MouseConstraint` no longer receives touch positions, so **bot dragging is
+desktop-only**. Everything else on touch is unchanged — bots still drop, settle, collide and
+idle-nudge, and the eyes still track the finger, because eye tracking is our own passive
+`pointermove` listener and not Matter's. Two honesty follow-ups: `.hint` ("drag a bot · they
+watch your cursor") and the `grab` cursor are now suppressed under `@media (pointer: coarse)`,
+not just under 640px, so a tablet is never told to do something that does nothing.
+
+Re-verified unchanged: desktop wheel scroll over the hero (scrollY 0 → 600), `?static=1`, and
+the reduced-motion path.
+
+### F4 · white on primary — fill darkened instead of dropping the gate
+
+**Supersedes A10 / design authority decision #18's ink**, per operator direction; the operator
+holds the one-token overrule and has now used it twice on this token, which is exactly what
+A10 said it was for.
+
+White on `#8C7A5C` is **4.156:1** and fails the 4.5 floor, and the floor did not come back as
+negotiable — so the text stays white and the **fill** darkens, hue-true and minimally:
+
+```
+--color-accent-strong: #867458      (light mode)
+  same HSL hue 37.5deg · same saturation 20.7% · lightness 45.5% -> 43.4%
+  white on #867458 = 4.513:1  PASS      (was: white on #8C7A5C = 4.156:1 FAIL)
+```
+
+**2.09 lightness points.** That is the LIGHTEST value on that hue/saturation line which
+clears 4.5 — searched, not guessed. It stays warm ash, nowhere near the muddy-brown the
+brief worried about, and it is much lighter than the anticipated `#7d6b4e`–`#806e50` range.
+**Headroom is thin by instruction** ("find the lightest passing value"). If the operator wants
+margin, **`#847357` at 4.594:1** is the next step down the same line and is the only other
+value worth considering.
+
+**Dark mode is NOT degraded.** White on `#C6AE85` measures **2.14:1** and would have been a bad
+regression, so dark keeps ink at 9.18:1 — which means `--color-accent-strong` is simply
+`--color-accent` there and the shipped dark button is byte-identical to before.
+
+**Token split:** `--color-accent` is now a **non-text** token (live dot, mark's accent dot,
+active-filter tint, chip borders) and `--color-accent-strong` is the label-bearing interactive
+fill. Three call sites moved: `Button` solid, `FeaturedTag`, `InstallModal`'s primary trigger.
+
+**Both halves are gated, and both gates were proven by regression:**
+- the measured pair became `accent-contrast on accent-strong` (4.5 floor). Reverting
+  `--color-accent-strong` to `#8C7A5C` → **exit 1**, `4.16:1 FAIL`, dark still passing.
+- a measured pair alone could not catch a label going back onto plain `--color-accent`,
+  because that combination would simply stop being measured. So `check-contrast.mjs` also
+  asserts it **structurally**: no element may carry `bg-accent` and `text-accent-contrast` on
+  the same line. Reverting `Button.astro` → **exit 1** naming the file and line. (The guard
+  regex is `bg-accent(?![\w-])` — a plain `\b` matches `bg-accent-strong` too, since a hyphen
+  is a word boundary. That bit me on the first run.)
+
+Side-by-side for the operator's judgement:
+`images/grokbot-m7-qa/F4-sidebyside-1440.png` · `F4-sidebyside-390.png`.
+
+### Verification
+
+- **Full gate suite green:** validate 10 entries · negative fixtures still rejected ·
+  check-contrast every gated pair + the F4 guard · hub-intros ARMED 83/83 ·
+  keyword-placements OK · links 108 pages 0 broken · audit-scripts **9 bundles, 0 inline JS** ·
+  `astro check` 0 errors 0 warnings · build exit 0 · raw-colour and arbitrary-value greps clean.
+- **Full QA sweep re-run:** 19 templates × 390/768/1440 = **57 combos, 0 overflow, 0 landmark
+  defects**. Screenshots refreshed in `images/grokbot-m7-qa/`, plus `F1-F4-home-*.png`,
+  `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`.
+- **Lighthouse — accessibility 100 and SEO 100** on `/`, a use-case page and an indexed hub,
+  with **zero failing a11y audits**, so F4's white-on-darker-amber holds the score A10's ink
+  had won. ⚠️ **Performance is NOT measurable on this box right now and none of the numbers
+  should be read as a regression:** load average is **154 on 12 cores**. The same hub, same
+  build, back to back, scored **52 → 80 → 93** while LCP stayed flat at ~1.7s and only TBT
+  moved (781ms → 291ms) — the signature of CPU starvation, not of a slower page. For scale,
+  the change adds **931 bytes** of JS. The real measurement is M7-remote item 8, against
+  production.

@@ -6,8 +6,25 @@
 // header nav (mono, lowercase). Right cluster: SearchInput link-mode, the /agent door
 // (leading ▪ at 8px — the one place "agent" appears in the UI), and the one solid
 // Button → /submit/.
-// §4.5 nav collapse — NO JS, NO hamburger: the right cluster wraps below md and the
-// search input collapses to a `search` link. Every nav item stays visible at every width.
+//
+// ── F1/F2 (operator, Stage 5B) — SUPERSEDES §4.5's "no JS, no hamburger" nav collapse.
+// The wrap-everything header stacked into THREE rows on a phone and ate the fold; the
+// operator's verdict was "much less busy". Three bands now:
+//
+//   < md  (<768) : ONE row — enlarged brand lockup left, `menu` toggle right. Nav, search,
+//                  /agent and submit live in a slide-in drawer.
+//   md–lg        : one row — brand + full nav + `search` LINK + /agent + submit. The search
+//                  INPUT moves up to lg so this band stays a single clean row.
+//   ≥ lg (1024)  : UNCHANGED from the shipped desktop header, exactly as the brief requires.
+//
+// §4.5 pins breakpoints to the Tailwind defaults "used exclusively", so the drawer boundary
+// is `md` (768) — the sanctioned breakpoint nearest the operator's ~720 — rather than an
+// arbitrary 720px value, which the §8.5 check-13 arbitrary-value grep would reject anyway.
+//
+// The drawer is a native `<details>`: it opens, closes and is keyboard-operable with ZERO
+// JS. The island below is ENHANCEMENT ONLY (scroll lock, focus trap, scrim tap, Escape),
+// exactly the shape §4.2.9 already sanctions for FilterBar, so §4.4 rule 7 holds — no
+// JS-dependent interaction is load-bearing.
 import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
 import SearchInput from './SearchInput.astro';
@@ -32,20 +49,23 @@ const nav = [
 
 <header class="border-b border-border bg-bg" data-pagefind-ignore>
   <div class="container-page flex min-h-16 flex-wrap items-center gap-x-8 gap-y-4 py-4">
-    <a href="/" class="flex items-center gap-3" aria-label="grokbot.dev home">
-      <MarkGlyph size={18} class="text-accent" />
-      <span class="display-track font-display text-sm font-semibold lowercase text-text">
+    {/* `flex-1` only below md, where it is what pushes the drawer toggle to the right edge.
+        From md up the brand must shrink to its content or it steals width from the nav and
+        forces a second row at 768 — measured at F1 QA. */}
+    <a href="/" class="brand flex flex-1 items-center gap-3 md:flex-none" aria-label="grokbot.dev home">
+      <MarkGlyph size={26} class="brand-mark text-accent" />
+      <span class="brand-word display-track font-display font-semibold lowercase text-text">
         grokbot.dev
       </span>
     </a>
 
-    <nav class="flex flex-1 flex-wrap items-center gap-x-6 gap-y-2" aria-label="main">
+    <nav class="hidden flex-1 flex-wrap items-center gap-x-6 gap-y-2 md:flex" aria-label="main">
       {nav.map((item) => <NavLink href={item.href} label={item.label} current={isCurrent(item.href)} />)}
     </nav>
 
-    <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-      <SearchInput mode="link" class="hidden md:flex" />
-      <NavLink href="/search/" label="search" current={isCurrent('/search/')} class="md:hidden" />
+    <div class="hidden flex-wrap items-center gap-x-6 gap-y-2 md:flex">
+      <SearchInput mode="link" class="hidden lg:flex" />
+      <NavLink href="/search/" label="search" current={isCurrent('/search/')} class="lg:hidden" />
 
       <span class="inline-flex items-center gap-1">
         <span aria-hidden="true" class="agent-glyph text-accent">▪</span>
@@ -54,6 +74,51 @@ const nav = [
 
       <Button href="/submit/" variant="solid" size="sm" label="submit" />
     </div>
+
+    {/* ── the mobile drawer (below md). Native <details>; the island only enhances it. ── */}
+    <details class="navDrawer md:hidden" data-nav-drawer>
+      <summary class="navDrawer__toggle" aria-label="menu">
+        <span class="navDrawer__word navDrawer__word--closed">menu</span>
+        <span class="navDrawer__word navDrawer__word--open">close</span>
+      </summary>
+
+      {/* Tap-outside target. Enhancement only — without JS you close with `close`. */}
+      <span class="navDrawer__scrim" data-nav-scrim aria-hidden="true"></span>
+
+      <div class="navDrawer__panel" data-nav-panel>
+        <nav class="navDrawer__nav" aria-label="mobile">
+          {nav.map((item) => (
+            <a
+              href={item.href}
+              class:list={['navDrawer__link', isCurrent(item.href) && 'navDrawer__link--current']}
+              aria-current={isCurrent(item.href) ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
+
+          <span class="navDrawer__rule" aria-hidden="true"></span>
+
+          <a
+            href="/search/"
+            class:list={['navDrawer__link', isCurrent('/search/') && 'navDrawer__link--current']}
+            aria-current={isCurrent('/search/') ? 'page' : undefined}
+          >
+            search
+          </a>
+          <a
+            href="/agent/"
+            class:list={['navDrawer__link', isCurrent('/agent/') && 'navDrawer__link--current']}
+            aria-current={isCurrent('/agent/') ? 'page' : undefined}
+          >
+            <span aria-hidden="true" class="agent-glyph text-accent">▪</span> /agent
+          </a>
+        </nav>
+
+        {/* A1 accent law: submit is the ONE amber element in the drawer. */}
+        <a href="/submit/" class="navDrawer__cta">submit</a>
+      </div>
+    </details>
   </div>
 </header>
 
@@ -63,4 +128,224 @@ const nav = [
     font-size: 8px;
     line-height: 1;
   }
+
+  /* F2 — the phone lockup was too small next to the nav type. The mark ships at 26px and
+     steps back to the desktop 18px at lg; the wordmark rides with it (--text-lg → --text-sm).
+     `!important` is load-bearing here and nowhere else: §4.2.1 MarkGlyph writes its size as
+     an INLINE style, which no class can outrank. Changing that documented prop API for one
+     caller would be the bigger change. */
+  /* `:global()` is required, not stylistic: the mark is rendered by the MarkGlyph CHILD
+     component, so it never receives this component's scope attribute and a plain
+     `.brand-mark` selector silently matches nothing. `.brand-word` is in this template and
+     scopes normally. Caught at F2 QA — the lg step-down was a no-op without it. */
+  :global(.brand-mark) {
+    inline-size: 26px !important;
+    block-size: 26px !important;
+  }
+  .brand-word {
+    font-size: var(--text-lg);
+  }
+  @media (min-width: 1024px) {
+    :global(.brand-mark) {
+      inline-size: 18px !important;
+      block-size: 18px !important;
+    }
+    .brand-word {
+      font-size: var(--text-sm);
+    }
+  }
+
+  /* ---------- drawer ---------- */
+  .navDrawer {
+    margin-inline-start: auto;
+  }
+  .navDrawer__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* §4.6 target size, raised to the F1 mobile floor of 44px. */
+    min-inline-size: 44px;
+    min-block-size: 44px;
+    padding-inline: var(--spacing-3);
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-text);
+    cursor: pointer;
+    list-style: none;
+  }
+  .navDrawer__toggle::-webkit-details-marker {
+    display: none;
+  }
+  /* While open, the toggle sits at x≈330 — INSIDE the panel's box — so without this it is
+     painted under the drawer and `close` becomes invisible and untappable (elementFromPoint
+     returned a nav link). Lifting it above the panel puts `close` at the panel's top-right,
+     which is where a close control belongs anyway. Scrim tap and Escape already worked;
+     this restores the visible affordance. Caught at F1 QA. */
+  .navDrawer[open] .navDrawer__toggle {
+    position: relative;
+    z-index: 42;
+    background: var(--color-surface);
+  }
+  .navDrawer__word--open,
+  .navDrawer[open] .navDrawer__word--closed {
+    display: none;
+  }
+  .navDrawer[open] .navDrawer__word--open {
+    display: inline;
+  }
+
+  .navDrawer__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: block;
+    background: var(--color-bg);
+    opacity: 0.72;
+  }
+
+  .navDrawer__panel {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: 41;
+    /* ~80% width, capped so it never becomes a full-bleed sheet on a large phone. */
+    inline-size: 80%;
+    max-inline-size: 22rem;
+    /* internally scrollable — a long nav must never be unreachable */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    padding: var(--spacing-6);
+    background: var(--color-surface);
+    border-inline-start: 1px solid var(--color-border);
+  }
+
+  .navDrawer__nav {
+    display: flex;
+    flex-direction: column;
+  }
+  .navDrawer__link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    min-block-size: 44px;
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    transition: color 0.15s;
+  }
+  .navDrawer__link:hover {
+    color: var(--color-text);
+  }
+  .navDrawer__link--current {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+  .navDrawer__rule {
+    display: block;
+    block-size: 1px;
+    margin-block: var(--spacing-3);
+    background: var(--color-border);
+  }
+
+  .navDrawer__cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 44px;
+    border: 1px solid var(--color-accent-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-accent-strong);
+    color: var(--color-accent-contrast);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+  }
+  .navDrawer__cta:hover {
+    filter: brightness(0.9);
+  }
+
+  /* The drawer is a below-md affordance only; nothing of it may leak onto desktop. */
+  @media (min-width: 768px) {
+    .navDrawer {
+      display: none;
+    }
+  }
 </style>
+
+<script>
+  // SANCTIONED ISLAND (operator directive, Stage 5B F1) — the mobile nav drawer.
+  // ENHANCEMENT ONLY, in the shape §4.2.9 already sanctions for FilterBar: the <details>
+  // opens, closes and is keyboard-operable natively. This adds the four things markup
+  // cannot do — background scroll lock, focus trap, scrim tap, and Escape-to-close with
+  // focus returned to the toggle. With JS off, everything still works via `menu`/`close`.
+  const drawer = document.querySelector<HTMLDetailsElement>('[data-nav-drawer]');
+  if (drawer) {
+    const panel = drawer.querySelector<HTMLElement>('[data-nav-panel]');
+    const scrim = drawer.querySelector<HTMLElement>('[data-nav-scrim]');
+    const toggle = drawer.querySelector<HTMLElement>('summary');
+
+    const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled])';
+    const close = (returnFocus: boolean) => {
+      drawer.open = false;
+      if (returnFocus) toggle?.focus();
+    };
+
+    drawer.addEventListener('toggle', () => {
+      // Scroll lock on the root element, so the page behind cannot move while the drawer
+      // is open. Paired with `overscroll-behavior: contain` on the panel.
+      document.documentElement.style.overflow = drawer.open ? 'hidden' : '';
+      if (drawer.open) panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    });
+
+    scrim?.addEventListener('click', () => close(true));
+
+    document.addEventListener('keydown', (event) => {
+      if (!drawer.open) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close(true);
+        return;
+      }
+
+      if (event.key !== 'Tab' || !panel) return;
+
+      // Focus trap: the toggle plus everything in the panel form the loop, so Shift+Tab off
+      // the first item lands on `close` rather than escaping to the page behind.
+      const items = [toggle, ...Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))].filter(
+        (el): el is HTMLElement => Boolean(el)
+      );
+      if (!items.length) return;
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (active instanceof HTMLElement && !items.includes(active)) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
+    // A resize past the breakpoint must not strand a locked scroll behind a hidden drawer.
+    window.addEventListener('resize', () => {
+      if (drawer.open && window.innerWidth >= 768) close(false);
+    });
+  }
+</script>

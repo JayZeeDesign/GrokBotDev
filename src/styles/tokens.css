@@ -7,15 +7,24 @@
   --color-border: #E5E5E1;
   --color-border-interactive: #6E6E76;
   --color-border-strong: #6E6E76;
+  /* A1's Ash Amber. NON-TEXT uses only — the live dot, the mark's accent dot, the
+     active-filter tint, chip borders. TEXT NEVER SITS ON THIS TOKEN; interactive fills that
+     carry a label use --color-accent-strong below. check-contrast.mjs enforces both halves. */
   --color-accent: #8C7A5C;
   --color-accent-text: #7A6748;
   --color-accent-ink: #7A6748;
-  /* A10 RESOLVED — design authority decision #18, 2026-08-21. Text on amber is INK, not
-     white: white measured 4.16:1 against a 4.5 floor; ink measures 4.73:1 and PASSES.
-     This is the swap A10 pre-wired; dark mode already shipped ink (9.18:1) and is
-     unchanged, and the amber hex itself is untouched. Operator retains a costless
-     overrule — it is this one line. `check-contrast.mjs` now GATES the pair. */
-  --color-accent-contrast: #0B0B0C;
+  /* F4 — operator direction, Stage 5B, supersedes A10/decision #18's ink.
+     The operator wants WHITE text on the primary buttons. White on #8C7A5C is 4.16:1 and
+     fails the 4.5 floor, and the floor is not negotiable — no exemption came back. So the
+     text stays white and the FILL darkens, hue-true and minimally: same HSL hue (37.5deg)
+     and same saturation (20.7%), lightness 45.5% -> 43.4%. That is a 2.1-point move, the
+     LIGHTEST value on that hue/saturation line that clears 4.5.
+       white on #867458 = 4.513:1 PASS   (was: white on #8C7A5C = 4.156:1 FAIL)
+     Headroom is deliberately thin because "lightest passing" was the instruction; if the
+     operator wants margin, #847357 is the next step down at 4.594:1 and is the only other
+     value worth considering. Operator retains the one-token overrule either way. */
+  --color-accent-strong: #867458;
+  --color-accent-contrast: #FFFFFF;
   --color-accent-tint: #FFFFFF;
   --color-success: #8C7A5C;
   /* warn/danger keep their §4.1.2 values: Addendum A1's table does not define them, and
@@ -105,6 +114,10 @@
   --color-accent: #C6AE85;
   --color-accent-text: #C6AE85;
   --color-accent-ink: #C6AE85;
+  /* F4: dark mode is NOT degraded. White on #C6AE85 measures 2.14:1 and would be a bad
+     regression, so dark keeps ink on the light amber at 9.18:1 — which means accent-strong
+     is simply accent here, and the shipped dark button is byte-identical to before. */
+  --color-accent-strong: #C6AE85;
   --color-accent-contrast: #0B0B0C;
   --color-accent-tint: #141417;
   --color-success: #C6AE85;

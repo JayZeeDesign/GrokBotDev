@@ -140,6 +140,9 @@ const SUBLINE =
   color:var(--muted); opacity:.75; text-transform:uppercase; white-space:nowrap;
 }
 @media(max-width:640px){ .hint{display:none} }
+/* "drag a bot" stopped being true on touch at F3 — hide it wherever the pointer is coarse,
+   not just under 640px, so a tablet is never told to do something that does nothing. */
+@media(pointer:coarse){ .hint{display:none} }
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce){
@@ -173,6 +176,9 @@ const SUBLINE =
   font:500 11px/1 var(--mono); letter-spacing:.06em; color:var(--muted); opacity:.75;
 }
 @media(max-width:640px){ .stage .hero-seed{display:none} }
+/* Bot dragging is desktop-only since F3 (Matter's touch handlers preventDefault every
+   touch event and trapped page scroll). Don't promise a gesture that no longer exists. */
+@media(pointer:coarse){ .stage{cursor:auto} }
 
 </style>
 
