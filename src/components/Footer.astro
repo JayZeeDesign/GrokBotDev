@@ -60,16 +60,32 @@ const columns = [
 
 <footer class="border-t border-border bg-bg">
   <div class="container-page py-12">
-    <nav aria-label="footer" class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    {/* F8 — the footer was ONE column on a phone: 17 links at a 32px pitch, 970px tall,
+        1.15 screens of scrolling. Two columns from the base breakpoint halves the row count;
+        the four groups stay intact and are never interleaved (browse | machine, then
+        project | counts). Four columns from md, not lg: at 768 two columns leave 348px of
+        column for a ~90px label and the footer still ran 670px on a tablet with room to
+        spare. The ruled composition is unchanged — four groups — it just arrives one
+        breakpoint earlier. Read §4.5's footer row as 2 / 2 / 4 / 4.
+        Touch targets come from PADDING, not line-height: each link is a 44px flex row with
+        the text vertically centred, so the §4.6 / WCAG 2.2 SC 2.5.8 target is real (all 17
+        were 16px tall before) while the type keeps its tight `--text-xs` rhythm. */}
+    <nav aria-label="footer" class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
       {columns.map((column) => (
         <section aria-labelledby={`footer-${column.title.replaceAll(' ', '-')}`}>
-          <h2 id={`footer-${column.title.replaceAll(' ', '-')}`} class="mb-3 font-mono text-xs text-text">
+          <h2 id={`footer-${column.title.replaceAll(' ', '-')}`} class="mb-2 font-mono text-xs text-text">
             {column.title}
           </h2>
-          <ul class="space-y-2">
+          <ul>
             {column.links.map((link) => (
               <li>
-                <NavLink href={link.href} label={link.label} external={link.external} variant="footer" />
+                <NavLink
+                  href={link.href}
+                  label={link.label}
+                  external={link.external}
+                  variant="footer"
+                  class="flex min-h-11 items-center"
+                />
               </li>
             ))}
           </ul>

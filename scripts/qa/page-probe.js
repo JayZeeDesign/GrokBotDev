@@ -18,11 +18,28 @@
     return false;
   };
 
+  // Clipped by an ancestor → cannot widen the page. Kept identical to
+  // `overflow-probe.js`, including both of its subtleties: only `hidden`/`clip` count
+  // (an element with `overflow-y: auto` computes `overflow-x: auto`, and excluding on that
+  // would have hidden the F6 modal defect), and the walk stops at a `position: fixed` node
+  // because a fixed element escapes an ancestor's overflow. Without this the A4 hero's
+  // gutter-resting edge bot — which `.stage` clips, by design — reads as page overflow on
+  // some seeds, making the sweep intermittently and wrongly red.
+  const clippedByAncestor = (el) => {
+    for (let n = el; n && n !== document.body; n = n.parentElement) {
+      const cs = getComputedStyle(n);
+      if (cs.position === 'fixed') return false;
+      if (n === el) continue;
+      if (cs.overflowX === 'hidden' || cs.overflowX === 'clip') return true;
+    }
+    return false;
+  };
+
   const overflowing = [];
   for (const el of q('body *')) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
-    if (inClosedDetails(el)) continue;
+    if (inClosedDetails(el) || clippedByAncestor(el)) continue;
     if (r.right > vw + 1 || r.left < -1) {
       const cs = getComputedStyle(el);
       if (cs.position === 'fixed' && r.width === 0) continue;

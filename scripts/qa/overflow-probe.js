@@ -21,11 +21,39 @@
   };
   const isSrOnly = (el) => el.closest('.sr-only') !== null;
 
+  // Clipped by an ancestor → cannot widen the page, so it is not this guard's business.
+  // Surfaced by the A4 hero: on some seeds an edge bot settles into the gutter and its box
+  // reads past the viewport, but `.stage` is `overflow: hidden` so it is visually clipped
+  // and `documentElement.scrollWidth` stays exactly the viewport width. hero.js documents
+  // that gutter rest as intended behaviour.
+  //
+  // ONLY `hidden` and `clip` count as clipping. NOT `auto`/`scroll`: an element with
+  // `overflow-y: auto` computes `overflow-x: auto` per spec, and that is precisely what
+  // `.install-modal__body` had when the F6 defect shipped — excluding on auto/scroll would
+  // have suppressed the very bug this guard was written to catch. Verified by re-running the
+  // F6 regression against this version of the probe.
+  //
+  // AND the walk stops at a `position: fixed` node: a fixed element is NOT clipped by an
+  // ancestor's overflow unless that ancestor establishes a containing block (transform,
+  // filter, contain). The site-level InstallModal lives inside `.stage` (overflow: hidden)
+  // and is `position: fixed`, so without this it would be wrongly excluded — and that modal
+  // is where F6 measured its WORST overflow (right=413). Confirmed by regression: with the
+  // F6 rules reverted, home-MODAL must still fail.
+  const clippedByAncestor = (el) => {
+    for (let n = el; n && n !== document.body; n = n.parentElement) {
+      const cs = getComputedStyle(n);
+      if (cs.position === 'fixed') return false;
+      if (n === el) continue;
+      if (cs.overflowX === 'hidden' || cs.overflowX === 'clip') return true;
+    }
+    return false;
+  };
+
   const pastViewport = [];
   const contentOverflow = [];
 
   for (const el of document.querySelectorAll('body *')) {
-    if (isSrOnly(el) || inClosedDetails(el)) continue;
+    if (isSrOnly(el) || inClosedDetails(el) || clippedByAncestor(el)) continue;
 
     const r = el.getBoundingClientRect();
     const label =

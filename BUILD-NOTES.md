@@ -1684,6 +1684,67 @@ exactly 390 and `body` carries F6's `overflow-x: clip`. `overflow-probe.js` alre
 closed-`<details>` descendants; `page-probe.js` predates the drawer and did not. The two
 probes disagreeing is what surfaced it. Aligned, and the sweep is back to 57/57 clean.
 
+### F8 · mobile footer — two columns, real touch targets
+
+The operator: *"Too much line height. Probably 2 columns since there's room."* On a phone the
+footer collapsed to ONE column — 17 links at a 32px pitch — and ran **970px, 1.15 screens**.
+
+**Two things were wrong, and only one of them was the line height.** Every footer link was a
+**16px-tall box**: all 17 failed §4.6 / WCAG 2.2 SC 2.5.8's target-size floor, and the airy feel
+came from `space-y-2` separating boxes that were too small to begin with. So the fix is not to
+compress — it is to move the space *inside* the target: each link is now a 44px flex row with
+the text vertically centred and no extra gap, which reads tighter **and** gives a real tap
+target. Line-height stays `--text-xs`'s tight 1rem; nothing is inflated.
+
+**Grid:** two columns from the base breakpoint, four from `md`. Groups stay intact and are
+never interleaved — `browse | machine`, then `project | counts`. `counts` did not need the
+full-width-bottom escape hatch; it pairs cleanly with `project` (3 links each).
+
+**`md` rather than `lg` for the four-column step is a judgement call the brief left open.** At
+768 two columns leave **348px of column for a ~90px label** and the footer still ran 670px on a
+tablet with room to spare; four columns there is 162px per column, comfortable for the longest
+label. The ruled composition is unchanged — still four groups — it just arrives one breakpoint
+earlier. **Read §4.5's footer row as 2 / 2 / 4 / 4** (it previously read 1 / 2 / 4).
+
+| width | before | after | columns | links under 44px |
+|---|---|---|---|---|
+| 360 | — | 726px · **0.93 screens** | 2 | 0 |
+| 390 | 970px · 1.15 screens | **726px · 0.86 screens** | 2 | 0 (was **17 of 17**) |
+| 640 | — | 710px · 0.79 screens | 2 | 0 |
+| 768 | 670px · 0.65 screens | **482px · 0.47 screens** | 4 | 0 |
+| 1024 | 466px | 466px — **unchanged** | 4 | 0 |
+| 1440 | 466px | 466px — **unchanged** | 4 | 0 |
+
+Desktop is byte-for-byte what it was. Mono lowercase voice untouched. No horizontal overflow
+at any width. Screenshots: `F8-footer-390.png`, `F8-footer-768.png`.
+
+### F8 · a probe correction that was nearly a wrong one
+
+Re-running the F6 overflow guard after F8 produced an **intermittent** failure: `home @ 360`
+and `home-MODAL @ 360`, reporting `div.bot right=379 (vw 360)`. Intermittent because the A4
+hero seeds a different pile every load, and on some seeds an edge bot settles into the gutter —
+which `hero.js` documents as intended ("the edge bot off the block and into the gutter on ~36%
+of seeds"). `.stage` is `overflow: hidden`, so it is visually clipped and
+`documentElement.scrollWidth` stayed exactly 360. Not a defect; a third false-positive class.
+
+The obvious fix — "skip anything clipped by an ancestor" — would have **broken the guard**, and
+it took two passes to get right:
+
+1. **Only `hidden` and `clip` may count as clipping, never `auto`/`scroll`.** An element with
+   `overflow-y: auto` computes `overflow-x: auto` per spec, and that is exactly what
+   `.install-modal__body` had when the F6 defect shipped. Excluding on `auto` would have
+   silently blinded the guard to the very bug it was written for.
+2. **The walk must stop at a `position: fixed` node.** A fixed element is not clipped by an
+   ancestor's overflow (absent a transform/filter/contain containing block). The site-level
+   `InstallModal` is fixed and lives inside `.stage` — so the naive rule excluded it, and that
+   modal is where F6 measured its **worst** overflow at `right=413`.
+
+Both were caught by re-running the F6 regression against each candidate probe rather than by
+reasoning about it. Final state: with the F6 rules reverted the guard fails **4** routes at 390
+including `home-MODAL` at `right=413`; with them restored, **three consecutive clean runs**,
+45/45. `page-probe.js` carries the identical logic so the sweep cannot go intermittently red
+for the same reason.
+
 ### Verification
 
 - **Full gate suite green:** validate 10 entries · negative fixtures still rejected ·
@@ -1695,7 +1756,7 @@ probes disagreeing is what surfaced it. Aligned, and the sweep is back to 57/57 
   `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`,
   `F5-wall-embeds-{390,768,1440}.png`, `F5-entry-detail-embed-{390,1440}.png`,
   `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`, `F6-modal-390.png`,
-  `F3b-hero-drag-390.png`, `F7-drawer-390.png`.
+  `F3b-hero-drag-390.png`, `F7-drawer-390.png`, `F8-footer-{390,768}.png`.
   **Screenshot caveat worth knowing:** a `--full` full-page capture does not repaint
   cross-origin iframes, so the wall's embeds photograph as blank boxes in a full-page shot even
   when they are rendering correctly. The F5 wall captures are therefore VIEWPORT shots, and the
