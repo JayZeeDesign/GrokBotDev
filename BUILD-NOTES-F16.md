@@ -231,6 +231,39 @@ changing it. Measured after: **0 stranded across 12 seeds** (from 4 in 8).
 It only became worth fixing at F16 because v2's bots are large and brightly coloured, so a
 missing one reads; against ten small black shapes it was invisible.
 
+### The second one: the hero was stealing the modal's touches (F16x)
+
+**Also a pre-existing main defect, not an F16 one** — measured identically on the pre-F16
+build. Found while trial-rebasing F16 onto main, landed on operator ruling, and kept in **its
+own commit** so it reverts independently of the re-skin.
+
+With the site InstallModal open at 390, a touch on a control **inside the modal sheet** was
+being `preventDefault`-ed by `#stage`'s F3b `touchstart` handler, engaging the
+MouseConstraint and dragging a bot hidden behind the overlay. Measured: `defaultPrevented`
+true, `stage.dragging` true, bot displaced 120px. On a phone that means the modal could not
+be scrolled by finger anywhere a bot sat behind it — and at 390 the sheet is full-height with
+**all six bots behind it**, so that was most of the sheet.
+
+**Two correct changes meeting.** The F3b handler decides purely from geometry, which is right
+only while nothing overlays the hero. The site InstallModal lives inside `#content`, i.e.
+inside `#stage`, so its touches bubble to that listener. Latent since F3b and only reachable
+once F10 fixed the modal's positioning — before that a transformed ancestor mispositioned the
+sheet so it never covered the bots. Neither change is wrong on its own.
+
+**The fix is one comparison.** `#botlayer` is `pointer-events:none`, so when nothing overlays
+the hero a touch over a bot has `e.target === #stage`; if anything is on top, `e.target` is
+that thing. `if (e.target !== stage) return;` declines the gesture for **any** current or
+future overlay — deliberately *not* keyed off the `install-modal-open` class, which would fix
+exactly one case and rot the next time an overlay is added.
+
+Verified on all three axes, not only the broken one:
+
+| case | result |
+|---|---|
+| modal open · touch on a modal control over a bot | `defaultPrevented` **false**, no drag, bot displaced 0 — hazard closed |
+| modal closed · touch on a bot | `defaultPrevented` true, dragging true, bot tracks the finger exactly (−100, −100) — F3b intact |
+| touch on empty stage | `defaultPrevented` false, `touch-action: pan-y` — the page still pans |
+
 ---
 
 ## 5 · The old family: bot family v1 on /about/
