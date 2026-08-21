@@ -12,7 +12,11 @@ const items = scroll ? [...SPONSORS, ...SPONSORS] : SPONSORS;
     <aside class="sponsorBar" aria-label="sponsors" data-pagefind-ignore>
       <a href="/sponsors/" class="sponsorBar__label">sponsors</a>
       <div class="sponsorBar__viewport">
-        <ul class:list={['sponsorBar__tape', scroll && 'sponsorBar__tape--scroll']}>
+        <ul
+          class:list={['sponsorBar__tape', scroll && 'sponsorBar__tape--scroll']}
+          data-sponsor-shuffle
+          data-sponsor-unit={SPONSORS.length}
+        >
           {items.map((s, i) => (
             <li>
               <a
@@ -137,3 +141,51 @@ const items = scroll ? [...SPONSORS, ...SPONSORS] : SPONSORS;
     color: var(--color-text);
   }
 </style>
+
+<script>
+  // Operator: sponsors show in RANDOM order — so no sponsor is permanently first/most-visible.
+  // Runs once (this bar is always in the DOM when sponsors are on) and shuffles EVERY sponsor
+  // list on the page: this bar plus both desktop rails ([data-sponsor-shuffle]). Bundled
+  // module = same-origin, CSP-clean. The rotating sponsor slot shuffles itself separately.
+  const shuffle = (a: HTMLElement[]): HTMLElement[] => {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-sponsor-shuffle]').forEach((ul) => {
+    const n = parseInt(ul.getAttribute('data-sponsor-unit') || '0', 10);
+    const kids = Array.from(ul.children) as HTMLElement[];
+    if (!n || kids.length < 2) return;
+
+    if (kids.length === n) {
+      // No marquee duplication — just reorder the items.
+      shuffle(kids).forEach((li) => ul.appendChild(li));
+      return;
+    }
+
+    // Marquee: n real items + a duplicated tail for the seamless loop. Shuffle the real n,
+    // then rebuild the tail as clones of the shuffled order so the loop stays seamless.
+    const real = shuffle(kids.slice(0, n));
+    kids.forEach((li) => li.remove());
+    real.forEach((li) => {
+      const a = li.querySelector('a');
+      if (a) {
+        a.removeAttribute('aria-hidden');
+        a.removeAttribute('tabindex');
+      }
+      ul.appendChild(li);
+    });
+    real.forEach((li) => {
+      const clone = li.cloneNode(true) as HTMLElement;
+      const a = clone.querySelector('a');
+      if (a) {
+        a.setAttribute('aria-hidden', 'true');
+        a.setAttribute('tabindex', '-1');
+      }
+      ul.appendChild(clone);
+    });
+  });
+</script>

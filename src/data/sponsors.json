@@ -54,5 +54,13 @@
     "tagline": "Any YouTube video to clean, usable text — instantly.",
     "tint": "sand",
     "icon": "youtubetotranscript.png"
+  },
+  {
+    "slug": "gateway-fast",
+    "name": "gateway.fast",
+    "url": "https://gateway.fast",
+    "tagline": "The fastest agentic AI models, one gateway.",
+    "tint": "lilac",
+    "icon": null
   }
 ]

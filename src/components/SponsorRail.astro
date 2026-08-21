@@ -23,7 +23,11 @@ const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless
     <aside class:list={['sponsorRail', `sponsorRail--${side}`]} aria-label={`${side} sponsors`}>
       <a href="/sponsors/" class="sponsorRail__label">sponsors</a>
       <div class="sponsorRail__viewport">
-        <ul class:list={['sponsorRail__tape', scroll && 'sponsorRail__tape--scroll']}>
+        <ul
+          class:list={['sponsorRail__tape', scroll && 'sponsorRail__tape--scroll']}
+          data-sponsor-shuffle
+          data-sponsor-unit={items.length}
+        >
           {cards.map((s, i) => (
             <li>
               <a
