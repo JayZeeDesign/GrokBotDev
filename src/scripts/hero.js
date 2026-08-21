@@ -4,138 +4,48 @@
 // 6 under 720px, resize reseed-with-the-same-seed, the ?static=1 flag and the
 // deterministic static pile are all integration-notes non-negotiables.
 // Kept as plain JS on purpose: this file is a lift, not our code to restyle.
+//
+// ── M8 · F16 — BOT FAMILY v2 ──────────────────────────────────────────────────
+// The SIM in this file is unchanged. What changed is WHICH BOTS it draws.
+//
+// The hero now wears family v2 (src/scripts/botFamilyV2.js): soft silhouettes —
+// squircles, rounded-corner triangles, pills/rounded rects, one circle — in flat
+// solid fills from a fixed six-colour palette that does NOT invert with the
+// theme, because real Grok Bot avatars do not either. Operator directive; it
+// supersedes Addendum A1's hero treatment specifically and nothing else.
+//
+// The old ink/paper/amber family is NOT gone. It is family v1, it kept every
+// line of its geometry, and it now renders as a decorative static pile on
+// /about/ — src/lib/botFamilyV1.ts + src/components/AboutBotPile.astro.
+//
+// EVERYTHING integration-notes and A4 lock is byte-identical below: INFLATE 1.10,
+// dropZone 0.22/0.78, botCount 10/6, botSize, the seed and reseed-on-resize, the
+// staggered release, the idle nudge/topple, the eye tracking + blink, the
+// reduced-motion + no-matter static pile, ?static=1, the wheel-listener removal
+// and the F3b touch hit-test. The only edits are: FORMS -> FORMS_V2, the SVG
+// builder -> buildBotSVGV2, makeBody -> reads bodySpecV2 (which adds the circle
+// and ellipse colliders), and the removal of the single-amber-bot pick, which
+// family v2 has no use for. See BUILD-NOTES-F16.md.
+import '../styles/hero-bots.css';
+import { FORMS_V2, bodySpecV2, buildBotSVGV2 } from './botFamilyV2.js';
 
 (function(){
 "use strict";
 
 /* ============================================================
    1. THE FORMS  — "no two alike"
-   Recreated as inline SVG from round-3 hero cluster.
-   Every shape carries the family DNA: two tilted slash eyes.
-   Coordinate space: ~120x120 units, centred on the shape bbox.
-   Eleven forms, ten drawn per desktop assembly — one sits out each roll, so
-   re-roll still changes the ROSTER and not just the sizes and placement.
+   Family v2 — see src/scripts/botFamilyV2.js for the roster, the palette
+   derivation and the deniability reasoning behind baking colour into the form.
+   Twelve forms, ten drawn per desktop assembly (v1: eleven and ten), so two sit
+   out each roll and the ROSTER still changes on re-roll, not just the sizes and
+   placement. Bot COUNTS are untouched — 10 desktop / 6 mobile, per A4.
    ============================================================ */
 
-var FORMS = [
-  { id:'squircle',   style:'solid',    geo:{t:'rect', w:88,  h:80,  r:26},  eye:{cy:2,   gap:36, w:15, h:27, tilt:20} },
-  { id:'squircleXL', style:'outline',  geo:{t:'rect', w:100, h:93,  r:31},  eye:{cy:4,   gap:40, w:16, h:29, tilt:23}, sw:7 },
-  { id:'hexagon',    style:'solid',    geo:{t:'hex',  w:100, h:86},         eye:{cy:2,   gap:38, w:15, h:26, tilt:17} },
-  { id:'pill',       style:'solid',    geo:{t:'rect', w:88,  h:46,  r:23},  eye:{cy:0,   gap:32, w:13, h:22, tilt:22} },
-  { id:'diamond',    style:'halftone', geo:{t:'diamond', w:94},             eye:{cy:2,   gap:35, w:14, h:24, tilt:19}, sw:3 },
-  { id:'capsule',    style:'solid',    geo:{t:'rect', w:48,  h:104, r:24},  eye:{cy:26,  gap:26, w:12, h:22, tilt:24} },
-  { id:'arch',       style:'outline',  geo:{t:'arch', w:78,  h:100},        eye:{cy:-8,  gap:34, w:15, h:26, tilt:18}, sw:7 },
-  { id:'triangle',   style:'solid',    geo:{t:'tri',  w:96,  h:78},         eye:{cy:14,  gap:31, w:13, h:21, tilt:21} },
-  { id:'wideRect',   style:'outline',  geo:{t:'rect', w:114, h:56,  r:28},  eye:{cy:0,   gap:38, w:14, h:23, tilt:25} , sw:6 },
-  // --- round-3 family, second pass: one faceted, one upright. Both are chosen
-  // symmetric about BOTH axes so their centroid is the origin — the drawn shape
-  // and the physics body share one frame, no offset correction needed.
-  { id:'octagon',    style:'outline',  geo:{t:'oct',  w:98,  h:90},        eye:{cy:2,   gap:37, w:15, h:26, tilt:18}, sw:6, strokeInset:true },
-  { id:'tallHex',    style:'solid',    geo:{t:'vhex', w:70,  h:104},       eye:{cy:-6,  gap:30, w:13, h:23, tilt:20} }
-];
+var FORMS = FORMS_V2;
 
 /* Physics bodies are inflated slightly beyond the drawn silhouette so that
    two solid-ink bots never visually fuse into one blob when they rest together. */
 var INFLATE = 1.10;
-
-/* ---------- geometry helpers ---------- */
-function hexVerts(w,h){ return [ {x:-w/2,y:0},{x:-w/4,y:-h/2},{x:w/4,y:-h/2},{x:w/2,y:0},{x:w/4,y:h/2},{x:-w/4,y:h/2} ]; }
-// upright hexagon: points top & bottom, flat sides — reads as a distinct
-// silhouette next to the wide flat-top hex above.
-function vhexVerts(w,h){ return [ {x:0,y:-h/2},{x:w/2,y:-h/4},{x:w/2,y:h/4},{x:0,y:h/2},{x:-w/2,y:h/4},{x:-w/2,y:-h/4} ]; }
-// octagon: rectangle with the corners cut by `c` of each half-axis. Clockwise
-// in screen space (y down), as matter.js requires.
-function octVerts(w,h,c){
-  var x=w/2, y=h/2, cx=w*(c||0.29), cy=h*(c||0.29);
-  return [ {x:-x+cx,y:-y},{x:x-cx,y:-y},{x:x,y:-y+cy},{x:x,y:y-cy},
-           {x:x-cx,y:y},{x:-x+cx,y:y},{x:-x,y:y-cy},{x:-x,y:-y+cy} ];
-}
-function diamondVerts(w){ var a=w/2; return [ {x:0,y:-a},{x:a,y:0},{x:0,y:a},{x:-a,y:0} ]; }
-function triVerts(w,h){ return [ {x:0,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2} ]; }
-function archVerts(w,h){
-  // flat-bottomed arch: semicircular cap + straight sides
-  var r=w/2, v=[], N=22, topY=-h/2+r, botY=h/2;
-  for(var i=0;i<=N;i++){ var a=Math.PI + (i/N)*Math.PI; v.push({x:r*Math.cos(a), y:topY + r*Math.sin(a)}); }
-  v.push({x:r,y:botY}); v.push({x:-r,y:botY});
-  return v;
-}
-function centroidOf(v){
-  var a=0,cx=0,cy=0;
-  for(var i=0;i<v.length;i++){ var p=v[i],q=v[(i+1)%v.length], f=p.x*q.y-q.x*p.y; a+=f; cx+=(p.x+q.x)*f; cy+=(p.y+q.y)*f; }
-  a*=0.5; if(Math.abs(a)<1e-9) return {x:0,y:0};
-  return {x:cx/(6*a), y:cy/(6*a)};
-}
-function ptsAttr(v,ox,oy){ return v.map(function(p){ return (p.x-ox).toFixed(2)+','+(p.y-oy).toFixed(2); }).join(' '); }
-
-function formVerts(f){
-  var g=f.geo;
-  if(g.t==='hex') return hexVerts(g.w,g.h);
-  if(g.t==='vhex') return vhexVerts(g.w,g.h);
-  if(g.t==='oct') return octVerts(g.w,g.h,g.c);
-  if(g.t==='diamond') return diamondVerts(g.w);
-  if(g.t==='tri') return triVerts(g.w,g.h);
-  if(g.t==='arch') return archVerts(g.w,g.h);
-  return null; // rect
-}
-
-/* ---------- SVG builder ---------- */
-function eyesMarkup(e){
-  var hx=e.gap/2, rx=e.w/2;
-  function slash(sx){
-    return '<rect class="eye" x="'+(-rx)+'" y="'+(-e.h/2)+'" width="'+e.w+'" height="'+e.h+'" rx="'+rx+'"'
-         + ' transform="translate('+sx+','+e.cy+') rotate('+e.tilt+')"/>';
-  }
-  return slash(-hx)+slash(hx);
-}
-
-function buildBotSVG(f, size){
-  var g=f.geo, sw=f.sw||0, off={x:0,y:0}, shape='';
-  var verts=formVerts(f);
-  if(verts){ off=centroidOf(verts); }
-
-  // A stroke is painted centred on the path, i.e. it bleeds sw/2 OUTSIDE the
-  // geometry the physics body uses. Inset the drawn path by sw/2 so the painted
-  // silhouette equals the nominal geometry — otherwise neighbours visually overlap.
-  if(g.t==='rect'){
-    var iw=g.w-sw, ih=g.h-sw, ir=Math.max(1,g.r-sw/2);
-    shape='<rect x="'+(-iw/2)+'" y="'+(-ih/2)+'" width="'+iw+'" height="'+ih+'" rx="'+ir+'"'
-        + (sw?' stroke-width="'+sw+'"':'')+'/>';
-  } else if(g.t==='tri'){
-    // rounded corners via a fat round-joined stroke; verts pulled in to the
-    // incircle offset so stroke-outer-edge lands back on the nominal triangle
-    var TSW=16, k=f.inset||0.70;
-    var tv=verts.map(function(p){ return {x:(p.x-off.x)*k, y:(p.y-off.y)*k}; });
-    shape='<polygon points="'+tv.map(function(p){return p.x.toFixed(2)+','+p.y.toFixed(2);}).join(' ')
-        + '" class="rt" stroke-width="'+TSW+'" stroke-linejoin="round"/>';
-  } else {
-    var pv=verts;
-    // Same rule as the rect branch above: an SVG stroke paints CENTRED on the
-    // path, so it bleeds sw/2 OUTSIDE the geometry the physics body uses. Scale
-    // the drawn polygon toward its centroid until every edge has come in by at
-    // least sw/2 — the painted silhouette then never exceeds the nominal shape.
-    // Opt-in per form so the already-tuned arch/diamond render byte-identically.
-    if(sw && f.strokeInset){
-      var dmin=Infinity, vi, p, q;
-      for(vi=0; vi<verts.length; vi++){
-        p=verts[vi]; q=verts[(vi+1)%verts.length];
-        var ex=q.x-p.x, ey=q.y-p.y, L=Math.hypot(ex,ey);
-        if(L<1e-6) continue;
-        var d=Math.abs((p.x-off.x)*ey-(p.y-off.y)*ex)/L;   // centroid -> edge
-        if(d<dmin) dmin=d;
-      }
-      if(isFinite(dmin) && dmin>sw){
-        var ik=1-(sw/2)/dmin;
-        pv=verts.map(function(pt){ return {x:off.x+(pt.x-off.x)*ik, y:off.y+(pt.y-off.y)*ik}; });
-      }
-    }
-    shape='<polygon points="'+ptsAttr(pv,off.x,off.y)+'"'+(sw?' stroke-width="'+sw+'" stroke-linejoin="round"':'')+'/>';
-  }
-
-  var inner = shape + '<g class="eyes" transform="translate(0,0)">'+eyesMarkup(f.eye)+'</g>';
-  return '<svg width="'+size+'" height="'+size+'" viewBox="-60 -60 120 120">'
-       + '<g class="s-'+f.style+'" transform="translate('+(-off.x).toFixed(2)+','+(-off.y).toFixed(2)+')">'
-       + inner + '</g></svg>';
-}
 
 /* ============================================================
    2. RANDOMISED ASSEMBLY  — a different cluster every visit
@@ -183,19 +93,23 @@ function makeBots(){
   layer.innerHTML='';
   bots=[];
   var picks = shuffled(FORMS).slice(0, botCount());
-  var accentIdx = Math.floor(rnd()*picks.length);   // exactly ONE bot wears Ash Amber
+  // v1 promoted exactly one bot to Ash Amber here. Family v2 drops that: colour
+  // is a property of the FORM (botFamilyV2.js explains why — it is what makes the
+  // cousin-not-copy guarantee hold on every seed rather than most of them), and
+  // v2 carries no amber at all. That is a tightening of A1, not a breach: the
+  // hero no longer spends the one-accent-element-per-viewport budget, so amber is
+  // left entirely to the CTA and the search cursor.
 
   picks.forEach(function(f,i){
     var form = Object.assign({}, f);
     form.__scale = rr(0.88, 1.12);                   // mutation: size variance
     form.eye = Object.assign({}, f.eye);
     form.eye.tilt = f.eye.tilt + rr(-5,5);           // mutation: eye tilt variance
-    if(i===accentIdx && form.style==='solid') form.style='accent';
 
     var size = botSize(form);
     var el = document.createElement('div');
     el.className='bot';
-    el.innerHTML = buildBotSVG(form, size);
+    el.innerHTML = buildBotSVGV2(form, size);
     layer.appendChild(el);
 
     bots.push({
@@ -230,22 +144,39 @@ function buildStatics(){
   M.Composite.add(world, statics);
 }
 
-/* ---------- physics bodies for bots ---------- */
+/* ---------- physics bodies for bots ----------
+   The collider comes from bodySpecV2(), which is family v2's single source of
+   truth for shape -> collider (botFamilyV2.js documents each branch against
+   integration-notes §8). The rule that matters is unchanged: the body is the
+   nominal geometry scaled by INFLATE, so the collider always BOUNDS the painted
+   silhouette and two solid bots can never visually fuse.
+
+   v2 adds two branches v1 never needed — a true circle (exact, no
+   approximation) and an ellipse (an inscribed 18-gon, 1.52% inside the paint,
+   two orders inside the INFLATE margin). Rounded rects still chamfer at the same
+   r they paint with; the rounded triangle still colliders as the full sharp
+   triangle while painting inset-plus-round-stroke, exactly as v1 did. */
 function makeBody(b, x, y){
-  var M=window.Matter, f=b.form, g=f.geo, s=b.size/120;
+  var M=window.Matter, f=b.form, s=b.size/120;
   var o={
     restitution:0.24, friction:0.5, frictionAir:0.014, frictionStatic:0.6,
     density:0.0016, slop:0.02
   };
   var si = s * INFLATE;
-  var verts=formVerts(f), body;
-  if(verts){
-    var c=centroidOf(verts);
-    var vs=verts.map(function(p){ return {x:(p.x-c.x)*si, y:(p.y-c.y)*si}; });
+  var spec = bodySpecV2(f), body;
+
+  if(spec.kind==='circle'){
+    body = M.Bodies.circle(x, y, spec.r*si, o);
+  } else if(spec.kind==='poly'){
+    var c=spec.off;
+    var vs=spec.verts.map(function(p){ return {x:(p.x-c.x)*si, y:(p.y-c.y)*si}; });
     body = M.Bodies.fromVertices(x, y, [vs], o, true);
-    if(!body) body = M.Bodies.circle(x,y,(g.w||90)*si/2,o);
+    // fromVertices returns null if decomposition fails; fall back to a circle
+    // that circumscribes the form so the pile never loses a body.
+    if(!body) body = M.Bodies.circle(x, y, (f.geo.w||90)*si/2, o);
   } else {
-    body = M.Bodies.rectangle(x, y, g.w*si, g.h*si, Object.assign({}, o, {chamfer:{radius:g.r*si}}));
+    body = M.Bodies.rectangle(x, y, spec.w*si, spec.h*si,
+                              Object.assign({}, o, {chamfer:{radius:spec.r*si}}));
   }
   return body;
 }

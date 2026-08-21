@@ -1,0 +1,80 @@
+/* ============================================================================
+   HERO BOT PAINT — family v2.  (M8 · F16)
+
+   integration-notes §1 / Addendum A4 say the bot token remap lives in ONE place,
+   the `.s-*` paint rules. This file IS that one place for family v2 — the rules
+   moved into their own stylesheet rather than staying inside HeroStage.astro's
+   <style is:global> for two reasons:
+
+     · the same paint has to reach three surfaces (the hero island, the
+       /dev/components bot section, and any future QA render) and a
+       component-local block only reaches one;
+     · F16 ran in parallel with another executor holding HeroStage.astro, and a
+       new file is a zero-collision surface.
+
+   It is imported from src/scripts/hero.js, so Astro/Vite bundles it into
+   /_astro/*.css and it is linked, never inlined — §10.7's `style-src 'self'`
+   CSP and scripts/audit-scripts.mjs both stay green.
+
+   ── WHAT CHANGED FROM v1, AND WHY IT IS NOT A TOKEN REMAP ──────────────────
+   v1's `.s-solid` / `.s-accent` / `.s-outline` / `.s-halftone` read --ink,
+   --paper and --accent, so the old bots inverted with the theme. Family v2 does
+   not: real Grok Bot avatars are the same colour in light and dark mode, and the
+   operator directive asks these to behave the same way. So these are LITERAL
+   HEXES with no [data-theme="dark"] override anywhere in this file. That is the
+   intended behaviour, not an oversight — if you find yourself "fixing" this by
+   pointing --bot-fill at a token, you have turned the family back into v1.
+
+   The v1 rules still exist (HeroStage.astro for the home page's now-unused
+   defs, and AboutBotPile.astro for the /about pile) and are untouched. The class
+   names here are deliberately different so the two families never collide.
+   ========================================================================== */
+
+/* ── the six ──────────────────────────────────────────────────────────────
+   Eyedropped from two screenshots of real Grok Bot avatars, then harmonised in
+   OKLCH to a 0.665–0.720 lightness band. Full derivation, per-colour source hex
+   and the contrast measurements live in src/scripts/botFamilyV2.js — this file
+   is the paint, that file is the reasoning. Keep them in step.            */
+.s2-blue   { --bot-fill: #4B92FA; }
+.s2-orange { --bot-fill: #E49422; }
+.s2-teal   { --bot-fill: #25B8A4; }
+.s2-purple { --bot-fill: #9E77FD; }
+.s2-red    { --bot-fill: #EF6243; }
+.s2-grey   { --bot-fill: #919497; }
+
+/* ── the paint ────────────────────────────────────────────────────────────
+   Flat solid fill, no stroke, no halftone — the whole point of the family.  */
+.s2 {
+  fill: var(--bot-fill);
+  stroke: none;
+}
+
+/* The rounded triangle is the one form that gets its corners from a fat
+   round-joined stroke rather than a corner radius (integration-notes §8), so its
+   stroke has to be the SAME colour as its fill or the corners read as an
+   outline. This is the only stroke in family v2. */
+.s2 .rt {
+  stroke: var(--bot-fill);
+}
+
+/* Facial features are white on every bot in both modes — fixed, like the fill.
+   White clears 3:1 on all six; grey (#919497) is the tight one at 3.05:1, which
+   is the readability case the F16 directive called out. If a seventh colour is
+   ever added, check it against white before shipping it. */
+.s2 .eye {
+  fill: #FFFFFF;
+  stroke: none;
+}
+
+/* ── C3 · THE CIRCLE EXEMPTION IS HERO-ONLY (BINDING) ──────────────────────
+   CIRCLES ARE ALLOWED IN THE HERO ILLUSTRATION FAMILY ONLY.
+
+   Addendum A3's trademark rule — "no circle silhouettes as marks — solid,
+   hollow, or dotted" — is UNCHANGED and remains absolute for the logo, the
+   favicon, OG cards, chips, and every other mark surface. The single circular
+   form in family v2 (`dot`, purple) is decorative illustration inside an
+   aria-hidden #botlayer, and it is the only place a circle is permitted.
+
+   If you are reaching for a circle anywhere that is not the hero bot layer, the
+   answer is no. See the same line in BUILD-NOTES-F16.md and in the
+   /dev/components bot-family section.                                       */
