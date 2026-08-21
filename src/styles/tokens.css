@@ -10,7 +10,12 @@
   --color-accent: #8C7A5C;
   --color-accent-text: #7A6748;
   --color-accent-ink: #7A6748;
-  --color-accent-contrast: #FFFFFF;
+  /* A10 RESOLVED — design authority decision #18, 2026-08-21. Text on amber is INK, not
+     white: white measured 4.16:1 against a 4.5 floor; ink measures 4.73:1 and PASSES.
+     This is the swap A10 pre-wired; dark mode already shipped ink (9.18:1) and is
+     unchanged, and the amber hex itself is untouched. Operator retains a costless
+     overrule — it is this one line. `check-contrast.mjs` now GATES the pair. */
+  --color-accent-contrast: #0B0B0C;
   --color-accent-tint: #FFFFFF;
   --color-success: #8C7A5C;
   /* warn/danger keep their §4.1.2 values: Addendum A1's table does not define them, and

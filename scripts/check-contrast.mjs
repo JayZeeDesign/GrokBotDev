@@ -56,11 +56,10 @@ function ratio(a, b) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-// Addendum A10 — text-on-amber measures 4.16:1 in light mode and is a KNOWN, PRE-WIRED
-// pending item: the operator verdict lands as a one-line token swap (flip
-// --color-accent-contrast to ink, or use --color-accent-ink). A10 says "block nothing",
-// so this pair is REPORTED, not gated. Remove the exemption when the verdict lands.
-const A10_PENDING = new Set(['accent-contrast on accent']);
+// Addendum A10 is CLOSED — design authority decision #18, 2026-08-21. Text on amber is ink
+// in both modes (light 4.73:1, dark 9.18:1), so `accent-contrast on accent` is now a fully
+// GATED pair in PAIRS below and there is no exemption set any more. A regression back to
+// white-on-amber (4.16:1) fails the build instead of printing a warning nobody reads.
 
 // [label, foreground token, background token, floor]
 const PAIRS = [
@@ -101,11 +100,10 @@ for (const [mode, set] of [
     }
     const value = ratio(a, b);
     const ok = value >= floor;
-    const pending = A10_PENDING.has(label) && !ok;
-    if (!ok && !pending) failures += 1;
+    if (!ok) failures += 1;
     console.log(
       `  ${label.padEnd(38)} ${value.toFixed(2).padStart(5)}:1 ${String(floor).padStart(5)}  ${
-        ok ? 'PASS' : pending ? 'A10-PENDING' : 'FAIL'
+        ok ? 'PASS' : 'FAIL'
       }`
     );
   }

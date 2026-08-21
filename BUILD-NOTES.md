@@ -1162,9 +1162,70 @@ This list is what M7 adds on top, in execution order.
       if the real dashboard URL differs.**
 - [ ] **11 · Search Console** (M7.7): submit `sitemap-index.xml`, verify the public dashboard
       link in the live footer.
-- [ ] **12 · Carried open items, decide before or at launch.** The A10 token flip (§ above —
-      measured, one line, worth 4 a11y points) · the OG typeface stand-in (DejaVu today; §6.6
-      wants the §4 mono + sans as committed TTF subsets — a one-line swap in `build-og.mjs`) ·
+- [ ] **12 · Carried open items, decide before or at launch.** ~~The A10 token flip~~ —
+      **CLOSED by decision #18, see the M7x entry below** · the OG typeface stand-in (DejaVu
+      today; §6.6 wants the §4 mono + sans as committed TTF subsets — a one-line swap in
+      `build-og.mjs`) ·
       the `favicon.svg` / `favicon-32.png` M0 assets, still not regenerated from A3's `favicon`
       variant (M1 sweep row S5) · the four judgment calls in §2 above · the M2 post-launch
       plugin smoke tests, none of which can run without a live Grok Bot account.
+
+## 2026-08-21 — M7x: A7 naming alignment + A10 RESOLVED (design authority decision #18)
+
+Two rulings landed and are applied here; the other three are recorded so nobody re-opens them.
+
+1. **Footer column count — KEEP 4.** §4.2.4's "Composition (4 mono columns)" plus A9's density
+   directive win over §4.5's 3-column table row, which is stale. The `counts` column stays.
+   **Resolved — do not "fix" the footer grid to 3 columns.** §4.5's footer row should be read
+   as 1 / 2 / 4.
+2. **Hero seed label hidden below 640px — KEEP.** A4's visible-seed differentiator lives at
+   desktop widths and in screenshots; mobile real estate wins. Reviewable post-launch, not a
+   defect.
+3. **`/about/` "the verifying agent" — ruled a DEFECT against A7, not a judgment call.** Public
+   copy uses the sanctioned names only. Fixed: the line now reads "Nothing gets a verification
+   date unless a maintainer — or the Curator — has actually read it", matching the README's
+   formulation word for word so the two public surfaces agree. `/about/` now names only the
+   Scouts, the Curator and the Builder.
+4. **Header wrapping to three rows at 390 — ACCEPTED deviation.** Nothing is hidden, there is
+   no hamburger and there is no overflow, so it satisfies §4.5's substance; the row count is
+   looser than the two the prose describes. Logged, not changed.
+
+### ✅ A10 IS CLOSED — ink on amber, design authority decision #18
+
+A10 has been open since M1 and A11 carried it as item 2. **Verdict: text on amber is ink.**
+`--color-accent-contrast` in the light `@theme` block goes `#FFFFFF` → `#0B0B0C`. The amber
+hex is untouched (A1's fill value and the accent law are unchanged), and dark mode already
+shipped ink, so it is genuinely a one-line change. The operator's costless overrule is that
+same line.
+
+**And the gate is now a gate.** `A10_PENDING` is gone from `scripts/check-contrast.mjs` —
+`accent-contrast on accent` is a fully gated pair, so a regression back to white-on-amber
+**fails the build** instead of printing an `A10-PENDING` row that nobody reads. Proven, not
+assumed: reverting only the light-block line makes `check-contrast` exit **1** with
+`accent-contrast on accent 4.16:1 4.5 FAIL` while dark still passes at 9.18:1.
+
+| | before | after |
+|---|---|---|
+| `check-contrast`, light | 4.16:1 · `A10-PENDING` (ungated) | **4.73:1 · PASS (gated)** |
+| `check-contrast`, dark | 9.18:1 · PASS | 9.18:1 · PASS (unchanged) |
+| Lighthouse a11y, `/` | 96 | **100** |
+| Lighthouse a11y, `/use-cases/grok-ship/` | 96 | **100** |
+| remaining a11y audit failures | `color-contrast` | **none** |
+
+`color-contrast` now PASSES on both pages and **no accessibility audit fails at all**. The
+four surfaces that carried the failing pair — the primary button, the header `submit` button,
+`FeaturedTag` and the newsletter submit — were re-checked in the browser (computed
+`rgb(11,11,12)` on `rgb(140,122,92)`) and captured at
+`images/grokbot-m7-qa/A10-ink-on-amber-home-1440.png`. Home screenshots at all three
+breakpoints refreshed.
+
+Every other gate re-run clean after the flip: validate OK · hub-intros armed 83/83 · keyword
+placements OK · links 108 pages 0 broken · audit-scripts OK · `astro check` 0/0 · build exit 0
+· the M0.4 raw-colour grep still returns nothing outside `tokens.css`.
+
+**Consequence for M7.2:** every Lighthouse category on every tested page is now ≥95, and
+accessibility is a clean **100**. The remote checklist's item 12 no longer carries A10.
+
+**Status: M0 through M7-local are complete, with no held design items.** What remains is
+M7-remote, gated on the org token, operator credentials and production DNS — the checklist is
+section 6 of the M7-LOCAL entry above, and it starts by executing the TOKEN-DAY RUNBOOK.
