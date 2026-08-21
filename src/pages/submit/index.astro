@@ -1,6 +1,15 @@
 ---
 // §4.3.10 — the submit chooser. Three tiles (§8.3 GitHub prefill CTAs) + the no-account
 // anchor sections. Copy: CP-057 (KEEP both) · CP-058 · CP-059 · CP-060 · CP-061 (KEEP).
+//
+// F17 NOTE — this page has no <form>: submission is a pull request, and the CTAs are GitHub
+// prefill links. So the directive's "optional youtube_url field, validated against the three
+// URL shapes" lands where a frontmatter field is actually validated — the Zod schema and
+// `scripts/validate.mjs` — and this page documents it in the same instructional voice as the
+// other frontmatter guidance. The validation VOICE that was asked to be preserved is the
+// schema's error voice ("must be a YouTube video URL — youtube.com/watch?v=…, youtu.be/…, or
+// youtube.com/shorts/…"), which reads the way the existing `Unknown integration "x" — must
+// exactly match …` message does.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import MarkGlyph from '../../components/MarkGlyph.astro';
@@ -81,6 +90,12 @@ const graph = [webPage('/submit/', META.submit.title, META.submit.description), 
       <ContributeSteps
         steps={[
           { title: 'copy the frontmatter template', body: 'named-character title, what it does, the prompt, and the post you found it in.', code: 'content/use-cases/<your-slug>.md' },
+          {
+            title: 'found it in a video instead?',
+            body:
+              'add primary_source with kind: youtube-video and the video url — youtube.com/watch, youtu.be/ or youtube.com/shorts/. title and channel are required, so the source stays named even if the player never loads. a timestamp is optional: write it as mm:ss and the page deep-links there.',
+            code: 'primary_source:\n  kind: youtube-video\n  url: "https://www.youtube.com/watch?v=<id>"\n  title: "the video\'s real title"\n  channel: "the channel name"\n  timestamp: "4:12"   # optional',
+          },
           { title: 'prefer the long version?', body: 'Read /contribute/.' },
         ]}
       />

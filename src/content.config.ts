@@ -6,6 +6,7 @@ import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 import categories from './data/categories.json';
 import integrations from './data/integrations.json';
+import { TIMESTAMP_RE, X_STATUS_RE, YOUTUBE_URL_RE } from './lib/sources';
 
 // ---------- shared primitives ----------
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -41,6 +42,76 @@ const scoutedBy = z
 // Addendum B4: `demo` joins the enum. A demo entry is an explicitly-labelled example —
 // it never carries verified_at and is excluded from the API, feeds, wall and sitemap.
 const status = z.enum(['live', 'needs-update', 'deprecated', 'demo']).default('live');
+
+// ---------- PRIMARY SOURCE (F17) ----------
+// The ONE thing an entry was found in. A discriminated union rather than a `kind` field
+// beside optional siblings, for one reason: it makes "a YouTube source without a title" and
+// "an X source carrying a channel name" UNREPRESENTABLE instead of merely discouraged. Zod
+// also reports the right error — it narrows on `kind` first and then complains about that
+// branch's fields, rather than listing every field of both shapes.
+//
+// EXACTLY ONE per entry is structural: it is an object, not an array. Nothing to enforce.
+//
+// ADDITIVE BY DESIGN — the whole field is `.optional()`. Absent means `{ kind: 'x-post', url:
+// source_tweets[0].url }`, which is precisely the rule the codebase already followed
+// implicitly, so every existing content file keeps its current behaviour untouched and NOT
+// ONE of them had to be edited to land F17. `primarySourceOf()` in lib/entries.ts is the one
+// place that fallback lives.
+const primarySource = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('x-post'),
+      // Points AT one of the entry's own source_tweets — see `primaryIsCredited` below. It
+      // carries no excerpt or handle of its own precisely so the two can never disagree:
+      // the credit line stays the single source of that text.
+      url: z.string().regex(X_STATUS_RE, 'must be a post URL like https://x.com/<handle>/status/<id>'),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('youtube-video'),
+      url: z
+        .string()
+        .regex(
+          YOUTUBE_URL_RE,
+          'must be a YouTube video URL — youtube.com/watch?v=…, youtu.be/…, or youtube.com/shorts/… (playlist, channel and /embed/ URLs are not accepted)'
+        ),
+      // REQUIRED, both of them. The embed's fallback card is also its permanent failure
+      // state, and a failure state that cannot name the video is not attribution — it is a
+      // dead rectangle. Making these optional would let an entry ship a source that
+      // disappears the moment Google is unreachable.
+      title: z.string().min(3).max(140),
+      channel: z.string().min(1).max(60), // display name, no leading @
+      channel_url: httpsUrl.optional(),
+      // A receipt, written the way a human reads it off the video: "4:12", "1:02:03".
+      // Converted to `start=` seconds at render (lib/sources.js).
+      timestamp: z
+        .string()
+        .regex(TIMESTAMP_RE, 'must be mm:ss or h:mm:ss — e.g. "4:12" or "1:02:03"')
+        .optional(),
+      posted_at: isoDate.optional(),
+    })
+    .strict(),
+]);
+
+// An `x-post` primary must be one of the entry's OWN credited posts. Without this an entry
+// could name a primary source that appears nowhere in its credit line — the reader would see
+// an embed attributed to a post the page never claims to be sourced from, which is the exact
+// kind of quiet attribution drift §10.1 exists to prevent.
+function primaryIsCredited(
+  data: { primary_source?: { kind: string; url: string }; source_tweets: Array<{ url: string }> },
+  ctx: z.RefinementCtx
+) {
+  const primary = data.primary_source;
+  if (!primary || primary.kind !== 'x-post') return;
+  if (!data.source_tweets.some((tweet) => tweet.url === primary.url)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['primary_source', 'url'],
+      message: `primary_source points at ${primary.url}, which is not in source_tweets[] — an x-post primary source must be one of this entry's own credited posts (§5.6 rule 10)`,
+    });
+  }
+}
 
 // cross-field checks
 function validCategoryPair(data: { category: string; subcategory: string }, ctx: z.RefinementCtx) {
@@ -143,9 +214,9 @@ const useCases = defineCollection({
         .array(
           z
             .object({
-              url: z
-                .string()
-                .regex(/^https:\/\/(x|twitter)\.com\/[A-Za-z0-9_]{1,15}\/status\/\d+$/),
+              // F17: the pattern moved to lib/sources.js so the schema and the primary-source
+              // union validate an X URL with the same regex rather than two copies of it.
+              url: z.string().regex(X_STATUS_RE),
               author_handle: z.string().min(1).max(15), // no leading @
               excerpt: z.string().min(20).max(280), // short attributed quote — NEVER the full post (§10.6, §5.6 rule 10)
               posted_at: isoDate.optional(),
@@ -154,6 +225,9 @@ const useCases = defineCollection({
         )
         .max(5)
         .default([]), // embed source; see rules in §5.6 (floor 6, cap 10)
+      // F17 — the ONE source this entry was found in. Optional: absent means the first
+      // source_tweet, which is what every entry before F17 meant implicitly.
+      primary_source: primarySource.optional(),
       author: author.optional(),
       scouted_by: scoutedBy.optional(),
       replicability: z.string().min(40).max(300), // rendered as Callout info (§4.3.5 region 7)
@@ -171,7 +245,8 @@ const useCases = defineCollection({
     .strict()
     .superRefine(validCategoryPair)
     .superRefine(datesSane)
-    .superRefine(verifiedWhenLive),
+    .superRefine(verifiedWhenLive)
+    .superRefine(primaryIsCredited),
 });
 
 // ---------- COLLECTION ----------

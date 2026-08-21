@@ -14,6 +14,10 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
+// F17 — the SAME parser the schema and the renderer use. `src/lib/sources.js` is plain JS
+// with JSDoc types precisely so this file can import it: a second copy of the YouTube URL
+// pattern here would be a licence for the validator and the site to disagree.
+import { TIMESTAMP_RE, YOUTUBE_URL_RE, youtubeVideoId } from '../src/lib/sources.js';
 
 // Default root is the live corpus. `--root scripts/fixtures` runs the same rules against
 // the deliberately-invalid golden fixtures (§11 M2.5) — every failure class must trip.
@@ -137,6 +141,12 @@ const projectUrls = new Map();
 const repoUrls = new Map();
 const sourceUrls = new Map();
 const tweetUrls = new Map();
+// F17 — keyed on VIDEO ID, deliberately not on URL. See the note on `youtubeVideoId`:
+// `normalizeUrl()` strips the query string, and a watch URL keeps its id there, so URL
+// dedupe would collapse every youtube.com/watch?v=… in the corpus into one key and report
+// every entry after the first as a duplicate. The id also catches the same video submitted
+// once as youtu.be/X and once as youtube.com/watch?v=X, which no URL normalisation can.
+const youtubeIds = new Map();
 
 for (const entry of entries) {
   const { file, data, body, type } = entry;
@@ -289,6 +299,51 @@ for (const entry of entries) {
     for (const field of ['schedule', 'autonomy', 'difficulty', 'setup_minutes']) {
       if (d[field] === undefined) fail(file, '§5.2', `use cases require \`${field}\``);
     }
+    // ── F17 · primary source ───────────────────────────────────────────────────────────
+    // The schema is the authority on SHAPE; these checks are the ones Zod structurally
+    // cannot make — cross-file uniqueness, and the cross-field tie to source_tweets.
+    const primary = d.primary_source;
+    if (primary) {
+      if (!['x-post', 'youtube-video'].includes(primary.kind)) {
+        fail(file, '§5.2', `primary_source.kind must be "x-post" or "youtube-video" (got "${primary.kind}")`);
+      } else if (primary.kind === 'youtube-video') {
+        if (!YOUTUBE_URL_RE.test(primary.url ?? '')) {
+          fail(
+            file,
+            '§5.2',
+            `primary_source url "${primary.url}" is not a YouTube video URL — accepted shapes are youtube.com/watch?v=…, youtu.be/… and youtube.com/shorts/…`
+          );
+        } else {
+          const id = youtubeVideoId(primary.url);
+          if (youtubeIds.has(id)) {
+            fail(
+              file,
+              '§5.6 #3',
+              `duplicate youtube video "${id}" — already used by ${youtubeIds.get(id)} (matched on video id, so a youtu.be link and a watch link for the same video still collide)`
+            );
+          } else {
+            youtubeIds.set(id, file);
+          }
+        }
+        if (!primary.title || !primary.channel) {
+          fail(
+            file,
+            '§5.2',
+            'a youtube-video primary_source requires `title` and `channel` — the fallback card is also the permanent failure state, and a failure state that cannot name the video is not attribution'
+          );
+        }
+        if (primary.timestamp && !TIMESTAMP_RE.test(primary.timestamp)) {
+          fail(file, '§5.2', `primary_source.timestamp "${primary.timestamp}" must be mm:ss or h:mm:ss`);
+        }
+      } else if (!(d.source_tweets ?? []).some((t) => t?.url === primary.url)) {
+        fail(
+          file,
+          '§5.6 #10',
+          `primary_source points at ${primary.url}, which is not in source_tweets[] — an x-post primary must be one of this entry's own credited posts`
+        );
+      }
+    }
+
     const tweets = Array.isArray(d.source_tweets) ? d.source_tweets : [];
     if (tweets.length > 5) fail(file, '§5.2', 'source_tweets is capped at 5');
     for (const tweet of tweets) {

@@ -85,10 +85,13 @@ const tweetId = tweetUrl.match(/status\/(\d+)/)?.[1] ?? '';
   // click to proximity.
   const WIDGETS_SRC = 'https://platform.twitter.com/widgets.js';
   // F12 — a page with MANY embeds (the wall) tightens this so only what is genuinely near
-  // the viewport fetches. `data-tweet-root-margin` on <body> is the opt-in; everything else
-  // keeps F5's 200px.
+  // the viewport fetches. The opt-in attribute is the surface's, not the vendor's: F17 added
+  // a second lazy embed (YouTube) to the same pages, and a wall that tuned its X embeds to
+  // 100px while its YouTube frames still fetched at 200px would be one surface with two
+  // different ideas of "near". Renamed from `data-tweet-root-margin` at F17 for that reason;
+  // both components read this one attribute. Everything else keeps F5's 200px.
   const NEAR_VIEWPORT =
-    document.querySelector<HTMLElement>('[data-tweet-root-margin]')?.dataset.tweetRootMargin ||
+    document.querySelector<HTMLElement>('[data-embed-root-margin]')?.dataset.embedRootMargin ||
     '200px';
   const RENDER_TIMEOUT_MS = 8000;
 

@@ -104,6 +104,45 @@ export const CP_120_ABOUT_PRIVACY_EMBEDS =
 export const CP_120_MONO_TOKEN = 'platform.twitter.com';
 
 /**
+ * §16 PROTECTED · F17 (2026-08-21). CP-125.
+ *
+ * Written because F17 made the /about privacy statement SILENT about new behaviour: pages can
+ * now embed a YouTube player. CP-119/CP-120's asymmetric rule fired — behaviour changed, so
+ * the copy changes with it.
+ *
+ * TWO GOVERNANCE RULINGS ARE BAKED INTO ITS SHAPE, both returned by the copy authority:
+ *
+ *   1. ADD, DO NOT AMEND. CP-120 is byte-untouched. Nothing in it became false — it describes
+ *      what X pages do, and they still do exactly that. The statement's fault was silence, and
+ *      "reopening protected copy to cure silence sets the wrong precedent" is now on the
+ *      record. A protected string is reopened when it is WRONG, not when it is incomplete.
+ *
+ *   2. "are on the page either way" STANDS, over the tighter parallel with CP-120's "instead":
+ *      ruled PRECISION BEATS PARALLELISM. CP-120 can say "instead" because the X excerpt is a
+ *      swapped state. The YouTube title, channel and link render OUTSIDE the swap, so they are
+ *      present whether or not the player loads, and "instead" would have been false.
+ *
+ * WHAT MAKES IT TRUE IS THE IMPLEMENTATION, NOT THE WORDING. `YouTubeEmbed` makes ZERO network
+ * requests in its fallback — no poster thumbnail, no i.ytimg.com, no YouTube JS. That is why
+ * "we load a player only as you scroll to it" is literally, not approximately, true. Note that
+ * `img-src` is already `'self' https: data:`, so a thumbnail would pass every gate we have:
+ * the CSP will not stop it and `audit-scripts` will not catch it. THIS STRING is the thing
+ * that becomes false. If thumbnails are ever added, this is a copy-governance change first.
+ *
+ * DO NOT REWRITE. Same standing as CP-119/CP-120.
+ */
+export const CP_125_ABOUT_PRIVACY_YOUTUBE =
+  'Pages built on a YouTube video embed the player from YouTube, which means Google sees the ' +
+  'request and may set its own cookies in that player. We load a player only as you scroll to ' +
+  "it, and we ask for reduced tracking by loading it from YouTube's no-cookie host, but we " +
+  "can't speak for what Google does. If you'd rather not load them, block " +
+  'www.youtube-nocookie.com — the page still works, and the video\'s title, its channel and a ' +
+  'link to it are on the page either way.';
+
+/** The one token in CP-125 rendered in mono — same split mechanism as CP-120's. */
+export const CP_125_MONO_TOKEN = 'www.youtube-nocookie.com';
+
+/**
  * §16 PROTECTED · OPERATOR-AMENDED (F10, 2026-08-21). CP-121 … CP-124.
  *
  * All four are the operator's own wording, supplied verbatim in the F10 brief. Register-first,

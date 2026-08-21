@@ -3,7 +3,9 @@
 // [3] named-character h1 + chips · [4] what it does · [5] how it's set up (+ PromptBlock +
 // FENCED CTA) · [6] why it's cool · [7] the `replicability` field rendered under CP-032's
 // label ("what you need" — the RENDERED LABEL only; the schema field is untouched) ·
-// [8] as seen on x (TweetEmbed per source post) + the B2 wall backlink (CP-100) ·
+// [8] as seen on <kind> (F17: the block generalised — the PRIMARY source renders through
+//     whichever embed its kind demands, then the remaining credited posts) + the B2 wall
+//     backlink (CP-100) ·
 // [8a] appears in · [9] related.
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -13,6 +15,7 @@ import Callout from '../../components/Callout.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import InstallModal from '../../components/InstallModal.astro';
 import TweetEmbed from '../../components/TweetEmbed.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import PromptBlock from '../../components/PromptBlock.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
@@ -20,10 +23,12 @@ import PagefindMeta from '../../components/PagefindMeta.astro';
 import categories from '../../data/categories.json';
 import {
   allCollections,
+  allSourcesOf,
   allUseCases,
   appearsIn,
   editorialRel,
   integrationSlug,
+  primarySourceOf,
   relatedTo,
   toCardEntry,
 } from '../../lib/entries';
@@ -59,6 +64,14 @@ const isDeprecated = d.status === 'deprecated';
 const named = splitNamedCharacter(d.name);
 // §5.3: exactly one fenced block per use-case body, and it is the prompt.
 const prompt = extractPrompt(entry.body ?? '');
+
+// F17 — the source rail. `allSourcesOf` puts the primary FIRST and then the remaining
+// credited posts in file order; for every entry that predates F17 the primary IS
+// `source_tweets[0]`, so this reproduces the old order exactly. `primary_source` never had
+// to be written into a content file for that to hold — see `primarySourceOf`.
+const sources = allSourcesOf(entry as never);
+const primary = primarySourceOf(entry as never);
+const sourceLabel = primary?.kind === 'youtube-video' ? 'as seen on youtube' : 'as seen on x';
 
 // F14 — SHORTENED breadcrumbs (operator directive; supersedes §6.10's five-level trail and
 // §4.3.3/§4.3.5/§4.3.7's `home / lane / category / subcategory / name`). Now exactly
@@ -99,7 +112,10 @@ const graph = [
       name: d.author?.handle ?? d.scouted_by?.handle ?? 'grokbot.dev',
       ...(d.author?.url ? { url: d.author.url } : {}),
     },
-    citation: d.source_tweets.map((t) => t.url),
+    // F17 — every source, not just the X ones. `citation` is the page's machine-readable
+    // claim about where this came from; leaving a YouTube primary out of it would make the
+    // structured data disagree with the rail rendered three feet below it.
+    citation: sources.map((s) => s.url),
     datePublished: d.added_at,
     dateModified: d.updated_at,
     isAccessibleForFree: true,
@@ -221,18 +237,34 @@ const graph = [
       </div>
 
       {
-        d.source_tweets.length > 0 && (
+        sources.length > 0 && (
           <aside class="entryGrid__rail flex flex-col gap-4" aria-label="source posts">
-            <SectionHeading title="as seen on x" variant="sub" level={2} />
+            {/* F17 — the label follows the PRIMARY source's kind. It names where the use case
+                was found, which is what a primary source is; additional credited posts below
+                it each carry their own `@handle on x ↗` row, so nothing is mislabelled at the
+                item level even when an entry mixes kinds. */}
+            <SectionHeading title={sourceLabel} variant="sub" level={2} />
             <div class="flex flex-col gap-4">
-              {d.source_tweets.map((tweet) => (
-                <TweetEmbed
-                  tweetUrl={tweet.url}
-                  authorHandle={tweet.author_handle}
-                  excerpt={tweet.excerpt}
-                  postedAt={tweet.posted_at}
-                />
-              ))}
+              {sources.map((source) =>
+                source.kind === 'youtube-video' ? (
+                  <YouTubeEmbed
+                    videoId={source.videoId}
+                    title={source.title}
+                    channel={source.channel}
+                    channelUrl={source.channelUrl}
+                    timestamp={source.timestamp}
+                    startSeconds={source.startSeconds}
+                    postedAt={source.postedAt}
+                  />
+                ) : (
+                  <TweetEmbed
+                    tweetUrl={source.url}
+                    authorHandle={source.authorHandle}
+                    excerpt={source.excerpt}
+                    postedAt={source.postedAt}
+                  />
+                )
+              )}
             </div>
             <p class="font-mono text-sm">
               <a href="/wall/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">

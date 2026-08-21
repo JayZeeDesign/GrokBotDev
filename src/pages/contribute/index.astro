@@ -56,6 +56,15 @@ const graph = [webPage('/contribute/', META.contribute.title, META.contribute.de
         you can submit someone else's build. credit them as the author, add yourself as the
         scout, and link the post you found it in — that's what the scouted credit is for.
       </p>
+      {/* F17 — sources are kind-aware now. Same section because it is the same act: naming
+          where you found it. */}
+      <p class="max-w-prose text-base text-text-muted">
+        found it in a video? same thing, one field: <code>primary_source</code> with
+        <code>kind: youtube-video</code> and the url — <code>youtube.com/watch</code>,
+        <code>youtu.be/</code> or <code>youtube.com/shorts/</code>. the video's title and
+        channel are required, so the source is still named if the player never loads. a
+        timestamp is optional — write it <code>mm:ss</code> and the page links straight there.
+      </p>
     </section>
 
     <div class="flex flex-wrap items-center gap-4">

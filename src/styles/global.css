@@ -140,3 +140,40 @@
     padding-inline: var(--page-gutter-desktop);
   }
 }
+
+/* ── The /wall/ masonry (F12), moved here at F17 ────────────────────────────────────────
+ *
+ * DEFECT THIS FIXES, found while verifying F17's mixed wall and PRE-DATING it: these rules
+ * lived in a `<style is:global>` inside `src/pages/wall/[page].astro`, on the reasoning that
+ * one definition shared by both wall routes beats two copies. The reasoning was right; the
+ * placement was not. `wall/[page].astro` only generates pages 2+, so with fewer than
+ * SSR_COUNT items it generates NOTHING — and a route that builds no pages contributes no
+ * stylesheet to any page. `/wall/` therefore linked no masonry CSS at all and had been
+ * rendering as one full-width column ever since F12 shipped. Measured, not inferred:
+ * `getComputedStyle('.wallMasonry').columnCount` returned `auto` on the built page, and the
+ * rule was present in `dist/_astro/` but linked from nothing.
+ *
+ * It is the same family as the bug F12 itself fixed — output that only exists when the item
+ * count is above a threshold — which is why it hid: the wall has never held 12 items.
+ *
+ * global.css always ships, so both routes get exactly one copy and neither can lose it.
+ */
+.wallMasonry {
+  columns: 1;
+  column-gap: 1.5rem;
+}
+@media (min-width: 768px) {
+  .wallMasonry {
+    columns: 2;
+  }
+}
+@media (min-width: 1280px) {
+  .wallMasonry {
+    columns: 3;
+  }
+}
+.wallMasonry > * {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-block-end: 1.5rem;
+}

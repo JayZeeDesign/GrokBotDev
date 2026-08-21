@@ -21,6 +21,8 @@ import {
   CP_119_ABOUT_PRIVACY_ANALYTICS,
   CP_120_ABOUT_PRIVACY_EMBEDS,
   CP_120_MONO_TOKEN,
+  CP_125_ABOUT_PRIVACY_YOUTUBE,
+  CP_125_MONO_TOKEN,
 } from '../../lib/copy';
 import { META, breadcrumbList, webPage } from '../../lib/seo';
 
@@ -31,6 +33,10 @@ const graph = [webPage('/about/', META.about.title, META.about.description), bre
 // CP-120 is §16 PROTECTED, so the markup splits the one mono-rendered token OUT of the string
 // rather than re-typing the sentence around it. The constant stays the single source.
 const [privacyEmbedsBefore, privacyEmbedsAfter] = CP_120_ABOUT_PRIVACY_EMBEDS.split(CP_120_MONO_TOKEN);
+// F17 — CP-125, same mechanism. It is an ADDITION, not an amendment: CP-120 above is
+// byte-untouched, because it was silent about YouTube rather than wrong about X.
+const [privacyYoutubeBefore, privacyYoutubeAfter] =
+  CP_125_ABOUT_PRIVACY_YOUTUBE.split(CP_125_MONO_TOKEN);
 ---
 
 <BaseLayout title={META.about.title} description={META.about.description} graph={graph}>
@@ -82,11 +88,14 @@ const [privacyEmbedsBefore, privacyEmbedsAfter] = CP_120_ABOUT_PRIVACY_EMBEDS.sp
 
     <section id="privacy" class="flex max-w-prose flex-col gap-4">
       <SectionHeading title="privacy" variant="sub" level={2} />
-      {/* CP-119 + CP-120 — §16 PROTECTED. Do not reword here; the strings live in lib/copy.ts
-          and any change is a copy-governance change, not a polish edit. */}
+      {/* CP-119 + CP-120 + CP-125 — §16 PROTECTED. Do not reword here; the strings live in
+          lib/copy.ts and any change is a copy-governance change, not a polish edit. */}
       <p class="text-base text-text-muted">{CP_119_ABOUT_PRIVACY_ANALYTICS}</p>
       <p class="text-base text-text-muted">
         {privacyEmbedsBefore}<span class="font-mono text-sm">{CP_120_MONO_TOKEN}</span>{privacyEmbedsAfter}
+      </p>
+      <p class="text-base text-text-muted">
+        {privacyYoutubeBefore}<span class="font-mono text-sm">{CP_125_MONO_TOKEN}</span>{privacyYoutubeAfter}
       </p>
     </section>
 

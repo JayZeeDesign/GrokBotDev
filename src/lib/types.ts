@@ -24,6 +24,45 @@ export interface SourceTweet {
   postedAt?: string;
 }
 
+/**
+ * F17 — the §5 `primary_source` union, mirrored in camelCase.
+ *
+ * The `x-post` arm is `SourceTweet` plus a discriminant on purpose: an x-post primary IS one
+ * of the entry's credited posts (the schema enforces it), so it must carry the same excerpt
+ * and handle the credit line shows. `primarySourceOf()` performs that join.
+ *
+ * The `youtube-video` arm carries two fields frontmatter does not: `videoId` and
+ * `startSeconds`, both DERIVED at resolve time from `url` and `timestamp`. They are on the
+ * resolved type rather than in frontmatter because a contributor should paste a URL they can
+ * see in their address bar, not extract an id — and because a derived value stored in content
+ * is a value that can be wrong.
+ */
+export type PrimarySource =
+  | {
+      kind: 'x-post';
+      url: string;
+      authorHandle: string;
+      excerpt: string;
+      postedAt?: string;
+    }
+  | {
+      kind: 'youtube-video';
+      url: string;
+      /** Derived from `url` — the 11-char id, never authored by hand. */
+      videoId: string;
+      title: string;
+      channel: string;
+      channelUrl?: string;
+      /** The human receipt as written, e.g. `4:12`. Rendered; not used to build the URL. */
+      timestamp?: string;
+      /** Derived from `timestamp` — what actually becomes `start=`. */
+      startSeconds?: number;
+      postedAt?: string;
+    };
+
+/** The kind discriminant, on its own — what the API and the feeds expose. */
+export type PrimarySourceKind = PrimarySource['kind'];
+
 export interface CollectionMember {
   slug: string;
   reason: string;
@@ -67,6 +106,8 @@ export interface UseCaseEntry extends EntryBase {
   setupMinutes: number;
   costNote?: string;
   sourceTweets: SourceTweet[];
+  /** F17 — resolved, never raw: absent frontmatter resolves to `sourceTweets[0]` as `x-post`. */
+  primarySource?: PrimarySource;
   author?: EntryAuthor;
   scoutedBy?: ScoutedBy;
   replicability: string;

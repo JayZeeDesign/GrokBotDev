@@ -103,6 +103,13 @@ console.log(`audit-scripts: ${inlineJsBlocks} inline script blocks with JS (must
 // were already in §10.7's table for the click-to-load model; F5 changed when the request
 // fires, not which host makes it. The assertion below is what stops a future edit dropping
 // them and breaking every embed in production only.
+//
+// NOTE ON F17: this one IS a loosening, deliberately — `www.youtube-nocookie.com` joins
+// `frame-src`, the first new third-party origin since M0. Because it is deliberate, the
+// guard gates it in BOTH directions: the host must be present in frame-src (or the build
+// fails), and YouTube must be ABSENT from the script directives (or the build fails). A
+// one-directional guard would have let the widening grow quietly afterwards, which is the
+// usual way a narrow exception becomes a broad one.
 const HEADERS_CONF = 'infra/security-headers.conf';
 const REQUIRED_HEADERS = [
   'Strict-Transport-Security',
@@ -119,6 +126,7 @@ const REQUIRED_CSP_TOKENS = [
   'https://platform.twitter.com', // F5 embeds (script-src + frame-src)
   'https://syndication.twitter.com', // F5 embeds
   'https://hub.vemetric.com', // §9.7 ingest
+  'https://www.youtube-nocookie.com', // F17 embeds (frame-src ONLY — see below)
   "object-src 'none'",
   "frame-ancestors 'none'",
 ];
@@ -151,10 +159,37 @@ if (!existsSync(HEADERS_CONF)) {
     ['frame-src', 'https://platform.twitter.com'],
     ['script-src', "'wasm-unsafe-eval'"],
     ['connect-src', 'https://hub.vemetric.com'],
+    // F17 — the YouTube host is gated exactly the way the twitter ones are: presence in the
+    // policy is not enough, it has to be in the directive that actually does the work.
+    ['frame-src', 'https://www.youtube-nocookie.com'],
   ];
   for (const [name, token] of perDirective) {
     if (!directiveOf(name).includes(token)) {
       violations.push(`${HEADERS_CONF}: CSP \`${name}\` is missing \`${token}\``);
+    }
+  }
+
+  // ── F17 · THE OTHER HALF OF THE WIDENING ────────────────────────────────────────────
+  // A guard that only checks a token is PRESENT can be satisfied by a policy that is far
+  // too open. F17's whole claim is that it widened ONE directive by ONE token, so the
+  // guard asserts the negative too — otherwise "we only added frame-src" is a comment, not
+  // a fact, and the next person to want the IFrame Player API can add a script host with
+  // nothing objecting.
+  const FORBIDDEN = [
+    // The IFrame Player API. Loading it would make YouTube a script origin, which is a
+    // different and much larger permission than letting it render in a frame.
+    ['script-src', 'youtube'],
+    ['script-src-elem', 'youtube'],
+    // The no-cookie host is the one the /about privacy copy (CP-125) names. Framing
+    // plain youtube.com would make that copy false while every gate stayed green.
+    ['frame-src', 'https://www.youtube.com'],
+    ['frame-src', 'https://youtube.com'],
+  ];
+  for (const [name, token] of FORBIDDEN) {
+    if (directiveOf(name).includes(token)) {
+      violations.push(
+        `${HEADERS_CONF}: CSP \`${name}\` contains \`${token}\` — F17 widened frame-src by exactly one token (www.youtube-nocookie.com). Loading YouTube script, or framing a host the /about privacy copy does not name, is a NEW decision: take it explicitly and amend §10.7 + CP-125 with it.`
+      );
     }
   }
 

@@ -3,7 +3,8 @@
 // and latest surface (§5.6 rule 8) — only their own detail page survives, plus inbound
 // "appears in" references.
 import { getCollection, type CollectionEntry } from 'astro:content';
-import type { Entry, SiteStats } from './types';
+import type { Entry, PrimarySource, SiteStats } from './types';
+import { timestampToSeconds, youtubeVideoId } from './sources';
 
 export type PluginDoc = CollectionEntry<'plugins'>;
 export type UseCaseDoc = CollectionEntry<'use-cases'>;
@@ -200,6 +201,10 @@ export function toCardEntry(doc: AnyDoc): Entry {
         excerpt: tweet.excerpt as string,
         postedAt: tweet.posted_at as string | undefined,
       })),
+      // F17 — RESOLVED, not raw: the camelCase mirror carries the same value every other
+      // surface sees, including the `source_tweets[0]` default for pre-F17 entries. A mirror
+      // that reported `undefined` where the API reported an x-post would be a lossy mirror.
+      primarySource: primarySourceOf(doc as UseCaseDoc) ?? undefined,
       author: d.author as never,
       scoutedBy: d.scouted_by as never,
       replicability: d.replicability as string,
@@ -212,4 +217,125 @@ export function toCardEntry(doc: AnyDoc): Entry {
     members: (d.members ?? []) as Array<{ slug: string; reason: string }>,
     prompt: d.prompt as string | undefined,
   } as Entry;
+}
+
+// ── F17 · PRIMARY SOURCE ────────────────────────────────────────────────────────────────
+//
+// ONE resolver, called by the entry page, the wall, the API serializer and the feeds. The
+// alternative — each surface reading `primary_source` and doing its own `?? source_tweets[0]`
+// — is four copies of a defaulting rule that will drift the first time one of them is edited.
+//
+// Two jobs, and the second is the one worth naming:
+//   1. Apply the ADDITIVE default. No `primary_source` in frontmatter means the first credited
+//      post, which is what the codebase already meant before F17 named the concept. This is
+//      why zero content files changed.
+//   2. REJOIN an `x-post` primary with its credit-line record. The frontmatter deliberately
+//      stores only a URL for that branch, so the excerpt and handle live in exactly one place
+//      (`source_tweets[]`) and cannot drift from what the wall and the credit row show. The
+//      renderer needs them together, so the join happens here rather than in a template.
+//
+// Returns null for an entry with neither a primary_source nor any source_tweets — legal (the
+// field has always been `.default([])`), and every surface already hides an empty source block.
+
+type SourceTweetData = {
+  url: string;
+  author_handle: string;
+  excerpt: string;
+  posted_at?: string;
+};
+
+type PrimarySourceData =
+  | { kind: 'x-post'; url: string }
+  | {
+      kind: 'youtube-video';
+      url: string;
+      title: string;
+      channel: string;
+      channel_url?: string;
+      timestamp?: string;
+      posted_at?: string;
+    };
+
+export function primarySourceOf(doc: UseCaseDoc): PrimarySource | null {
+  const data = doc.data as unknown as {
+    primary_source?: PrimarySourceData;
+    source_tweets: SourceTweetData[];
+  };
+  const tweets = data.source_tweets ?? [];
+  const declared = data.primary_source;
+
+  if (declared?.kind === 'youtube-video') {
+    const videoId = youtubeVideoId(declared.url);
+    // The Zod regex already guaranteed this parses; the guard is here because a null id would
+    // otherwise become the string "null" inside an embed URL and frame a 404 rather than fail.
+    if (!videoId) return null;
+    const startSeconds = declared.timestamp ? timestampToSeconds(declared.timestamp) : null;
+    return {
+      kind: 'youtube-video',
+      url: declared.url,
+      videoId,
+      title: declared.title,
+      channel: declared.channel,
+      channelUrl: declared.channel_url,
+      timestamp: declared.timestamp,
+      startSeconds: startSeconds ?? undefined,
+      postedAt: declared.posted_at,
+    };
+  }
+
+  // x-post, declared or defaulted. `primaryIsCredited` in the schema guarantees a declared
+  // URL matches one of these, so the find cannot miss on validated content.
+  const tweet = declared ? tweets.find((t) => t.url === declared.url) : tweets[0];
+  if (!tweet) return null;
+  return {
+    kind: 'x-post',
+    url: tweet.url,
+    authorHandle: tweet.author_handle,
+    excerpt: tweet.excerpt,
+    postedAt: tweet.posted_at,
+  };
+}
+
+/**
+ * Every source of an entry, primary FIRST, then the remaining credited posts in file order.
+ *
+ * The wall and the entry rail both need this exact list, and both need it in this exact
+ * order. Note what it does to existing output: with no `primary_source` in frontmatter the
+ * primary IS `source_tweets[0]`, so "primary first, then the rest" reproduces file order
+ * byte for byte. The rule is new; the rendering of every current entry is not.
+ */
+export function allSourcesOf(doc: UseCaseDoc): PrimarySource[] {
+  const primary = primarySourceOf(doc);
+  const tweets = (doc.data as unknown as { source_tweets: SourceTweetData[] }).source_tweets ?? [];
+  const rest: PrimarySource[] = tweets
+    .filter((t) => !(primary?.kind === 'x-post' && t.url === primary.url))
+    .map((t) => ({
+      kind: 'x-post' as const,
+      url: t.url,
+      authorHandle: t.author_handle,
+      excerpt: t.excerpt,
+      postedAt: t.posted_at,
+    }));
+  return primary ? [primary, ...rest] : rest;
+}
+
+/**
+ * F17 — THE wall item list. One function, called by `/wall/`, `/wall/[page]` and
+ * `/wall/data.json`.
+ *
+ * It is centralised because the previous three-copy version is what produced F12's 404s: the
+ * page and its paginated routes each rebuilt the same flatMap, they disagreed about how many
+ * items existed, and Pagination linked at pages that were never generated. Three copies of a
+ * derivation is three chances to disagree; this is one.
+ *
+ * Order — `newest-first unchanged` is a requirement, so note precisely what it means here:
+ * entries in `sortForLatest` order, and WITHIN an entry the primary source first, then the
+ * remaining credited posts in file order. For every entry that predates F17 the primary IS
+ * `source_tweets[0]`, so the emitted sequence is byte-identical to the pre-F17 wall. A
+ * YouTube primary simply takes that first slot for its own entry.
+ */
+export function wallItems(docs: UseCaseDoc[]): Array<{ source: PrimarySource; entry: UseCaseDoc }> {
+  return sortForLatest(docs).flatMap((entry) =>
+    allSourcesOf(entry as UseCaseDoc).map((source) => ({ source, entry: entry as UseCaseDoc }))
+  );
 }

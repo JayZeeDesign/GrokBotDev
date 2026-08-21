@@ -96,6 +96,23 @@ You can also submit someone else's work. Set `author` to the creator, `scouted_b
 link the origin post, and the page credits you both — see
 [scouting](https://grokbot.dev/contribute/#scouting).
 
+An entry names **one primary source** — the thing it was found in. That is a post on X by
+default, and nothing needs writing for it. If it was a YouTube video instead, add:
+
+```yaml
+primary_source:
+  kind: youtube-video
+  url: "https://www.youtube.com/watch?v=<id>"   # or youtu.be/<id>, or youtube.com/shorts/<id>
+  title: "the video's real title"
+  channel: "the channel name"
+  timestamp: "4:12"                             # optional; mm:ss or h:mm:ss
+```
+
+`title` and `channel` are required, because they are what the page shows when the player does
+not load. The timestamp is a receipt: it renders next to the link and deep-links the embed, so
+a reader who never presses play still knows where the claim is. Videos are deduped by video id,
+so the same video cannot be submitted twice under two different link shapes.
+
 ## Local development
 
 Node 22 (see `.nvmrc`).

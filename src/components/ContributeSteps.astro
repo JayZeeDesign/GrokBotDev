@@ -24,7 +24,13 @@ const pad = (n: number) => String(n).padStart(2, '0');
         <p class="text-base text-text-muted">{step.body}</p>
         {step.code && (
           <div class="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-border bg-surface-raised p-3">
-            <pre class="m-0 overflow-x-auto font-mono text-sm text-text"><code>{step.code}</code></pre>
+            {/* F17 — `min-w-0` is what makes `overflow-x-auto` actually work here. This <pre>
+                is a FLEX CHILD, so its automatic minimum size is its content: without the
+                zeroed minimum the box just grows and the scroller never engages. Latent since
+                this component shipped — every existing `code` string was short enough to fit,
+                so the first long one (F17's YAML snippet) was also the first to expose it.
+                Caught by the overflow guard at 360/390, not by eye. */}
+            <pre class="m-0 min-w-0 flex-1 overflow-x-auto font-mono text-sm text-text"><code>{step.code}</code></pre>
             <CopyButton text={step.code} size="sm" />
           </div>
         )}

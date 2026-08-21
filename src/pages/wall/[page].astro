@@ -16,16 +16,16 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import WallCard from '../../components/WallCard.astro';
 import Pagination from '../../components/Pagination.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
-import { allUseCases, sortForLatest, urlOf } from '../../lib/entries';
+import { allUseCases, urlOf, wallItems } from '../../lib/entries';
 import type { UseCaseDoc } from '../../lib/entries';
 import { META, breadcrumbList, collectionPage, itemList } from '../../lib/seo';
 import { SSR_COUNT } from './data.json';
 
 export const getStaticPaths = (async () => {
-  const useCases = sortForLatest(await allUseCases()) as UseCaseDoc[];
-  const items = useCases.flatMap((entry) =>
-    entry.data.source_tweets.map((tweet) => ({ tweet, entry }))
-  );
+  // F17 — one shared builder (`wallItems`) instead of this page's own flatMap. Three copies
+  // of that derivation is what let Pagination link at routes that were never generated; see
+  // the note on `wallItems`. It also transparently picks up YouTube primaries.
+  const items = wallItems((await allUseCases()) as UseCaseDoc[]);
   const total = Math.max(1, Math.ceil(items.length / SSR_COUNT));
 
   // Page 1 lives at `/wall/` — starting at 2 keeps a single canonical URL for it.
@@ -66,16 +66,11 @@ const graph = [
       </h1>
     </header>
 
-    <div class="wallMasonry" data-tweet-root-margin="100px">
+    <div class="wallMasonry" data-embed-root-margin="100px">
       {
         items.map((item) => (
           <WallCard
-            tweet={{
-              url: item.tweet.url,
-              authorHandle: item.tweet.author_handle,
-              excerpt: item.tweet.excerpt,
-              postedAt: item.tweet.posted_at,
-            }}
+            source={item.source}
             entryName={item.entry.data.name}
             entryHref={urlOf(item.entry)}
           />
@@ -96,26 +91,3 @@ const graph = [
     <NewsletterRow source="home" />
   </div>
 </BaseLayout>
-
-<style is:global>
-  /* Shared with `/wall/` — see the masonry note there. Global so both pages get one rule. */
-  .wallMasonry {
-    columns: 1;
-    column-gap: 1.5rem;
-  }
-  @media (min-width: 768px) {
-    .wallMasonry {
-      columns: 2;
-    }
-  }
-  @media (min-width: 1280px) {
-    .wallMasonry {
-      columns: 3;
-    }
-  }
-  .wallMasonry > * {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    margin-block-end: 1.5rem;
-  }
-</style>

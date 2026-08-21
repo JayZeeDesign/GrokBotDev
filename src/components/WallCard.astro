@@ -2,34 +2,56 @@
 // Addendum B2 — `WallCard`: one item on /wall/. Operator, verbatim: "we need to have
 // Wall of Posts! and then we'll tag people who post them and say their idea is posted
 // on GrokBot.dev!"
-// Integrity rule (B2): a wall item exists ONLY where a live entry has a real
-// `source_tweets[]` post. No fabrication, no placeholders. `status: demo` is excluded —
-// the page owns that filter; this component only renders what it is handed.
-// Renders through TweetEmbed, which since F5 auto-loads the REAL X embed as it comes into
-// range (§10.3's click-to-load consent model was overruled by the operator). The wall is the
-// densest use of it — 10 embeds — which is why TweetEmbed lazy-loads rather than eager-loads.
+// Integrity rule (B2): a wall item exists ONLY where a live entry has a real source. No
+// fabrication, no placeholders. `status: demo` is excluded — the page owns that filter;
+// this component only renders what it is handed.
+//
+// F17 — the card is now KIND-AWARE. Its prop was `tweet: SourceTweet`; it is now
+// `source: PrimarySource`, and it renders whichever embed the kind demands. Operator ruling:
+// YouTube source cards JOIN the wall rather than getting a lane of their own — same masonry,
+// same lazy path, same fallback discipline, mixed with the X cards, newest-first unchanged.
+//
+// Both embeds lazy-load as they come into range (F5 for X, F17 for YouTube) and both read the
+// surface's `data-embed-root-margin`, so the wall's tighter 100px applies to every card
+// whatever the vendor. The wall is the densest use of either — which is the whole reason
+// neither one eager-loads.
 // Copy CP-099 (KEEP, B2 verbatim): `→ posted on grokbot.dev: {entry_name}`.
 import TweetEmbed from './TweetEmbed.astro';
+import YouTubeEmbed from './YouTubeEmbed.astro';
 import { CP_099_WALL_LINK_CHIP, fillCopy } from '../lib/copy';
-import type { SourceTweet } from '../lib/types';
+import type { PrimarySource } from '../lib/types';
 
 interface Props {
-  tweet: SourceTweet;
+  source: PrimarySource;
   entryName: string;
   entryHref: string;
   class?: string;
 }
 
-const { tweet, entryName, entryHref, class: className = '' } = Astro.props;
+const { source, entryName, entryHref, class: className = '' } = Astro.props;
 ---
 
 <article class:list={['flex flex-col gap-3', className]}>
-  <TweetEmbed
-    tweetUrl={tweet.url}
-    authorHandle={tweet.authorHandle}
-    excerpt={tweet.excerpt}
-    postedAt={tweet.postedAt}
-  />
+  {
+    source.kind === 'youtube-video' ? (
+      <YouTubeEmbed
+        videoId={source.videoId}
+        title={source.title}
+        channel={source.channel}
+        channelUrl={source.channelUrl}
+        timestamp={source.timestamp}
+        startSeconds={source.startSeconds}
+        postedAt={source.postedAt}
+      />
+    ) : (
+      <TweetEmbed
+        tweetUrl={source.url}
+        authorHandle={source.authorHandle}
+        excerpt={source.excerpt}
+        postedAt={source.postedAt}
+      />
+    )
+  }
   <a
     href={entryHref}
     class="inline-flex min-h-6 items-center self-start rounded-sm border border-border-interactive px-2 py-1 font-mono text-xs text-text hover:border-accent hover:text-accent-text"

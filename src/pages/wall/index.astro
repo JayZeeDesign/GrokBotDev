@@ -1,5 +1,5 @@
 ---
-// Addendum B2 — Wall of Posts. Grid of the REAL source X posts behind live entries,
+// Addendum B2 — Wall of Posts. Grid of the REAL sources behind live entries,
 // newest first (entry `added_at` desc, slug asc — §5.6 rule 11), click-to-load embeds
 // (§10.3 consent model), each with a mono link chip to its entry.
 // Integrity rule (B2): an item exists ONLY where a live entry has a real source_tweets[]
@@ -11,16 +11,16 @@ import WallCard from '../../components/WallCard.astro';
 import EmptyState from '../../components/EmptyState.astro';
 import Pagination from '../../components/Pagination.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
-import { allUseCases, sortForLatest, urlOf } from '../../lib/entries';
+import { allUseCases, urlOf, wallItems } from '../../lib/entries';
 import type { UseCaseDoc } from '../../lib/entries';
 import { CP_101_WALL_EMPTY } from '../../lib/copy';
 import { META, breadcrumbList, collectionPage, itemList } from '../../lib/seo';
 import { SSR_COUNT } from './data.json';
 
-const useCases = sortForLatest(await allUseCases()) as UseCaseDoc[];
-const items = useCases.flatMap((entry) =>
-  entry.data.source_tweets.map((tweet) => ({ tweet, entry }))
-);
+// F17 — one shared builder for all three wall surfaces (see `wallItems`). Mixed-kind by
+// construction: a YouTube primary takes its entry's first slot, X posts follow, and the
+// entry ordering — newest first — is untouched.
+const items = wallItems((await allUseCases()) as UseCaseDoc[]);
 
 // F12 — only the first SSR_COUNT render server-side: enough for SEO and for a no-JS reader,
 // while a wall that will hold "a LOT" does not ship hundreds of embeds in the HTML. The tail
@@ -49,15 +49,10 @@ const graph = [
 
     {
       items.length > 0 ? (
-        <div class="wallMasonry" data-wall-masonry data-tweet-root-margin="100px">
+        <div class="wallMasonry" data-wall-masonry data-embed-root-margin="100px">
           {ssrItems.map((item) => (
             <WallCard
-              tweet={{
-                url: item.tweet.url,
-                authorHandle: item.tweet.author_handle,
-                excerpt: item.tweet.excerpt,
-                postedAt: item.tweet.posted_at,
-              }}
+              source={item.source}
               entryName={item.entry.data.name}
               entryHref={urlOf(item.entry)}
             />
@@ -93,8 +88,9 @@ const graph = [
   </div>
 </BaseLayout>
 
-{/* Masonry CSS is defined once, globally, in `wall/[page].astro` so both the first page
-    and the paginated ones share exactly one rule set. */}
+{/* Masonry CSS lives in `src/styles/global.css` — see the note there. It used to live in
+    `wall/[page].astro`, which generates no pages until the wall exceeds SSR_COUNT items, so
+    this page linked no masonry at all. */}
 
 <script>
   // F12 — infinite scroll. ENHANCEMENT ONLY: the first page is server-rendered and the
@@ -107,15 +103,33 @@ const graph = [
   const pagination = document.querySelector<HTMLElement>('[data-wall-pagination]');
 
   if (masonry && sentinel && 'IntersectionObserver' in window) {
-    type Item = {
+    // F17 — kind-discriminated, mirroring /wall/data.json. Every derived URL arrives
+    // pre-built from the server (`embed_src`, `watch_url`); this island never assembles a
+    // YouTube URL, so there is exactly one place that can point at the wrong host.
+    type Common = {
       url: string;
-      authorHandle: string;
-      excerpt: string;
-      postedAt: string | null;
-      entryName: string;
-      entryHref: string;
-      tweetId: string;
+      posted_at: string | null;
+      entry_name: string;
+      entry_href: string;
     };
+    type XItem = Common & {
+      kind: 'x-post';
+      author_handle: string;
+      excerpt: string;
+      tweet_id: string;
+    };
+    type YtItem = Common & {
+      kind: 'youtube-video';
+      video_id: string;
+      title: string;
+      channel: string;
+      channel_url: string | null;
+      timestamp: string | null;
+      start_seconds: number | null;
+      embed_src: string;
+      watch_url: string;
+    };
+    type Item = XItem | YtItem;
 
     let pages: Item[][] = [];
     let next = 0;
@@ -127,23 +141,55 @@ const graph = [
         c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '"' ? '&quot;' : '&#39;'
       );
 
-    // Mirrors WallCard + TweetEmbed's markup. Kept deliberately small and in one place; the
+    // Mirrors WallCard's two branches. Kept deliberately small and in one place; the
     // server-rendered cards remain the reference, and the shared CSS classes mean a style
     // change lands on both at once.
-    const card = (it: Item) => `
-<article class="flex flex-col gap-3">
+    const dateCell = (postedAt: string | null) =>
+      postedAt ? `<time datetime="${esc(postedAt)}">${esc(postedAt.slice(0, 10))}</time>` : '';
+
+    const xEmbed = (it: XItem) => `
   <figure class="tweet-embed flex flex-col gap-3 border border-border-interactive bg-surface p-4"
-    data-tweet-embed data-tweet-url="${esc(it.url)}" data-tweet-id="${esc(it.tweetId)}" data-tweet-state="pending">
+    data-tweet-embed data-tweet-url="${esc(it.url)}" data-tweet-id="${esc(it.tweet_id)}" data-tweet-state="pending">
     <div class="tweet-embed__mount" data-tweet-mount></div>
     <blockquote class="tweet-embed__fallback border-l-2 border-l-border-strong pl-4 text-base text-text" data-tweet-fallback>
       <p>${esc(it.excerpt)}</p>
     </blockquote>
     <figcaption class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-text-muted">
-      <a href="${esc(it.url)}" target="_blank" rel="noopener" class="hover:text-accent-text">@${esc(it.authorHandle)} on x <span aria-hidden="true">↗</span></a>
-      ${it.postedAt ? `<time datetime="${esc(it.postedAt)}">${esc(it.postedAt.slice(0, 10))}</time>` : ''}
+      <a href="${esc(it.url)}" target="_blank" rel="noopener" class="hover:text-accent-text">@${esc(it.author_handle)} on x <span aria-hidden="true">↗</span></a>
+      ${dateCell(it.posted_at)}
     </figcaption>
-  </figure>
-  <a href="${esc(it.entryHref)}" class="inline-flex min-h-6 items-center self-start rounded-sm border border-border-interactive px-2 py-1 font-mono text-xs text-text hover:border-accent hover:text-accent-text">→ posted on grokbot.dev: ${esc(it.entryName)}</a>
+  </figure>`;
+
+    // The fallback div is the BACKGROUND of the 16:9 box and is never hidden — same
+    // invariant as the component. `aria-hidden` because the figcaption repeats both strings.
+    const ytEmbed = (it: YtItem) => `
+  <figure class="yt-embed flex flex-col gap-3 border border-border-interactive bg-surface p-4"
+    data-yt-embed data-yt-src="${esc(it.embed_src)}" data-yt-id="${esc(it.video_id)}" data-yt-title="${esc(it.title)}" data-yt-state="pending">
+    <div class="yt-embed__frame" data-yt-mount>
+      <div class="yt-embed__fallback" data-yt-fallback aria-hidden="true">
+        <p class="yt-embed__title">${esc(it.title)}</p>
+        <p class="yt-embed__channel font-mono text-xs text-text-muted">${esc(it.channel)}</p>
+      </div>
+    </div>
+    <figcaption class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-text-muted">
+      <span class="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <a href="${esc(it.watch_url)}" target="_blank" rel="noopener" class="hover:text-accent-text">on youtube <span aria-hidden="true">↗</span></a>
+        <span aria-hidden="true">·</span>
+        ${
+          it.channel_url
+            ? `<a href="${esc(it.channel_url)}" target="_blank" rel="noopener" class="hover:text-accent-text">${esc(it.channel)}</a>`
+            : `<span>${esc(it.channel)}</span>`
+        }
+        ${it.timestamp ? `<span class="yt-embed__stamp">at ${esc(it.timestamp)}</span>` : ''}
+      </span>
+      ${dateCell(it.posted_at)}
+    </figcaption>
+  </figure>`;
+
+    const card = (it: Item) => `
+<article class="flex flex-col gap-3">
+${it.kind === 'youtube-video' ? ytEmbed(it) : xEmbed(it)}
+  <a href="${esc(it.entry_href)}" class="inline-flex min-h-6 items-center self-start rounded-sm border border-border-interactive px-2 py-1 font-mono text-xs text-text hover:border-accent hover:text-accent-text">→ posted on grokbot.dev: ${esc(it.entry_name)}</a>
 </article>`;
 
     const append = () => {
@@ -154,9 +200,17 @@ const graph = [
       }
       const batch = pages[next++];
       masonry.insertAdjacentHTML('beforeend', batch.map(card).join(''));
-      // Appended figures are invisible to the observer TweetEmbed set up at load, so it has
-      // to be told to look again — that hook is why the embeds in these cards ever render.
-      (window as unknown as { grokbotScanTweets?: (r?: ParentNode) => void }).grokbotScanTweets?.(masonry);
+      // Appended figures are invisible to the observers TweetEmbed and YouTubeEmbed set up
+      // at load, so BOTH have to be told to look again — those hooks are why the embeds in
+      // these cards ever render. Missing the YouTube one would show a wall whose X cards
+      // load and whose video cards sit as fallbacks forever, which looks like a YouTube
+      // problem and is not.
+      const w = window as unknown as {
+        grokbotScanTweets?: (r?: ParentNode) => void;
+        grokbotScanYouTube?: (r?: ParentNode) => void;
+      };
+      w.grokbotScanTweets?.(masonry);
+      w.grokbotScanYouTube?.(masonry);
       if (status) status.textContent = `loaded ${masonry.children.length} posts`;
     };
 

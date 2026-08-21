@@ -12,7 +12,8 @@
 - [ ] I did NOT set `verified_at` or `status: live` — a maintainer sets those during verification (§10.1).
 - [ ] This is not an ad. A listing that exists to funnel traffic to your product gets closed. Sponsor slots will exist for that — this isn't one.
 - [ ] If this is someone else's work: `author` is the original creator, the origin is linked (`source_url` for a plugin, `source_tweets[]` for a use case), and `scouted_by` is me.
+- [ ] If the source is a YouTube video: `primary_source` is `kind: youtube-video` with a `youtube.com/watch`, `youtu.be/` or `youtube.com/shorts/` URL, plus the video's real `title` and `channel` — those two are required because they are what the page shows if the player never loads. `timestamp` is optional and is written `mm:ss`.
 - [ ] I license this contribution under CC BY 4.0 (attribution: entry author + grokbot.dev).
 
 ## Where it came from
-<!-- Link the source post / repo / your own writeup. -->
+<!-- Link the source post / video / repo / your own writeup. -->

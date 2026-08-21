@@ -38,6 +38,7 @@ import StatBar from '../../components/StatBar.astro';
 import TweetEmbed from '../../components/TweetEmbed.astro';
 import ThemeToggle from '../../components/ThemeToggle.astro';
 import WallCard from '../../components/WallCard.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 
 import {
   CP_067_CALLOUT_NEEDS_UPDATE,
@@ -186,6 +187,7 @@ const groups = [
   'CopyButton',
   'AgentContractBlock',
   'TweetEmbed',
+  'YouTubeEmbed',
   'StatBar',
   'NewsletterRow',
   'Pagination',
@@ -609,7 +611,8 @@ const groups = [
     <section id="c-tweetembed" class="flex flex-col gap-6">
       <SectionHeading title="TweetEmbed — §4.2.16" />
       <p class="font-mono text-xs text-text-muted">
-        unloaded = default and permanent until a click. zero third-party requests before then.
+        F5: auto-loads the REAL post as it scrolls into range. the quote card below is the
+        loading state AND the permanent failure state; the attribution row survives both.
       </p>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
         <TweetEmbed
@@ -622,6 +625,78 @@ const groups = [
           tweetUrl="https://x.com/example/status/1000000000000000002"
           authorHandle="example"
           excerpt="second embed on the same page reuses the already-loaded widgets.js — it is injected once, and only after a click."
+        />
+      </div>
+    </section>
+
+    {/* ------------------------------------------------------------- YouTubeEmbed */}
+    <section id="c-youtubeembed" class="flex flex-col gap-6">
+      <SectionHeading title="YouTubeEmbed — F17" />
+      <p class="max-w-prose font-mono text-xs text-text-muted">
+        the youtube half of the kind-aware primary source. same discipline as TweetEmbed:
+        nothing is requested until the reader scrolls to it, and the attribution row sits
+        outside the swap so the source stays named and reachable on every failure path.
+      </p>
+      <p class="max-w-prose font-mono text-xs text-text-muted">
+        the fallback card is the BACKGROUND of the 16:9 box, never hidden — a player that
+        loads simply covers it. that is why states 3 and 4 below are the same DOM: an iframe
+        cannot be asked whether it worked, so nothing visual is allowed to depend on the
+        answer.
+      </p>
+
+      <p class="font-mono text-xs text-text-muted">1 — default. auto-loads on scroll.</p>
+      <div class="max-w-xl">
+        <YouTubeEmbed
+          videoId="aircAruvnKk"
+          title="But what is a neural network? | Deep learning chapter 1"
+          channel="3Blue1Brown"
+          channelUrl="https://www.youtube.com/@3blue1brown"
+          postedAt="2017-10-05T00:00:00Z"
+        />
+      </div>
+
+      <p class="font-mono text-xs text-text-muted">
+        2 — with a timestamp receipt (4:12). the stamp renders next to the link AND becomes
+        <code>start=252</code> in the frame url, so a reader who never plays the video still
+        sees where the claim is.
+      </p>
+      <div class="max-w-xl">
+        <YouTubeEmbed
+          videoId="aircAruvnKk"
+          title="But what is a neural network? | Deep learning chapter 1"
+          channel="3Blue1Brown"
+          timestamp="4:12"
+          startSeconds={252}
+        />
+      </div>
+
+      <p class="font-mono text-xs text-text-muted">
+        3 — loading state / 4 — permanent failure state. ONE specimen because they are one
+        rendering: <code>embed={false}</code> omits the observer hook, which is exactly what a
+        blocked frame leaves behind. title, channel and the youtube link all survive.
+      </p>
+      <div class="max-w-xl">
+        <YouTubeEmbed
+          videoId="aircAruvnKk"
+          title="But what is a neural network? | Deep learning chapter 1"
+          channel="3Blue1Brown"
+          timestamp="4:12"
+          startSeconds={252}
+          postedAt="2017-10-05T00:00:00Z"
+          embed={false}
+        />
+      </div>
+
+      <p class="font-mono text-xs text-text-muted">
+        5 — long title, no channel url, no date. the title wraps with
+        <code>overflow-wrap: anywhere</code> so an unbroken string cannot widen the card (F6).
+      </p>
+      <div class="max-w-xl">
+        <YouTubeEmbed
+          videoId="aircAruvnKk"
+          title="a deliberately overlong title with an unbroken token https://example.com/a/very/long/path/that/never/breaks to prove the card holds"
+          channel="example"
+          embed={false}
         />
       </div>
     </section>
@@ -766,9 +841,27 @@ const groups = [
     {/* -------------------------------------------------------------------- WallCard */}
     <section id="c-wallcard" class="flex flex-col gap-6">
       <SectionHeading title="WallCard — Addendum B2" />
+      <p class="max-w-prose font-mono text-xs text-text-muted">
+        F17: kind-aware. one card, either embed — the two below are what a MIXED wall looks
+        like, which is the whole ruling: youtube sources join the wall rather than getting a
+        lane of their own.
+      </p>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
         <WallCard
-          tweet={sampleUseCase.sourceTweets[0]}
+          source={{ kind: 'x-post', ...sampleUseCase.sourceTweets[0] }}
+          entryName={sampleUseCase.name}
+          entryHref="/use-cases/"
+        />
+        <WallCard
+          source={{
+            kind: 'youtube-video',
+            url: 'https://www.youtube.com/watch?v=aircAruvnKk',
+            videoId: 'aircAruvnKk',
+            title: 'But what is a neural network? | Deep learning chapter 1',
+            channel: '3Blue1Brown',
+            timestamp: '4:12',
+            startSeconds: 252,
+          }}
           entryName={sampleUseCase.name}
           entryHref="/use-cases/"
         />

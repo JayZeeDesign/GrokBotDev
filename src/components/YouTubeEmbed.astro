@@ -1,0 +1,280 @@
+---
+// F17 — YouTubeEmbed. The YouTube half of the kind-aware primary source, built to exactly
+// F5's discipline: nothing third-party is requested until the reader scrolls to it, and the
+// source stays NAMED AND REACHABLE on every failure path.
+//
+// ── WHAT IT DOES NOT DO, and why each absence is deliberate ──────────────────────────────
+//
+// NO POSTER THUMBNAIL. The obvious design loads `i.ytimg.com/vi/<id>/hqdefault.jpg` behind a
+// play button. It is declined: this card is BOTH the loading state and the permanent failure
+// state, and the failure state is by definition the case where Google is unreachable — so a
+// poster is an image that fails in exactly the situation it was added for, while costing a
+// Google round-trip in the situation it wasn't. Declining it also keeps the §10.7 widening to
+// a single token. Note that `img-src` is already `'self' https: data:`, so a thumbnail would
+// NOT have needed a CSP edit — this is a privacy call, not a guard-forced one.
+//
+// NO YOUTUBE IFRAME API. We build the <iframe> ourselves. That is why F17 adds nothing to
+// `script-src`: the only widening anywhere is `frame-src https://www.youtube-nocookie.com`.
+//
+// NO AUTOPLAY. The frame is created when the reader scrolls to it. A video that started
+// talking at that moment would be an ambush, not a lazy-load.
+//
+// ── THE FAILURE MODEL — read this before "simplifying" the layering ──────────────────────
+//
+// TweetEmbed can ask `createTweet` whether it worked. An <iframe> cannot be asked: a blocked
+// frame may fire `load` anyway (for its own error page), and a cross-origin frame that DID
+// load is unreadable by design. Any state machine built on those signals guesses.
+//
+// So this component does not need one to be CORRECT. The fallback card is the BACKGROUND of
+// the aspect box and is never removed or hidden; the iframe is layered on top of it. A player
+// that loads is opaque and covers the card. A player that never loads leaves the card
+// showing. The visual outcome is right in both cases without anything having to detect which
+// case it is in — the only way to get this wrong would be to hide the card on a signal that
+// can lie, which is precisely what an earlier draft of this component did.
+//
+// `data-yt-state` therefore exists for analytics, tests and aria-busy ONLY. Nothing visual
+// depends on it. Read that as the invariant it is: if a future edit makes a paint rule key
+// off `[data-yt-state="loaded"]`, the false-positive failure mode comes straight back.
+//
+// The fallback card is `aria-hidden` because its two strings — title and channel — are
+// repeated verbatim in the <figcaption>, which sits OUTSIDE the swap and is the accessible
+// attribution. Screen readers get the source once, from the element that always exists.
+import { youtubeEmbedUrl, youtubeWatchUrl } from '../lib/sources';
+
+interface Props {
+  videoId: string;
+  /** §05 `primary_source.title` — the video's real title, required by the schema. */
+  title: string;
+  /** §05 `primary_source.channel` — display name, no leading @. */
+  channel: string;
+  channelUrl?: string;
+  /** The human receipt as authored (`4:12`); rendered next to the link. */
+  timestamp?: string;
+  /** Derived from `timestamp`; what becomes `start=`. */
+  startSeconds?: number;
+  postedAt?: string;
+  /**
+   * `false` renders the identical card but omits the `data-yt-embed` hook, so the island
+   * never observes it and no frame is ever requested.
+   *
+   * This is not a dev-only escape hatch — it is the failure state made reachable on purpose.
+   * Because the fallback is a layer rather than a swapped-out state, "the player never
+   * arrived" and "no player was ever asked for" are the SAME DOM, which is what lets the
+   * style guide show the real failure specimen instead of a hand-built replica that rots.
+   */
+  embed?: boolean;
+  class?: string;
+}
+
+const {
+  videoId,
+  title,
+  channel,
+  channelUrl,
+  timestamp,
+  startSeconds,
+  postedAt,
+  embed = true,
+  class: className = '',
+} = Astro.props;
+
+// Both built at BUILD time from one helper, so the framed host and the linked host can never
+// drift apart — and so the only YouTube host we ever frame is the one §10.7 allows.
+const embedUrl = youtubeEmbedUrl(videoId, startSeconds);
+const watchUrl = youtubeWatchUrl(videoId, startSeconds);
+---
+
+<figure
+  class:list={[
+    'yt-embed flex flex-col gap-3 border border-border-interactive bg-surface p-4',
+    className,
+  ]}
+  data-yt-embed={embed ? '' : undefined}
+  data-yt-src={embedUrl}
+  data-yt-id={videoId}
+  data-yt-title={title}
+  data-yt-state={embed ? 'pending' : 'no-embed'}
+>
+  {/* The 16:9 box. Fixed aspect from the first paint, so a player arriving later does not
+      shove the rest of the page down — the layout-shift argument that a poster image is
+      usually reached for, solved by geometry instead of by a request. */}
+  <div class="yt-embed__frame" data-yt-mount>
+    {/* Loading state AND permanent failure state. Never hidden, never removed — it is the
+        BACKGROUND of the box, and a loaded player simply covers it. */}
+    <div class="yt-embed__fallback" data-yt-fallback aria-hidden="true">
+      <p class="yt-embed__title">{title}</p>
+      <p class="yt-embed__channel font-mono text-xs text-text-muted">{channel}</p>
+    </div>
+  </div>
+
+  {/* OUTSIDE the swap, exactly as TweetEmbed's attribution row is: a use case's whole claim
+      to honesty is that the source it came from is named and reachable (§10.1 item 5). With
+      Google blocked, with JS off, with the frame refused — this row still renders. */}
+  <figcaption
+    class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-text-muted"
+  >
+    <span class="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <a href={watchUrl} target="_blank" rel="noopener" class="hover:text-accent-text">
+        on youtube <span aria-hidden="true">↗</span>
+      </a>
+      <span aria-hidden="true">·</span>
+      {
+        channelUrl ? (
+          <a href={channelUrl} target="_blank" rel="noopener" class="hover:text-accent-text">
+            {channel}
+          </a>
+        ) : (
+          <span>{channel}</span>
+        )
+      }
+      {/* The receipt is rendered, not just encoded in the URL: "the claim is at 4:12" is a
+          statement to the reader, and it has to survive a reader who never plays the video. */}
+      {timestamp && <span class="yt-embed__stamp">at {timestamp}</span>}
+    </span>
+    {postedAt && <time datetime={postedAt}>{postedAt.slice(0, 10)}</time>}
+  </figcaption>
+</figure>
+
+<style>
+  .yt-embed__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    inline-size: 100%;
+    /* F6/F10's min-sizing law: this box is a flex child, and without the zeroed minimum its
+       automatic minimum size is its content, so a wide player would push the card past its
+       container instead of being constrained by it. */
+    min-inline-size: 0;
+    overflow: hidden;
+    /* `--color-bg` and not a hand-picked dark: the card is on `--color-surface`, so the page
+       background reads as a recessed panel inside it, and it inverts correctly with the F9
+       theme. §4.1.1 — no hex outside tokens.css, and no `var(--token, #fallback)` either:
+       a fallback is where a typo'd token name hides, which is trap 1's exact shape. */
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+  }
+
+  /* The background layer. Not `display:none` under any state — see the failure model above. */
+  .yt-embed__fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    padding: 1rem;
+    text-align: start;
+  }
+
+  .yt-embed__title {
+    font-size: var(--text-base);
+    line-height: 1.35;
+    color: var(--color-text);
+    /* An unbroken title (a pasted URL, a 60-char German noun) must shrink the box's
+       min-content, not blow out the card — F6's inline-axis rule. */
+    overflow-wrap: anywhere;
+  }
+
+  /* The player, layered ON TOP. Opaque when it loads; absent when it does not. */
+  .yt-embed__frame :global(iframe) {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+  }
+
+  .yt-embed__stamp {
+    color: var(--color-text);
+  }
+</style>
+
+<script>
+  // F17 — lazy YouTube frames. NOT a new island in spirit: it is the same
+  // scroll-into-range-then-fetch trigger TweetEmbed already owns, pointed at a different
+  // vendor. It shares TweetEmbed's root margin so a surface tunes both embeds at once
+  // (`data-embed-root-margin` on <body>; the wall sets 100px, everything else gets 200px).
+  const NEAR_VIEWPORT =
+    document.querySelector<HTMLElement>('[data-embed-root-margin]')?.dataset.embedRootMargin ||
+    '200px';
+
+  const w = window as unknown as {
+    grokbotTrack?: (event: string, props?: Record<string, string>) => void;
+  };
+
+  function render(figure: HTMLElement): void {
+    const mount = figure.querySelector<HTMLElement>('[data-yt-mount]');
+    const src = figure.dataset.ytSrc;
+    if (!mount || !src || figure.querySelector('iframe')) return;
+
+    figure.dataset.ytState = 'loading';
+    figure.setAttribute('aria-busy', 'true');
+
+    const frame = document.createElement('iframe');
+    frame.src = src;
+    frame.title = figure.dataset.ytTitle || 'YouTube video';
+    frame.loading = 'lazy';
+    frame.referrerPolicy = 'strict-origin-when-cross-origin';
+    frame.allow =
+      'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    frame.allowFullscreen = true;
+
+    // ONLY analytics and aria-busy hang off this. Nothing visual — the fallback stays put
+    // either way, which is what makes a wrong guess here harmless. `load` fires for a real
+    // player AND for a blocked frame's error page, so it is not trustworthy enough to paint
+    // from; the cross-origin check below is the best available signal and is still only
+    // used to label, never to hide.
+    frame.addEventListener('load', () => {
+      figure.removeAttribute('aria-busy');
+      let reachedYouTube = false;
+      try {
+        // A cross-origin document reads back as null — that means we really are showing
+        // youtube-nocookie.com. A READABLE document means the frame is sitting on
+        // about:blank, i.e. it was refused (CSP, blocker, offline).
+        reachedYouTube = frame.contentDocument === null;
+      } catch {
+        reachedYouTube = true; // throwing is also a cross-origin answer
+      }
+      figure.dataset.ytState = reachedYouTube ? 'loaded' : 'failed';
+      if (reachedYouTube) {
+        w.grokbotTrack?.('youtube_embed_load', { page: window.location.pathname });
+      }
+    });
+
+    frame.addEventListener('error', () => {
+      figure.removeAttribute('aria-busy');
+      figure.dataset.ytState = 'failed';
+    });
+
+    mount.appendChild(frame);
+  }
+
+  const hasObserver = 'IntersectionObserver' in window;
+  const observer = hasObserver
+    ? new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            observer!.unobserve(entry.target);
+            render(entry.target as HTMLElement);
+          }
+        },
+        { rootMargin: NEAR_VIEWPORT }
+      )
+    : null;
+
+  /** Observe every not-yet-seen frame under `root`. Exposed for the wall island, whose
+   *  appended cards are invisible to an observer that was set up at page load. */
+  const scan = (root: ParentNode = document) => {
+    for (const figure of root.querySelectorAll<HTMLElement>('[data-yt-embed]')) {
+      if (figure.dataset.ytSeen) continue;
+      figure.dataset.ytSeen = '1';
+      if (observer) observer.observe(figure);
+      else render(figure); // no observer: render rather than show nobody the video
+    }
+  };
+
+  (window as unknown as { grokbotScanYouTube?: typeof scan }).grokbotScanYouTube = scan;
+  scan();
+</script>

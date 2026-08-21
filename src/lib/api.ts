@@ -6,8 +6,8 @@
 // Governing rule (§7.1.3): NON-LOSSY. Every §5 frontmatter field and every §5.3 body
 // section appears under its §5 snake_case name. The only renames are `works_with`
 // (plugins) and `integrations` (use cases) → the API field `integrations`.
-import type { AnyDoc } from './entries';
-import { integrationSlug, kindOf, urlOf } from './entries';
+import type { AnyDoc, UseCaseDoc } from './entries';
+import { integrationSlug, kindOf, primarySourceOf, urlOf } from './entries';
 import integrationsVocab from '../data/integrations.json';
 
 export const SITE_URL = 'https://grokbot.dev';
@@ -69,6 +69,41 @@ function promptFromBody(body: string): string | null {
   return match ? match[1].trim() : null;
 }
 
+/**
+ * F17 — `primary_source`, in §5 snake_case, with the DERIVED fields kept.
+ *
+ * `video_id` and `start_seconds` are not frontmatter — they are computed from `url` and
+ * `timestamp` at resolve time. They are published anyway: an API consumer that wanted to
+ * embed the video would otherwise have to re-implement our URL parser and our mm:ss maths,
+ * and two parsers is two answers. `timestamp` is published beside `start_seconds` because the
+ * human receipt ("4:12") is what a reader is shown; the seconds are what a machine wants.
+ */
+function primarySourceApi(doc: AnyDoc): Record<string, unknown> | null {
+  if (kindOf(doc) !== 'use-case') return null;
+  const source = primarySourceOf(doc as UseCaseDoc);
+  if (!source) return null;
+  if (source.kind === 'youtube-video') {
+    return {
+      kind: source.kind,
+      url: source.url,
+      video_id: source.videoId,
+      title: source.title,
+      channel: source.channel,
+      channel_url: source.channelUrl ?? null,
+      timestamp: source.timestamp ?? null,
+      start_seconds: source.startSeconds ?? null,
+      posted_at: source.postedAt ?? null,
+    };
+  }
+  return {
+    kind: source.kind,
+    url: source.url,
+    author_handle: source.authorHandle,
+    excerpt: source.excerpt,
+    posted_at: source.postedAt ?? null,
+  };
+}
+
 /** §7.1.3 — one item, non-lossy, for any entry type. */
 export function toApiItem(doc: AnyDoc): Record<string, unknown> {
   const d = doc.data as Record<string, unknown>;
@@ -109,6 +144,18 @@ export function toApiItem(doc: AnyDoc): Record<string, unknown> {
       excerpt: t.excerpt,
       posted_at: t.posted_at ?? null,
     })),
+    // F17 — the kind-aware primary source, on EVERY item of all seven endpoints because it
+    // lives in `common`. Two properties worth stating, because §7.1.3's non-lossy rule cuts
+    // both ways here:
+    //   · It is RESOLVED, not echoed. A pre-F17 entry with no `primary_source` in frontmatter
+    //     reports `{"kind":"x-post", …}` for its first credited post — which is what the entry
+    //     always meant. A consumer never has to reimplement the defaulting rule, and the API
+    //     never disagrees with the page.
+    //   · It is `null`, not absent, for plugins and collections. Those types have no primary
+    //     source in v1 (see the note in content.config.ts); an explicit null says "asked and
+    //     answered" where a missing key would leave a consumer guessing whether the field is
+    //     unsupported or the build is old.
+    primary_source: primarySourceApi(doc),
     featured: Boolean(d.featured),
   };
 
