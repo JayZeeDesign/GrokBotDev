@@ -220,6 +220,41 @@ function dropBots(){
   });
 }
 
+/* Operator: "drop more bots" — spawn 1..n extra bots from the top, on demand. Only meaningful
+   in the live sim; the control that calls this is revealed by build() only in that path. New
+   bots enter immediately (entered:true) so releaseDue() never re-parks them, and join `bots`
+   so render/blink/idle handle them like the rest. */
+function spawnBots(n){
+  if(!HAS_MATTER || !world) return;
+  var M=window.Matter;
+  for(var k=0;k<n;k++){
+    var f = FORMS[Math.floor(Math.random()*FORMS.length)];
+    var form = Object.assign({}, f);
+    form.__scale = 0.88 + Math.random()*0.24;
+    form.eye = Object.assign({}, f.eye);
+    form.eye.tilt = f.eye.tilt + (Math.random()*10 - 5);
+    var size = botSize(form);
+    var el = document.createElement('div');
+    el.className='bot';
+    el.innerHTML = buildBotSVGV2(form, size);
+    layer.appendChild(el);
+    var b = { form:form, el:el, size:size, eyesEl: el.querySelector('.eyes'),
+      body:null, blinkAt: performance.now() + (1200 + Math.random()*4000), blinkT:-1,
+      delay:0, entered:true };
+    var z = dropZone(size);
+    var x = z.l + Math.random()*(z.r - z.l);
+    var y = -size - (40 + Math.random()*220);
+    var body = makeBody(b, x, y);
+    M.Body.setAngle(body, Math.random()-0.5);
+    M.Body.setAngularVelocity(body, (Math.random()-0.5)*0.12);
+    M.Body.setVelocity(body, {x:(Math.random()-0.5)*1.6, y:Math.random()*2});
+    M.Sleeping.set(body, false);
+    b.body = body;
+    M.Composite.add(world, body);
+    bots.push(b);
+  }
+}
+
 function releaseDue(now){
   var M=window.Matter;
   bots.forEach(function(b){
@@ -500,6 +535,21 @@ function build(newSeed){
   stage.addEventListener('touchcancel', endTouch, { passive:false });
   M.Events.on(mouseC,'startdrag',function(e){ stage.classList.add('dragging'); if(e.body) M.Sleeping.set(e.body,false); });
   M.Events.on(mouseC,'enddrag',function(){ stage.classList.remove('dragging'); });
+
+  // Operator: reveal + wire the "drop more bots" control — ONLY in the live sim (this code
+  // never runs on the reduced-motion / no-JS / static path). Listener lives here in the
+  // bundled module, so no inline handler is needed and §10.7's CSP stays untouched.
+  var dropCtl = document.querySelector('[data-drop-bots]');
+  if(dropCtl){
+    dropCtl.hidden = false;
+    if(!dropCtl.__wired){
+      dropCtl.__wired = true;
+      dropCtl.addEventListener('click', function(e){
+        e.preventDefault();
+        spawnBots(1 + Math.floor(Math.random()*4));
+      });
+    }
+  }
 
   startedAt=performance.now();
   runnerRAF=requestAnimationFrame(loop);
