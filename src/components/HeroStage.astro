@@ -31,11 +31,10 @@ const SUBLINE =
   'ready-to-use Grok Bot prompts, plugins and collections, all in one place. plug your Bot in and it keeps its own list fresh.';
 ---
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-  <pattern id="gbHalftone" width="11" height="11" patternUnits="userSpaceOnUse">
-    <circle cx="2.9" cy="2.9" r="2.3"/><circle cx="8.4" cy="8.4" r="2.3"/>
-  </pattern>
-</defs></svg>
+{/* F16 — the `#gbHalftone` <pattern> <defs> that stood here is gone with the rest of
+    family v1's paint. Only v1's halftone diamond ever used it, and v1 now renders on
+    /about/, where AboutBotPile declares its own id-namespaced copy. Family v2 has no
+    halftone at all: flat solid fills only. */}
 
 <section class="stage" id="stage" aria-label="Animated bot cluster">
   <div class="botlayer" id="botlayer" aria-hidden="true"></div>
@@ -82,18 +81,18 @@ const SUBLINE =
 .bot svg{display:block; overflow:visible}
 .bot .eyes{transform-box:fill-box; transform-origin:center}
 
-/* fill / stroke driven purely by CSS vars => auto-inverts with theme */
-.s-solid{fill:var(--ink); stroke:none}
-.s-solid .eye{fill:var(--paper)}
-.s-solid .rt{stroke:var(--ink)}          /* rounded-triangle corner stroke = its own fill */
-.s-accent{fill:var(--accent); stroke:none}
-.s-accent .eye{fill:var(--paper)}
-.s-accent .rt{stroke:var(--accent)}
-.s-outline{fill:none; stroke:var(--ink)}
-.s-outline .eye{fill:var(--ink); stroke:none}
-.s-halftone{fill:url(#gbHalftone); stroke:var(--ink)}
-.s-halftone .eye{fill:var(--ink); stroke:none}
-#gbHalftone circle{fill:var(--ink)}
+/* F16 — the `.s-solid / .s-accent / .s-outline / .s-halftone` block that stood here is
+   GONE, along with the `#gbHalftone` <defs> above. Those were family v1's paint: ink,
+   paper and one Ash Amber bot, driven by CSS vars so they inverted with the theme.
+   The hero now draws family v2, whose paint is fixed hexes in src/styles/hero-bots.css
+   under `.s2-*` — deliberately theme-INVARIANT, because real Grok Bot avatars do not
+   invert either. Family v1 itself is not deleted: it renders as a decorative static
+   pile on /about/ (components/AboutBotPile.astro), and its paint lives scoped under
+   `.bots-v1` in src/styles/bots-v1.css.
+
+   Note what is NOT dead and must stay: `.bot .eyes` below keeps `transform-box:fill-box;
+   transform-origin:center`, which integration-notes §8 requires — without the CSS half,
+   blinks scale from the wrong origin. */
 
 /* ---------- hero content (a static physics body) ---------- */
 .content{
