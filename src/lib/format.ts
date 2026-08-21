@@ -15,9 +15,13 @@ export function monoLabel(label: string): string {
   return label.toLowerCase();
 }
 
-/** §4.2.11 setup-time chip formatting rule. */
-export function setupLabel(minutes: number): string {
-  return `~${minutes} min setup`;
+/**
+ * §4.2.11 setup-time chip formatting rule.
+ * Returns null when the field is absent so the chip can OMIT itself — a missing
+ * `setup_minutes` must never render as "~undefined min setup" (M7.1 QA finding).
+ */
+export function setupLabel(minutes: number | undefined | null): string | null {
+  return typeof minutes === 'number' && Number.isFinite(minutes) ? `~${minutes} min setup` : null;
 }
 
 const LANE_BY_TYPE: Record<EntryType, string> = {

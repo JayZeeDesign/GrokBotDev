@@ -99,8 +99,8 @@ const typeLabel = entry.type === 'use-case' ? 'use case' : entry.type;
             needs update
           </span>
         )}
-        {plugin?.setupMinutes && <Chip variant="setup-time" label={setupLabel(plugin.setupMinutes)} />}
-        {useCase && <Chip variant="setup-time" label={setupLabel(useCase.setupMinutes)} />}
+        {setupLabel(plugin?.setupMinutes) && <Chip variant="setup-time" label={setupLabel(plugin?.setupMinutes)!} />}
+        {setupLabel(useCase?.setupMinutes) && <Chip variant="setup-time" label={setupLabel(useCase?.setupMinutes)!} />}
         {showType && <Chip variant="type" label={typeLabel} entryType={entry.type} />}
         <Chip variant="category" label={entry.category} href={`/categories/${entry.category}/`} />
         {useCase &&

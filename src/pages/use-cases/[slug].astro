@@ -24,6 +24,7 @@ import {
   editorialRel,
   integrationSlug,
   relatedTo,
+  toCardEntry,
 } from '../../lib/entries';
 import { extractPrompt, isoToDate, setupLabel, splitNamedCharacter } from '../../lib/format';
 import {
@@ -141,7 +142,7 @@ const graph = [
       <p class="text-lg text-text-muted">{d.tagline}</p>
       <div class="flex flex-wrap items-center gap-2">
         {d.verified_at && d.status === 'live' && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
-        <Chip variant="setup-time" label={setupLabel(d.setup_minutes)} />
+        {setupLabel(d.setup_minutes) && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)!} />}
         <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
         {d.source_tweets.length > 0 && (
           <Chip variant="scouted" label="scouted on x" href={d.source_tweets[0].url} />
@@ -224,8 +225,8 @@ const graph = [
       {d.cost_note && <span>{d.cost_note}</span>}
     </section>
 
-    <RelatedList entries={inCollections.map((c) => c.data) as never} variant="appears-in" />
-    <RelatedList entries={related.map((r) => r.data) as never} />
+    <RelatedList entries={inCollections.map(toCardEntry)} variant="appears-in" />
+    <RelatedList entries={related.map(toCardEntry)} />
 
     <NewsletterRow source="use-case-detail" />
   </article>

@@ -11,7 +11,7 @@ import StatBar from '../components/StatBar.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import EntryCard from '../components/EntryCard.astro';
 import NewsletterRow from '../components/NewsletterRow.astro';
-import { allListable, kindOf, siteStats, sortForIndex, sortForLatest, urlOf } from '../lib/entries';
+import { allListable, kindOf, siteStats, sortForIndex, sortForLatest, urlOf, toCardEntry } from '../lib/entries';
 import { META, collectionPage, itemList } from '../lib/seo';
 
 const stats = await siteStats();
@@ -57,7 +57,7 @@ const graph = [
           <SectionHeading title="featured" action={{ label: 'view all →', href: '/plugins/' }} />
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {featured.map((entry) => (
-              <EntryCard entry={entry.data as never} variant={kindOf(entry)} />
+              <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} />
             ))}
           </div>
         </section>
@@ -87,7 +87,7 @@ const graph = [
           <SectionHeading title="latest" action={{ label: 'view all →', href: '/use-cases/' }} />
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {latest.map((entry) => (
-              <EntryCard entry={entry.data as never} variant={kindOf(entry)} />
+              <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} />
             ))}
           </div>
         </section>

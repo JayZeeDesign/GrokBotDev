@@ -24,6 +24,7 @@ import {
   integrationSlug,
   relatedTo,
   urlOf,
+  toCardEntry,
 } from '../../lib/entries';
 import { isoToDate, setupLabel } from '../../lib/format';
 import { CP_067_CALLOUT_NEEDS_UPDATE, CP_068_CALLOUT_DEPRECATED, CP_112_CTA_SENTENCE, fillCopy } from '../../lib/copy';
@@ -109,7 +110,7 @@ const graph = [
           {d.verified_at && d.status === 'live' && (
             <Chip variant="verified" date={isoToDate(d.verified_at)} />
           )}
-          {d.setup_minutes && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)} />}
+          {setupLabel(d.setup_minutes) && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)!} />}
           <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
         </div>
       </header>
@@ -183,8 +184,8 @@ const graph = [
       {d.source_url && <a href={d.source_url} rel={rel} target="_blank" class="hover:text-accent-text">source ↗</a>}
     </section>
 
-    <RelatedList entries={related.map((r) => r.data) as never} />
-    <RelatedList entries={inCollections.map((c) => c.data) as never} variant="appears-in" />
+    <RelatedList entries={related.map(toCardEntry)} />
+    <RelatedList entries={inCollections.map(toCardEntry)} variant="appears-in" />
 
     <NewsletterRow source="plugin-detail" />
   </article>

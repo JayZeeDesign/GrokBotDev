@@ -13,7 +13,7 @@ import InstallModal from '../../components/InstallModal.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
 import categories from '../../data/categories.json';
-import { allCollections, allPlugins, allUseCases, kindOf, relatedTo } from '../../lib/entries';
+import { allCollections, allPlugins, allUseCases, kindOf, relatedTo, toCardEntry } from '../../lib/entries';
 import { isoToDate } from '../../lib/format';
 import { CP_112_CTA_SENTENCE } from '../../lib/copy';
 import { SITE, breadcrumbList, collectionPage, entryDescription, entryTitle, itemList } from '../../lib/seo';
@@ -95,7 +95,7 @@ const graph = [
         {
           members.map((member) => (
             <div class="flex flex-col gap-2">
-              <EntryCard entry={member.doc.data as never} variant={kindOf(member.doc)} />
+              <EntryCard entry={toCardEntry(member.doc)} variant={kindOf(member.doc)} />
               <p class="font-mono text-xs text-text-muted">{member.reason}</p>
             </div>
           ))
@@ -113,7 +113,7 @@ const graph = [
       )
     }
 
-    <RelatedList entries={related.map((r) => r.data) as never} />
+    <RelatedList entries={related.map(toCardEntry)} />
 
     <NewsletterRow source="collection-detail" />
   </article>

@@ -3,7 +3,7 @@
 // and latest surface (§5.6 rule 8) — only their own detail page survives, plus inbound
 // "appears in" references.
 import { getCollection, type CollectionEntry } from 'astro:content';
-import type { SiteStats } from './types';
+import type { Entry, SiteStats } from './types';
 
 export type PluginDoc = CollectionEntry<'plugins'>;
 export type UseCaseDoc = CollectionEntry<'use-cases'>;
@@ -138,4 +138,78 @@ export function editorialRel(doc: AnyDoc): string | undefined {
   const { status, verified_at: verifiedAt } = doc.data;
   if (status === 'deprecated') return 'nofollow noopener';
   return status !== 'demo' && verifiedAt ? 'noopener' : 'nofollow noopener';
+}
+
+/**
+ * §4.2.10's collection boundary: "snake_case frontmatter → camelCase at the collection
+ * boundary". This is that boundary, and it was missing — pages were handing raw snake_case
+ * frontmatter straight to EntryCard's camelCase Props behind an `as never` cast, so every
+ * camelCase read (`setupMinutes`, `verifiedAt`, `worksWith`, `sourceTweets`) came back
+ * undefined at runtime. Visible symptom: "~undefined min setup"; silent symptom: the
+ * verified chip, integration chips and scouted chip never rendered at all.
+ * Every EntryCard / RelatedList call site goes through here, and no call site casts.
+ */
+export function toCardEntry(doc: AnyDoc): Entry {
+  const d = doc.data as Record<string, unknown>;
+  const base = {
+    name: d.name as string,
+    slug: d.slug as string,
+    tagline: d.tagline as string,
+    category: d.category as string,
+    subcategory: d.subcategory as string,
+    featured: Boolean(d.featured),
+    addedAt: d.added_at as string,
+    updatedAt: d.updated_at as string,
+    verifiedAt: d.verified_at as string | undefined,
+    status: d.status as Entry['status'],
+  };
+
+  const kind = kindOf(doc);
+  if (kind === 'plugin') {
+    return {
+      ...base,
+      type: 'plugin',
+      installSteps: (d.install_steps ?? []) as string[],
+      prompt: d.prompt as string | undefined,
+      worksWith: (d.works_with ?? []) as string[],
+      projectUrl: d.project_url as string,
+      repoUrl: d.repo_url as string | undefined,
+      author: d.author as Entry extends { author: infer A } ? A : never,
+      scoutedBy: d.scouted_by as never,
+      sourceUrl: d.source_url as string | undefined,
+      pricingNote: d.pricing_note as string | undefined,
+      setupMinutes: d.setup_minutes as number | undefined,
+    } as Entry;
+  }
+
+  if (kind === 'use-case') {
+    return {
+      ...base,
+      type: 'use-case',
+      botName: d.bot_name as string | undefined,
+      whatItDoes: d.what_it_does as string,
+      integrations: (d.integrations ?? []) as string[],
+      schedule: d.schedule as never,
+      autonomy: d.autonomy as never,
+      difficulty: d.difficulty as never,
+      setupMinutes: d.setup_minutes as number,
+      costNote: d.cost_note as string | undefined,
+      sourceTweets: ((d.source_tweets ?? []) as Array<Record<string, unknown>>).map((tweet) => ({
+        url: tweet.url as string,
+        authorHandle: tweet.author_handle as string,
+        excerpt: tweet.excerpt as string,
+        postedAt: tweet.posted_at as string | undefined,
+      })),
+      author: d.author as never,
+      scoutedBy: d.scouted_by as never,
+      replicability: d.replicability as string,
+    } as Entry;
+  }
+
+  return {
+    ...base,
+    type: 'collection',
+    members: (d.members ?? []) as Array<{ slug: string; reason: string }>,
+    prompt: d.prompt as string | undefined,
+  } as Entry;
 }

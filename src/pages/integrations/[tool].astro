@@ -10,7 +10,7 @@ import Chip from '../../components/Chip.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
 import integrations from '../../data/integrations.json';
 import categories from '../../data/categories.json';
-import { hubEligible, integrationSlug, integrationsOf, kindOf, sortForIndex, urlOf } from '../../lib/entries';
+import { hubEligible, integrationSlug, integrationsOf, kindOf, sortForIndex, urlOf, toCardEntry } from '../../lib/entries';
 import { breadcrumbList, collectionPage, integrationHubDescription, integrationHubTitle, itemList } from '../../lib/seo';
 import { hubIntro } from '../../lib/hubIntros';
 
@@ -80,7 +80,7 @@ const graph = [
       entries.length > 0 ? (
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {entries.map((entry) => (
-            <EntryCard entry={entry.data as never} variant={kindOf(entry)} showType />
+            <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} showType />
           ))}
         </div>
       ) : (
