@@ -1532,6 +1532,32 @@ rather than burying it.**
 CP-034 (`load tweet from x`) is **retired** — there is no button. The constant stays in
 `lib/copy.ts` marked retired so the pack key still resolves.
 
+**GOVERNANCE CLOSURE (2026-08-21): the privacy copy is BLESSED AS-IS by the copy authority,
+zero edits, and is now §16 PROTECTED.** It is registered as two keyed rows rather than one,
+because the paragraph I added and the sentence I amended are a pair and only make sense
+together:
+
+| key | string | why |
+|---|---|---|
+| **CP-119** `about / privacy.analytics` | the amended "no cookies **of its own**" sentence | the original claim went false the moment embeds auto-loaded |
+| **CP-120** `about / privacy.embeds` | the net-new X-embed paragraph | written because the consent model was overruled, so the CLAIM had to change instead |
+
+Registered in three places, and **verified byte-for-byte in all three**: the pack's §14 table,
+its §16 protected list (same status as the original nineteen), and its §17 reverse index under
+`src/pages/about/index.astro`. Pack scope line updated 118 → 120 keyed rows.
+
+**They also moved out of the page and into `src/lib/copy.ts`**, which is the half that actually
+prevents a rewrite: a protected string sitting as inline JSX is exactly the kind a later pass
+reworks without noticing it was protected. `/about/` now renders the constants, and CP-120's
+one mono-rendered token (`platform.twitter.com`) is **split out of the string** rather than the
+sentence being re-typed around it, so the constant stays the single source. Rendered output is
+byte-identical to the blessed wording.
+
+**One property these two have that the original nineteen do not:** they are a *factual claim
+about system behaviour*, true only while the embed model stays as F5 shipped it. Rewriting them
+for tone is forbidden like the rest — but changing them because the behaviour changed is
+**required**. That is recorded against the §16 entry, not just here.
+
 ### F6 · horizontal overflow on mobile — root-caused, fixed at component level, D9 swept
 
 The operator hit sideways page scroll on `/plugins/aaron-marketing-skills/` with the

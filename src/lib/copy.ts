@@ -73,6 +73,36 @@ export const CP_114_RETRIEVAL_PHRASE = 'ready-to-use Grok Bot prompts';
 /** CP-032 — the RENDERED label for the use-case `replicability` field. Field name unchanged. */
 export const CP_032_REPLICABILITY_LABEL = 'what you need';
 
+/**
+ * §16 PROTECTED — `/about/` privacy statement. CP-119 + CP-120.
+ *
+ * Written at F5 because auto-loading X embeds made the previous line ("no cookies are set by
+ * this site and there is no cross-site tracking") FALSE, on the one page whose entire subject
+ * is what we do with your data. §10.8's own escalation rule covers exactly that case. Blessed
+ * as-is by the copy authority, zero edits, and registered in the pack's §16 protected list —
+ * same status as the original nineteen.
+ *
+ * DO NOT REWRITE. If the embed behaviour changes, the copy has to change WITH it — that is
+ * the point of the pairing, and it is a copy-governance change, not a polish edit.
+ *
+ * They live here rather than inline in the page precisely because a protected string sitting
+ * as inline JSX is the kind that gets casually reworded by a later pass.
+ */
+export const CP_119_ABOUT_PRIVACY_ANALYTICS =
+  'Analytics is cookieless and the dashboard is public — this site sets no cookies of its own ' +
+  'and does not track you across the web. If you join the waitlist we store your email address ' +
+  'and the page you signed up from, nothing else, and we use it only to send the weekly email. ' +
+  'Ask us to delete it and we will.';
+
+export const CP_120_ABOUT_PRIVACY_EMBEDS =
+  'Pages that quote a post from X embed it from X, which means X sees the request and may set ' +
+  "its own cookies in that embed. We load an embed only as you scroll to it, and we ask X for " +
+  "its do-not-track mode, but we can't speak for what X does. If you'd rather not load them, " +
+  'block platform.twitter.com — the page still works and you\'ll see our quote of the post instead.';
+
+/** The one token in CP-120 rendered in mono. Split, never re-typed, so the string stays whole. */
+export const CP_120_MONO_TOKEN = 'platform.twitter.com';
+
 /** Interpolate `{token}` placeholders in a pack string without editorialising it. */
 export function fillCopy(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) =>
