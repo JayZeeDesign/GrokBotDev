@@ -6,7 +6,7 @@
 // the guard below is a belt-and-braces backstop.
 import Chip from './Chip.astro';
 import FeaturedTag from './FeaturedTag.astro';
-import { entryUrl, isoToDate, memberSummary, setupLabel, splitNamedCharacter } from '../lib/format';
+import { entryUrl, memberSummary, splitNamedCharacter } from '../lib/format';
 import type { CollectionEntry, Entry, PluginEntry, UseCaseEntry } from '../lib/types';
 
 interface Props {
@@ -38,7 +38,6 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3';
 const href = entryUrl(entry.type, entry.slug);
 const isFeatured = featured || entry.featured;
 const needsUpdate = entry.status === 'needs-update';
-const verified = entry.status !== 'deprecated' && Boolean(entry.verifiedAt);
 
 const plugin = variant === 'plugin' ? (entry as PluginEntry) : null;
 const useCase = variant === 'use-case' ? (entry as UseCaseEntry) : null;
@@ -92,15 +91,15 @@ const typeLabel = entry.type === 'use-case' ? 'use case' : entry.type;
         {useCase ? useCase.tagline : entry.tagline}
       </p>
 
+      {/* Direct round, operator: listing cards drop `verified` + setup time — both live on
+          the detail page, where the claim can carry its evidence. Cards stay taxonomy-only.
+          `needs update` KEPT: it is an integrity warning, not decoration. */}
       <div class="relative z-10 flex flex-wrap items-center gap-2">
-        {verified && entry.verifiedAt && <Chip variant="verified" date={isoToDate(entry.verifiedAt)} />}
         {needsUpdate && (
           <span class="inline-flex items-center rounded-sm px-2 py-0.5 font-mono text-xs lowercase text-warn">
             needs update
           </span>
         )}
-        {setupLabel(plugin?.setupMinutes) && <Chip variant="setup-time" label={setupLabel(plugin?.setupMinutes)!} />}
-        {setupLabel(useCase?.setupMinutes) && <Chip variant="setup-time" label={setupLabel(useCase?.setupMinutes)!} />}
         {showType && <Chip variant="type" label={typeLabel} entryType={entry.type} />}
         <Chip variant="category" label={entry.category} href={`/categories/${entry.category}/`} />
         {useCase &&
