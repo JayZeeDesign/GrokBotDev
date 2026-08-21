@@ -101,14 +101,11 @@ for (const [dir, label] of Object.entries(DIRS)) {
   }
 }
 
-// Site default + the Organization.logo raster (§6.4).
-write('dist/og/default.png', await png(card({
-  typeLabel: 'DIRECTORY',
-  name: 'Everything your Grok Bot could be doing',
-  verified: null,
-  category: null,
-})));
-
+// Site default (§6.6): the social card is now a brand-true, browser-rendered image committed
+// at public/og/default.png (scripts/gen-og-default.mjs) — REAL Geist/Inter fonts + REAL
+// family-v2 bots, which this satori/DejaVu path cannot reproduce. Astro copies public/ into
+// dist/, so dist/og/default.png already exists; do NOT regenerate it here or it clobbers the
+// good one. The Organization.logo raster (§6.4) stays satori-generated below.
 write(
   'dist/og/logo-512.png',
   await png(
@@ -123,4 +120,4 @@ write(
   )
 );
 
-console.log(`build-og: ${count} entry cards + default.png + logo-512.png`);
+console.log(`build-og: ${count} entry cards + logo-512.png (default.png is committed at public/og/default.png)`);
