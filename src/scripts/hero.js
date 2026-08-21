@@ -456,6 +456,26 @@ function build(newSeed){
 
   stage.addEventListener('touchstart', function(e){
     if(!engine || !e.changedTouches || !e.changedTouches.length) return;
+    // ── F16x — DECLINE ANY GESTURE THAT BELONGS TO SOMETHING ON TOP OF THE HERO ──
+    // The hit-test below decides purely from GEOMETRY, which is correct only while
+    // nothing overlays the stage. That is not always true: the site InstallModal's
+    // overlay lives INSIDE #content, i.e. inside #stage, so its touches BUBBLE to this
+    // listener. With the modal open its sheet sits directly over the bot cluster, so a
+    // touch on a control inside the sheet hit-tests onto a bot behind it, engages the
+    // constraint and preventDefaults — stealing the modal's own gesture and dragging an
+    // invisible bot. At 390 the sheet is full-height with every bot behind it, so that
+    // was most of the sheet: the modal could not be scrolled by finger.
+    //
+    // Latent since F3b and only reachable once F10 fixed the modal's positioning (before
+    // that a transformed ancestor mispositioned the sheet so it never covered the bots).
+    // Neither change was wrong on its own; the defect only exists where they meet.
+    //
+    // #botlayer is pointer-events:none, so when nothing overlays the hero a touch over a
+    // bot has e.target === #stage itself. If anything IS on top, e.target is that thing.
+    // So this one comparison declines the gesture for any current or FUTURE overlay,
+    // without the handler needing to know which overlays exist — deliberately not keyed
+    // off the install-modal-open class, which would fix exactly one case and rot.
+    if(e.target !== stage) return;
     var t = e.changedTouches[0];
     var B = stageBox();
     // Query.point uses world coords, which for this sim are stage-relative pixels.
