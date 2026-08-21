@@ -659,3 +659,66 @@ unchanged: `/categories/engineering/` and `/categories/engineering/agents-ops/`.
 
 Gates: validate OK (10 entries) · astro check 0/0 · build exit 0 · keyword, contrast, links,
 hub-intros, OG and audit-scripts all green.
+
+## 2026-08-21 — M6 newsletter + analytics (§9)
+
+### Waitlist endpoint
+
+`services/src/waitlist.mjs`, mounted at `POST /api/waitlist` on the services process.
+Accepts JSON (the JS path) and `application/x-www-form-urlencoded` (the no-JS native form);
+the response SHAPE is chosen by request Content-Type — JSON gets JSON, a form post gets a
+303 to `/subscribed/`, because the static site cannot read a query param at build time.
+
+Security posture, all §9/§10: `INSERT OR IGNORE` on email so a duplicate is
+**indistinguishable from a new signup** and the endpoint is not an enumeration oracle ·
+honeypot `website` non-empty → silent accept, nothing stored, byte-identical response ·
+`ip_hash` is `sha256(ip + WAITLIST_IP_SALT)`, the **raw IP is never stored** · client IP is
+the nginx/Cloudflare-resolved `CF-Connecting-IP` with a socket fallback and **no trust in
+client-supplied headers** (§9.3) · CORS is site-origin only, the opposite of the read API's
+`*` · body capped at 4 KB · per-IP sliding window (5/hour default) as the inner bound, with
+nginx `limit_req` as the outer one.
+
+**Dependency:** `better-sqlite3` in `services/` — named by §9.3, so pre-justified.
+
+### Analytics
+
+`src/scripts/analytics.ts` now loads the `@vemetric/web` SDK (§9.7: SDK, not a script tag,
+so the §10.7 CSP needs no script host — only the ingest host in `connect-src`).
+`trackPageViews: true`, `trackOutboundLinks: **false**` (editorial clicks are tracked
+explicitly as `plugin_link_click`; auto-tracking would double-count), `trackDataAttributes:
+true`. With `PUBLIC_VEMETRIC_TOKEN` unset it installs a no-op stub and never constructs
+Vemetric — that is what keeps analytics off on staging and silent in local dev.
+
+Events wired to real interactions through the sitewide `grokbotTrack` hook:
+`prompt_copy` (CopyButton), `newsletter_signup` (both the JS path and the `/subscribed/`
+no-JS landing), `tweet_embed_load` (only ever after a real click, §10.3), and
+`install_modal_open` / `install_copy` / `subscribe_copy` (InstallModal, wired at M1).
+
+### M6 exit criteria — evidence (2026-08-21, against a scratch DB at /tmp)
+
+1. **M6.1 PASS** — `POST` JSON `{"email":"test@example.com","source":"footer","website":""}`
+   → `{"ok":true}`, row count 0 → **1**. Duplicate POST of the same email → `{"ok":true}`
+   (identical response) and the count stays **1**.
+2. **M6.2 PASS** — honeypot `website` non-empty → `{"ok":true}` and the count stays **1**;
+   nothing stored.
+3. **M6.3 PASS** — over the per-IP limit returns **429** `{"ok":false,"error":"rate_limited"}`.
+   Note for the reader: by the time the dedicated burst ran, the earlier smoke calls from the
+   same IP had already consumed the 5/hour budget, so all 7 burst calls returned 429 — the
+   limit counts every POST from that IP, which is the intended behaviour.
+4. **M6.4 PASS** — the static site is unaffected by services state (proven at M4.5: with the
+   process killed, 107 pages still resolve with 0 broken links). The `NewsletterRow` island
+   catches fetch failure and shows CP-017's honest down-message; with no JS the native form
+   posts and the browser handles a 502 itself.
+5. **M6.5 PARTIAL — token-blocked, documented.** The SDK is wired, the event names are on
+   real interactions, `trackOutboundLinks` is off, and the footer Stats link is already
+   gated on `PUBLIC_STATS_URL` (renders only when set — M1). What **cannot** be done here:
+   creating the Vemetric account, obtaining `PUBLIC_VEMETRIC_TOKEN`, confirming events land
+   in the dashboard and setting that dashboard public. Those need operator credentials and
+   move to the token/launch day runbook alongside the M5 remote items.
+6. **M6.6 PASS** — form-urlencoded POST returns **`303`** with
+   `Location: /subscribed/?subscribed=1`. Invalid email on the form path returns 303 with
+   `?subscribed=0`; rate-limited returns `?subscribed=0&reason=rate_limited`.
+
+Also verified: wrong method → **405** `method_not_allowed`; invalid email on the JSON path →
+**400** `invalid_email`; stored row shows `ip_hash` as a 64-char sha256 with no raw IP
+present.

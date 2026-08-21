@@ -138,6 +138,9 @@ const fieldId = `newsletter-email-${source}`;
         if (!response.ok) throw new Error(String(response.status));
         form.classList.add('hidden');
         successEl.classList.remove('hidden');
+        // §9.7 newsletter_signup — fired on the JS path when the endpoint returns ok.
+        (window as unknown as { grokbotTrack?: (e: string, p?: Record<string, string>) => void })
+          .grokbotTrack?.('newsletter_signup', { source: payload.source });
       } catch {
         button.disabled = false;
         button.textContent = idleLabel;

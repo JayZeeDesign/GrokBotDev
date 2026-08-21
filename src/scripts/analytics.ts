@@ -1,10 +1,12 @@
 // SANCTIONED ISLAND #1 — the analytics loader, imported once by BaseLayout, sitewide.
-// M1 scope: the module, the sitewide load, and the `grokbotTrack` hook every other
-// island calls. §9.7 owns the transport (the bundled Vemetric SDK, cookieless, no PII)
-// and M6 wires it — nothing here talks to the network.
-// If PUBLIC_VEMETRIC_TOKEN is unset the module installs a no-op stub, so every
-// call site stays safe on staging and in local dev (§9.7, §2 Q10/Q11).
-
+// §9.7: the @vemetric/web npm SDK, NOT a script tag — typed API, bundled by Astro to
+// /_astro/*.js (so the §10.7 CSP needs no script host, only the ingest host in connect-src).
+//
+// If PUBLIC_VEMETRIC_TOKEN is unset the module returns before constructing Vemetric and
+// installs a no-op stub, so every trackEvent call site stays safe. That is what keeps
+// analytics off on staging and clean in local dev (§2 Q10/Q11).
+//
+// Cookieless; no PII in any event (§10.8).
 type TrackProps = Record<string, string>;
 type Tracker = (event: string, props?: TrackProps) => void;
 
@@ -15,18 +17,44 @@ declare global {
 }
 
 const token = import.meta.env.PUBLIC_VEMETRIC_TOKEN ?? '';
-
 const noop: Tracker = () => {};
 
-// The queue exists so events fired before M6's SDK wiring are never lost — the loader
-// drains it once a transport is installed.
-const queue: Array<{ event: string; props?: TrackProps }> = [];
+async function boot() {
+  if (!token) {
+    window.grokbotTrack = noop;
+    return;
+  }
 
-const enqueue: Tracker = (event, props) => {
-  queue.push({ event, props });
-  if (queue.length > 50) queue.shift();
-};
+  try {
+    const { vemetric } = await import('@vemetric/web');
+    vemetric.init({
+      token,
+      trackPageViews: true,
+      // Editorial link clicks are tracked explicitly as plugin_link_click (§9.8);
+      // auto-tracking would double-count them.
+      trackOutboundLinks: false,
+      trackDataAttributes: true,
+    });
 
-window.grokbotTrack = token ? enqueue : noop;
+    window.grokbotTrack = (event, props) => {
+      try {
+        vemetric.trackEvent(event, props ? { eventData: props } : undefined);
+      } catch {
+        /* analytics must never break a page */
+      }
+    };
+
+    // §9.2a — the no-JS path lands on /subscribed/?subscribed=1; that is the only place
+    // the query value is read, and only to fire the event. It never reaches markup.
+    const params = new URLSearchParams(window.location.search);
+    if (window.location.pathname === '/subscribed/' && params.get('subscribed') === '1') {
+      window.grokbotTrack('newsletter_signup', { source: 'no-js' });
+    }
+  } catch {
+    window.grokbotTrack = noop;
+  }
+}
+
+void boot();
 
 export {};

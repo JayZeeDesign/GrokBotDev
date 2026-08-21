@@ -103,6 +103,9 @@ const { tweetUrl, authorHandle, excerpt, postedAt, class: className = '' } = Ast
         quote.appendChild(link);
         figure.replaceChildren(quote);
         ensureWidgets();
+        // §9.7 tweet_embed_load — only ever fires on a real click (§10.3 consent model).
+        (window as unknown as { grokbotTrack?: (e: string, p?: Record<string, string>) => void })
+          .grokbotTrack?.('tweet_embed_load', { page: window.location.pathname });
         window.setTimeout(() => figure.removeAttribute('aria-busy'), 1200);
       },
       { once: true }

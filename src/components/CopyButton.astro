@@ -140,6 +140,9 @@ const { text, label = 'copy', size = 'sm', class: className = '' } = Astro.props
         button.dataset.state = 'copied';
         labelEl.textContent = 'copied ▪';
         announce(root, 'prompt copied to clipboard');
+        // §9.7 prompt_copy — the directory's core interaction.
+        (window as unknown as { grokbotTrack?: (e: string, p?: Record<string, string>) => void })
+          .grokbotTrack?.('prompt_copy', { page: window.location.pathname });
         timer = window.setTimeout(() => {
           button.dataset.state = 'idle';
           labelEl.textContent = idleLabel;

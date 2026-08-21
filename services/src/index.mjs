@@ -3,6 +3,7 @@
 // client IP resolved Cloudflare-first (§9.3/§10.9) — the engine gets no exemption (§12.7).
 import { createServer } from 'node:http';
 import { TOOLS, callTool } from './mcp.mjs';
+import { handleWaitlist } from './waitlist.mjs';
 
 const PORT = Number(process.env.SERVICES_PORT ?? 4390);
 const HOST = process.env.SERVICES_HOST ?? '127.0.0.1';
@@ -84,6 +85,10 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
   if (url.pathname === '/healthz') return send(res, 200, { ok: true });
+
+  // §9.2 — the waitlist capture. CORS is site-origin only here, the opposite of the
+  // static read API's `*` (§9.5).
+  if (url.pathname === '/api/waitlist') return handleWaitlist(req, res);
 
   if (url.pathname !== '/mcp') return send(res, 404, { error: 'not found' });
 
