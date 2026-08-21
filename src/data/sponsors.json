@@ -5,7 +5,7 @@
     "url": "https://transcriptapi.com",
     "tagline": "Audio & video to accurate transcripts in one API call.",
     "tint": "sky",
-    "icon": "transcriptapi.ico"
+    "icon": "transcriptapi.png"
   },
   {
     "slug": "generatespecs",
@@ -19,9 +19,9 @@
     "slug": "crhq",
     "name": "CRHQ",
     "url": "https://crhq.ai",
-    "tagline": "Your AI control room \u2014 agents that run the work.",
+    "tagline": "Your AI control room — agents that run the work.",
     "tint": "lilac",
-    "icon": null
+    "icon": "crhq.svg"
   },
   {
     "slug": "zillapi",
@@ -35,9 +35,9 @@
     "slug": "stayingapi",
     "name": "StayingAPI",
     "url": "https://stayingapi.com",
-    "tagline": "Agent access to booking sites \u2014 availability and price compare.",
+    "tagline": "Agent access to booking sites — availability and price compare.",
     "tint": "blush",
-    "icon": null
+    "icon": "stayingapi.svg"
   },
   {
     "slug": "recapio",
@@ -45,13 +45,13 @@
     "url": "https://recapio.com",
     "tagline": "Meeting recaps and action items, automatically.",
     "tint": "sky",
-    "icon": "recapio.ico"
+    "icon": "recapio.png"
   },
   {
     "slug": "youtube2transcript",
     "name": "YouTube2Transcript",
     "url": "https://youtube2transcript.com",
-    "tagline": "Any YouTube video to clean, usable text \u2014 instantly.",
+    "tagline": "Any YouTube video to clean, usable text — instantly.",
     "tint": "sand",
     "icon": null
   }

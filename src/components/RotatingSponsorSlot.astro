@@ -61,6 +61,7 @@ import { SPONSORS, sponsorHref, sponsorIconPath } from '../lib/sponsors';
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-inline-size: 0;
   }
   .sponsorSlot__eyebrow {
     font-family: var(--font-mono);
@@ -72,6 +73,12 @@ import { SPONSORS, sponsorHref, sponsorIconPath } from '../lib/sponsors';
   }
   .sponsorSlot__stack {
     display: grid;
+    /* Operator: a longer card was pushing the PAGE into horizontal scroll. A grid `auto`
+       track sizes to the widest card's max-content, so a long nowrap tagline widened the
+       whole stack. Pinning the single column to minmax(0, 1fr) makes it exactly the
+       container width (min 0 = free to shrink), so cards can never exceed it — the tagline
+       wraps instead. */
+    grid-template-columns: minmax(0, 1fr);
   }
   .sponsorSlot__card {
     grid-area: 1 / 1;
@@ -126,14 +133,20 @@ import { SPONSORS, sponsorHref, sponsorIconPath } from '../lib/sponsors';
     font-size: var(--text-sm);
     font-weight: 600;
     color: var(--color-text);
+    overflow-wrap: anywhere;
   }
   .sponsorSlot__tag {
     font-size: var(--text-xs);
     line-height: 1.4;
     color: var(--color-text-muted);
+    /* Wrap to at most two lines (no one-line ellipsis) so a longer tagline reads well and
+       still can't grow the card horizontally. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
   .sponsorSlot__cta {
     margin-inline-start: auto;
