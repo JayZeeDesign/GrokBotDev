@@ -22,7 +22,7 @@ author:
   url: https://x.com/Av1dlive
   platform: x
 replicability: "The exact prompt Avid shared for a Grok Bot chief of staff — it reads your own machine to build the team, so it adapts itself. Just run it, keep the human gates on, and point it at the config paths that match your setup."
-featured: false
+featured: true
 added_at: '2026-08-21T09:44:00Z'
 updated_at: '2026-08-21T09:44:04Z'
 verified_at: '2026-08-21T09:44:04Z'

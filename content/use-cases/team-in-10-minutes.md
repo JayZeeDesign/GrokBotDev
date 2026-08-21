@@ -22,7 +22,7 @@ author:
   url: https://x.com/zodchiii
   platform: x
 replicability: "Reconstructed from @zodchiii's guide to building a Grok Bot team in under 10 minutes. The prompt is a Curator reconstruction of the single Chief-of-Staff entry point he describes — adapt the team it coordinates and the description to your own work."
-featured: false
+featured: true
 added_at: '2026-08-21T12:31:00Z'
 updated_at: '2026-08-21T12:31:30Z'
 verified_at: '2026-08-21T12:31:30Z'

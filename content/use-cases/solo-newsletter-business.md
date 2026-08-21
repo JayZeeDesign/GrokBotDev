@@ -18,7 +18,7 @@ source_tweets:
   excerpt: "My friend Billy runs his whole newsletter business on Grok Bot agents, and I think we're about to see 100,000+ businesses like his."
   posted_at: '2026-08-21T20:40:26Z'
 replicability: "Reconstructed from Greg Isenberg's thread describing his friend Billy's newsletter business run on Grok Bot agents. The prompt is a Curator reconstruction of that setup — adapt the roles, cadence, and connected tools to your own newsletter and stack."
-featured: false
+featured: true
 added_at: '2026-08-21T20:00:00Z'
 updated_at: '2026-08-21T20:40:26Z'
 verified_at: '2026-08-21T20:40:26Z'

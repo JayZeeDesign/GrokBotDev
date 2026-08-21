@@ -22,7 +22,7 @@ author:
   url: https://x.com/vladdubchak_x
   platform: x
 replicability: "Maxfusion open-sourced this as a real skill — github.com/holy-templar/marketing-agi. Give Grok Bot the repo link to install it, then fill in brand-context so every module writes for your brand. Adapt the modules you actually use to your own marketing."
-featured: false
+featured: true
 added_at: '2026-08-21T12:00:00Z'
 updated_at: '2026-08-21T12:00:01Z'
 verified_at: '2026-08-21T12:00:01Z'
