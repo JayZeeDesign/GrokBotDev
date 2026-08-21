@@ -1,0 +1,165 @@
+---
+// §4.3.12 + §6.2 — category and subcategory hubs on one template.
+// Anatomy: breadcrumb · H1 (§6.3 pattern) · hand-written intro · StatBar inline (plugins +
+// use cases only) · FilterBar (the other facets) · mixed entry grid · sibling cross-links ·
+// EmptyState when thin · Pagination · NewsletterRow.
+// Thin-hub rule (§6.2): fewer than 3 non-deprecated entries → noindex,follow + excluded
+// from the sitemap, but fully built and internally linked.
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import StatBar from '../../../components/StatBar.astro';
+import FilterBar from '../../../components/FilterBar.astro';
+import EntryCard from '../../../components/EntryCard.astro';
+import EmptyState from '../../../components/EmptyState.astro';
+import Chip from '../../../components/Chip.astro';
+import NewsletterRow from '../../../components/NewsletterRow.astro';
+import categories from '../../../data/categories.json';
+import { hubEligible, integrationSlug, integrationsOf, kindOf, sortForIndex, urlOf } from '../../../lib/entries';
+import {
+  breadcrumbList,
+  categoryHubDescription,
+  categoryHubTitle,
+  collectionPage,
+  itemList,
+  subcategoryHubDescription,
+  subcategoryHubTitle,
+} from '../../../lib/seo';
+import { hubIntro } from '../../../lib/hubIntros';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const category of categories) {
+    paths.push({ params: { cat: category.slug, sub: undefined }, props: { catSlug: category.slug, subSlug: null } });
+    for (const sub of category.subcategories) {
+      paths.push({
+        params: { cat: category.slug, sub: sub.slug },
+        props: { catSlug: category.slug, subSlug: sub.slug },
+      });
+    }
+  }
+  return paths;
+}
+
+const { catSlug, subSlug } = Astro.props;
+const category = categories.find((c) => c.slug === catSlug)!;
+const sub = subSlug ? category.subcategories.find((s) => s.slug === subSlug)! : null;
+
+const pool = await hubEligible();
+const entries = sortForIndex(
+  pool.filter((e) => e.data.category === catSlug && (!subSlug || e.data.subcategory === subSlug))
+);
+
+const url = sub ? `/categories/${catSlug}/${sub.slug}/` : `/categories/${catSlug}/`;
+const h1 = sub
+  ? `${sub.label} Grok Bots — ${category.label}`
+  : `Grok Bot plugins & use cases for ${category.label}`;
+const title = sub ? subcategoryHubTitle(sub.label, category.label) : categoryHubTitle(category.label);
+const description = sub
+  ? subcategoryHubDescription(sub.label, category.label)
+  : categoryHubDescription(category.label);
+
+const intro = hubIntro(sub ? `categories/${catSlug}--${sub.slug}` : `categories/${catSlug}`);
+const isThin = entries.length < 3;
+
+const stats = {
+  plugins: entries.filter((e) => kindOf(e) === 'plugin').length,
+  useCases: entries.filter((e) => kindOf(e) === 'use-case').length,
+  collections: 0,
+  generatedAt: new Date().toISOString(),
+};
+
+// The *other* facets (§4.3.12 region 4): integrations present among these entries.
+const integrationCounts = new Map<string, number>();
+for (const entry of entries) {
+  for (const tool of integrationsOf(entry)) {
+    integrationCounts.set(tool, (integrationCounts.get(tool) ?? 0) + 1);
+  }
+}
+const facetOptions = {
+  integrations: [...integrationCounts.entries()].map(([label, count]) => ({
+    label,
+    href: `/integrations/${integrationSlug(label)}/`,
+    count,
+    current: false,
+  })),
+  types: [
+    { label: 'plugin', href: '/plugins/', count: stats.plugins, current: false },
+    { label: 'use case', href: '/use-cases/', count: stats.useCases, current: false },
+  ],
+};
+
+const crumbs = sub
+  ? [
+      { label: 'home', href: '/' },
+      { label: 'categories', href: '/categories/' },
+      { label: category.label, href: `/categories/${catSlug}/` },
+      { label: sub.label },
+    ]
+  : [{ label: 'home', href: '/' }, { label: 'categories', href: '/categories/' }, { label: category.label }];
+
+const graph = [
+  collectionPage(url, title, description),
+  breadcrumbList(crumbs),
+  itemList(entries.map((e) => ({ url: urlOf(e), name: e.data.name }))),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  robots={isThin ? 'noindex,follow' : undefined}
+  graph={graph}
+>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">{h1}</h1>
+      {intro && <div class="max-w-prose text-base text-text-muted" set:html={intro} />}
+      <StatBar stats={stats} variant="inline" hideCollections />
+    </header>
+
+    {
+      facetOptions.integrations.length > 0 && (
+        <FilterBar facets={['integration', 'type']} options={facetOptions} clearHref={url} />
+      )
+    }
+
+    {
+      entries.length > 0 ? (
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+          {entries.map((entry) => (
+            <EntryCard entry={entry.data as never} variant={kindOf(entry)} showType />
+          ))}
+        </div>
+      ) : (
+        <EmptyState variant="hub" />
+      )
+    }
+
+    {
+      !sub && (
+        <nav aria-label="subcategories" class="flex flex-wrap items-center gap-2">
+          {category.subcategories.map((child) => (
+            <Chip
+              variant="category"
+              label={child.label}
+              href={`/categories/${catSlug}/${child.slug}/`}
+            />
+          ))}
+        </nav>
+      )
+    }
+
+    <nav aria-label="other categories" class="flex flex-wrap items-center gap-2">
+      {
+        categories
+          .filter((other) => other.slug !== catSlug)
+          .map((other) => (
+            <Chip variant="category" label={other.label} href={`/categories/${other.slug}/`} />
+          ))
+      }
+    </nav>
+
+    <NewsletterRow source="hub" />
+  </div>
+</BaseLayout>

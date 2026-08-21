@@ -1,15 +1,99 @@
 ---
+// §4.3.1 Home. Regions: [2] hero (A4 physics island) · [3] StatBar full · [4] featured ·
+// [5] "what's in here" lane tiles · [6] latest · [7] NewsletterRow.
+// Copy: CP-113/CP-002/CP-003/CP-004 live inside HeroStage's #content (A4 requirement 2);
+// CP-007 (StatBar, KEEP) · CP-008 (KEEP) · CP-009 "what's in here" · CP-010 · CP-011 (KEEP)
+// · CP-012 · CP-013 (KEEP). Meta: CP-072 title, CP-073 description.
+// No `data-pagefind-body` here — §4.2.8a indexes entry detail pages + /plugin-builder/ only.
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroStage from '../components/HeroStage.astro';
+import StatBar from '../components/StatBar.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import EntryCard from '../components/EntryCard.astro';
+import NewsletterRow from '../components/NewsletterRow.astro';
+import { allListable, kindOf, siteStats, sortForIndex, sortForLatest, urlOf } from '../lib/entries';
+import { META, collectionPage, itemList } from '../lib/seo';
+
+const stats = await siteStats();
+const entries = await allListable();
+
+const featured = sortForIndex(entries.filter((e) => e.data.featured)).slice(0, 3);
+const latest = sortForLatest(entries).slice(0, 3);
+
+// CP-010 / CP-012 carry a live `{n}` — never hard-code a number in copy (pack §1 note).
+const lanes = [
+  {
+    href: '/plugins/',
+    title: 'plugins',
+    body: `every plugin people ship for Grok Bot, in one place. ${stats.plugins} →`,
+  },
+  {
+    href: '/use-cases/',
+    title: 'awesome use cases',
+    body: `what people actually built, with receipts. ${stats.useCases} →`,
+  },
+  {
+    href: '/collections/',
+    title: 'collections',
+    body: `whole setups, not single prompts. ${stats.collections} →`,
+  },
+];
+
+const graph = [
+  collectionPage('/', META.home.title, META.home.description),
+  itemList([...featured, ...latest].map((e) => ({ url: urlOf(e), name: e.data.name }))),
+];
 ---
 
-<BaseLayout title="grokbot.dev" description="A community directory for what Grok Bot can do.">
-  <section class="container-page py-24 md:py-32" data-pagefind-body>
-    <p class="mb-4 font-mono text-sm text-text-muted">community index</p>
-    <h1 class="display-track max-w-4xl font-display text-4xl font-semibold text-text md:text-5xl">
-      Everything your Grok Bot could be doing
-    </h1>
-    <p class="mt-6 max-w-2xl text-base text-text-muted md:text-lg">
-      The base layout is live: header, rails-ready page shell, and footer chrome are wired to the M0 token system.
-    </p>
-  </section>
+<BaseLayout title={META.home.title} description={META.home.description} graph={graph}>
+  <HeroStage />
+
+  <div class="container-page flex flex-col gap-12 py-12 md:gap-16 md:py-16">
+    <StatBar stats={stats} variant="full" />
+
+    {
+      featured.length > 0 && (
+        <section class="flex flex-col gap-6">
+          <SectionHeading title="featured" action={{ label: 'view all →', href: '/plugins/' }} />
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+            {featured.map((entry) => (
+              <EntryCard entry={entry.data as never} variant={kindOf(entry)} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="flex flex-col gap-6">
+      <SectionHeading title="what's in here" />
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+        {
+          lanes.map((lane) => (
+            <a
+              href={lane.href}
+              class="flex flex-col gap-2 rounded-sm border border-border bg-surface p-4 transition-[background-color,border-color] duration-150 hover:border-border-strong hover:bg-surface-raised"
+            >
+              <span class="font-mono text-sm lowercase text-text">{lane.title}</span>
+              <span class="text-base text-text-muted">{lane.body}</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    {
+      latest.length > 0 && (
+        <section class="flex flex-col gap-6">
+          <SectionHeading title="latest" action={{ label: 'view all →', href: '/use-cases/' }} />
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+            {latest.map((entry) => (
+              <EntryCard entry={entry.data as never} variant={kindOf(entry)} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <NewsletterRow source="home" />
+  </div>
 </BaseLayout>

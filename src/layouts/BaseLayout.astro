@@ -1,8 +1,12 @@
 ---
+// The one page shell. Owns the §6 head contract: self-referencing absolute canonical,
+// robots, OG/Twitter, the §6.4 JSON-LD @graph, and §6.10 feed autodiscovery.
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import Footer from '../components/Footer.astro';
 import { ENABLE_RAILS } from '../lib/buildFlags';
+import { siteStats } from '../lib/entries';
+import { SITE, baseGraph } from '../lib/seo';
 import geistDisplayUrl from '@fontsource/geist/files/geist-latin-600-normal.woff2?url';
 import interBodyUrl from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
 import geistMonoUrl from '@fontsource/geist-mono/files/geist-mono-latin-400-normal.woff2?url';
@@ -10,20 +14,30 @@ import geistMonoUrl from '@fontsource/geist-mono/files/geist-mono-latin-400-norm
 interface Props {
   title?: string;
   description?: string;
-  /** Dev-only and thin surfaces set their own robots directive (§6.2). */
+  /** Thin hubs, /search/, /subscribed/, deprecated entries and /dev/ set this (§6.2). */
   robots?: string;
+  /** Absolute OG image URL; defaults to the site card (§6.6). */
+  ogImage?: string;
+  /** Page-type members of the §6.4 @graph — the sitewide two are always added. */
+  graph?: Record<string, unknown>[];
+  /** Lane feed for autodiscovery on lane index pages (§6.10). */
+  laneFeed?: string;
 }
 
 const {
   title = 'grokbot.dev',
   description = 'A community directory for what Grok Bot can do.',
   robots,
+  ogImage = `${SITE}/og/default.png`,
+  graph = [],
+  laneFeed,
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
-const generatedAt = new Date().toISOString();
+const canonical = `${SITE}${currentPath}`;
 const statsUrl = import.meta.env.PUBLIC_STATS_URL ?? '';
-const stats = { plugins: 0, useCases: 0, collections: 0, generatedAt };
+const stats = await siteStats();
+const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...baseGraph(), ...graph] });
 ---
 
 <!doctype html>
@@ -34,12 +48,28 @@ const stats = { plugins: 0, useCases: 0, collections: 0, generatedAt };
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
     {robots && <meta name="robots" content={robots} />}
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="grokbot.dev" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" />
+    <link rel="alternate" type="application/rss+xml" title="grokbot.dev" href={`${SITE}/rss.xml`} />
+    {laneFeed && <link rel="alternate" type="application/rss+xml" title={`grokbot.dev — ${laneFeed}`} href={`${SITE}/${laneFeed}/rss.xml`} />}
+
     <link rel="preload" href={geistDisplayUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={interBodyUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={geistMonoUrl} as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
+    <script type="application/ld+json" is:inline set:html={jsonLd} />
     {/* SANCTIONED ISLAND #1 — analytics loader, once, sitewide (§4.2 client-JS policy). */}
     <script>
       import '../scripts/analytics';

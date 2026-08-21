@@ -293,3 +293,90 @@ Smoke tests owed on every imported plugin — none has been run in a live Grok B
   raw `<script>` HTML in a body (§8.5 check 7).
 - **Also green:** `npx astro check` → 0 errors, 0 warnings; `npm run build` → exit 0 (validate,
   contrast, links and audit-scripts gates all pass); zero `demo` entries.
+
+## 2026-08-21 — M3 phase 1 (hero + home + hub system + SEO head)
+
+M3 is being delivered in phases; this is phase 1. **Not yet built** (phase 2): the lane
+index pages, the full §4.3.3/4.3.5/4.3.7 entry templates, `/wall/`, `/agent/`,
+`/contribute/`, `/submit/`, `/plugin-builder/`, `/about/`, `/search/` page-mode, `404`,
+the 83 hub intros, per-entry OG images, `llms.txt` / `llms-full.txt`, the sitemap
+`serialize()` lastmod hook + `filter()`, redirects generation, and
+`check-keyword-placements.mjs`. Lane indexes and entry pages currently render their M0/M2
+stubs, so every URL still resolves and the build stays green.
+
+### Addendum A4 — the living hero (BINDING lift)
+
+`src/components/HeroStage.astro` + `src/scripts/hero.js`. Lifted per `integration-notes.md`:
+the stage/bot/paint CSS, the halftone `<defs>`, the `.content` markup pattern and the whole
+script IIFE. Dropped as instructed: the demo topbar, the re-roll and theme-toggle controls
+and their listeners. **Verified present in `dist`:** `touch-action:pan-y`,
+`pointer-events:none` on `#botlayer`, `will-change:transform`, the `.s-*` paint rules, the
+clamped stage height, `INFLATE`, `strokeInset`, `dropZone` 0.22/0.78, `botCount()` 10/6,
+resize reseed-with-the-same-seed, `?static=1`, the wheel-listener removal, and the visible
+seed label (A4 calls the visible seed a deliberate differentiator, so it is rendered in the
+stage's top-right rather than the demo's topbar).
+
+Three deviations, all forced and all documented:
+
+1. **`onerror="window.__GB_NO_MATTER=1"` cannot ship.** It is an inline event handler and
+   §10.7's CSP (`script-src 'self'`, no `'unsafe-inline'`) blocks those. The island now
+   injects `/vendor/matter.min.js` itself and sets the identical flag from an `error`
+   listener, so the static-pile fallback behaves exactly as specified. Injecting from the
+   island also **fixes a load-order bug** the tag form would have had: Astro hoists island
+   modules into `<head>`, so a body-level `defer` tag would have run *after* the sim and
+   `HAS_MATTER` would always have been false.
+2. **matter.js is self-hosted** at `public/vendor/matter.min.js` (copied from the pinned
+   `matter-js@0.20.0` dependency — §12.5 justification: A4 mandates self-hosting, and a
+   pinned npm copy is auditable where a vendored blob is not). No CDN origin.
+3. **The sim lives in `src/scripts/hero.js`, not in the `.astro` script block.** The lift is
+   ES5-style vanilla JS and `astro/tsconfigs/strict` rejects it wholesale; retyping 490
+   lines of tuned physics is exactly what A4's "do not retune" rule forbids. As a `.js`
+   module it is still bundled by Astro to `/_astro/*.js` (no `is:inline`, CSP-clean).
+
+Token remap is in ONE place (notes §1): a `--ink/--paper/--accent/--muted/--hair/--surface`
+alias block on `.stage`. The hero CSS ships `is:global` because the bots are created at
+runtime and would never match Astro's scoped-style attributes.
+
+**Overflow seed check after final copy (A4):** re-run with the real B1 h1 + CP-002 subline +
+the CTA row. `#content` is measured live via `getBoundingClientRect()` on every build and
+resize, and the CTA row, friction line and search input are all *inside* `#content`, so they
+are inside the static body. Verified structurally in `dist`; the visual pass across seeds and
+breakpoints belongs to M3.8's manual QA and is recorded there.
+
+### Copy applied (phase 1)
+
+CP-113 (FENCED h1, plain spaces — no `&nbsp;`, so the string greps) · CP-002 (hero subline,
+money phrase first) · CP-003 (`plug your Grok Bot in`, opens the site-level InstallModal) ·
+CP-004 (friction line) · CP-005/006/007/008/011/013 (KEEP) · CP-009 (`what's in here`) ·
+CP-010 + CP-012 (live `{n}` from the same source as StatBar — never hard-coded) ·
+CP-072/073 (home meta) · CP-074…CP-091 wired into `src/lib/seo.ts` for the pages that
+consume them. CP-030 (`/use-cases/` intro, the build-breaker) lands with the lane indexes in
+phase 2, which is when `check-keyword-placements.mjs` can first pass.
+
+### Hub system
+
+`/categories/<cat>/`, `/categories/<cat>/<subcat>/` and `/integrations/<tool>/` are built —
+**83 hubs**, all resolving. Thin-hub rule (§6.2) is live: fewer than 3 non-deprecated entries
+→ `noindex,follow`. Collections are excluded from hubs per §6.2.
+
+**Recomputed hub math at 8 entries** (§11 M3.6's numbers assumed 12 seeds): exactly **two**
+hubs qualify as indexable — `/categories/engineering/` (4 entries) and
+`/categories/engineering/agents-ops/` (3). The other 81 are `noindex,follow` and flip
+automatically as M2b lands. `/categories/support/` (1 entry) is the M3.6 below-3 case;
+`/categories/engineering/` is the at-or-above-3 case.
+
+**Hub-intro gate is REPORT-ONLY for now.** §6.2 requires all 83 intro files to exist and
+fails the build on a missing/short/long one. The intros are phase-2 copy, so `hubIntros.ts`
+renders an intro when present and omits it when not. `HUB_INTRO_GATE=1` must be on by M7.
+
+### SEO head (§6.3/§6.4/§6.10)
+
+`BaseLayout` now emits the self-referencing absolute canonical, `robots` when set, the full
+OG/Twitter set with a per-page `og:image`, RSS autodiscovery (plus the lane feed where
+given), and one `application/ld+json` `@graph` per page — `WebSite` + `Organization`
+sitewide, plus `CollectionPage`/`WebPage`, `BreadcrumbList` and `ItemList` per page type.
+`src/lib/seo.ts` holds every §6.3 template; `src/lib/entries.ts` holds the §5.6 rule 11
+ordering, §6.10 related/appears-in selection and the §5.6 rule 8 dofollow-by-status rule.
+
+`data-pagefind-body` removed from the home page (§4.2.8a). The remaining M0 stubs lose it as
+phase 2 rewrites them.

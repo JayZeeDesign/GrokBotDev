@@ -1,0 +1,201 @@
+---
+// Addendum A4 (BINDING) — the living hero. Lifted from
+// `assets/hero-animation/hero-demo.html` per `integration-notes.md`: the stage/bot/paint
+// CSS, the halftone <defs>, the `.content` markup pattern and the entire script IIFE.
+// Dropped, as the notes instruct: the demo topbar, the re-roll and theme-toggle controls
+// and their listeners. Kept, as the notes require: INFLATE 1.10, strokeInset sw/2,
+// dropZone 0.22/0.78, `touch-action: pan-y`, the wheel-listener removal, 10 bots desktop /
+// 6 under 720px, resize reseed-with-the-same-seed, the `?static=1` flag, and the
+// deterministic static pile as a FIRST-CLASS path (reduced motion, no-JS, no-matter).
+//
+// DOM contract (notes §2): #stage is position:relative + overflow:hidden with a real
+// height; #botlayer is pointer-events:none at z-index 1; #content is measured into a
+// static physics body, so EVERYTHING that must never be covered lives inside #content.
+//
+// Token remap (notes §1) happens in ONE place — the `.stage` alias block below. The bots
+// read --ink/--paper/--accent and nothing else.
+//
+// matter.js is self-hosted at /vendor/matter.min.js (no CDN origin). The demo's
+// `onerror="window.__GB_NO_MATTER=1"` attribute is an inline event handler, which §10.7's
+// CSP (`script-src 'self'`, no 'unsafe-inline') would block — the script's own
+// `typeof window.Matter !== 'undefined'` guard already produces the identical fallback,
+// so the attribute is dropped and the static pile still renders. See BUILD-NOTES.
+//
+// Copy: CP-113 (FENCED h1) · CP-002 (subline, money phrase) · CP-003 (primary CTA) ·
+// CP-004 (friction line) · CP-005 + CP-006 (KEEP).
+import SearchInput from './SearchInput.astro';
+import Button from './Button.astro';
+import InstallModal from './InstallModal.astro';
+import { CP_113_HOME_H1 } from '../lib/copy';
+
+const SUBLINE =
+  'ready-to-use Grok Bot prompts, plugins and collections, all in one place. plug your Bot in and it keeps its own list fresh.';
+---
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="gbHalftone" width="11" height="11" patternUnits="userSpaceOnUse">
+    <circle cx="2.9" cy="2.9" r="2.3"/><circle cx="8.4" cy="8.4" r="2.3"/>
+  </pattern>
+</defs></svg>
+
+<section class="stage" id="stage" aria-label="Animated bot cluster">
+  <div class="botlayer" id="botlayer" aria-hidden="true"></div>
+
+  <div class="content" id="content">
+    <h1>{CP_113_HOME_H1}</h1>
+    <p class="sub">{SUBLINE}</p>
+
+    <div class="hero-actions">
+      <InstallModal variant="site" id="site" renderTrigger={true} triggerLabel="plug your Grok Bot in" />
+      <Button variant="outline" href="/plugins/" label="browse plugins" />
+    </div>
+
+    <p class="hero-friction">copy one prompt. your Bot does the rest.</p>
+
+    <div class="hero-search">
+      <SearchInput mode="link" />
+    </div>
+  </div>
+
+  <span class="hero-seed" id="seedLabel">assembly ····</span>
+  <div class="hint" id="hint">drag a bot · they watch your cursor</div>
+</section>
+
+<style is:global>
+/* ---------- stage ---------- */
+.stage{
+  position:relative; width:100%;
+  height:clamp(520px, 82vh, 780px);
+  overflow:hidden;
+  touch-action:pan-y;
+  cursor:grab;
+}
+.stage.dragging{cursor:grabbing}
+
+/* bot layer sits *behind* the text block so text is always legible,
+   but physics guarantees they never overlap it anyway. */
+.botlayer{position:absolute; inset:0; z-index:1; pointer-events:none}
+.bot{
+  position:absolute; left:0; top:0;
+  transform-origin:50% 50%;
+  will-change:transform;
+  backface-visibility:hidden;
+}
+.bot svg{display:block; overflow:visible}
+.bot .eyes{transform-box:fill-box; transform-origin:center}
+
+/* fill / stroke driven purely by CSS vars => auto-inverts with theme */
+.s-solid{fill:var(--ink); stroke:none}
+.s-solid .eye{fill:var(--paper)}
+.s-solid .rt{stroke:var(--ink)}          /* rounded-triangle corner stroke = its own fill */
+.s-accent{fill:var(--accent); stroke:none}
+.s-accent .eye{fill:var(--paper)}
+.s-accent .rt{stroke:var(--accent)}
+.s-outline{fill:none; stroke:var(--ink)}
+.s-outline .eye{fill:var(--ink); stroke:none}
+.s-halftone{fill:url(#gbHalftone); stroke:var(--ink)}
+.s-halftone .eye{fill:var(--ink); stroke:none}
+#gbHalftone circle{fill:var(--ink)}
+
+/* ---------- hero content (a static physics body) ---------- */
+.content{
+  position:absolute; z-index:3;
+  left:50%; transform:translateX(-50%);
+  /* sits ~6.5vh higher than the first cut — the pile reads as a group ABOVE the
+     type rather than crowding its shoulders. Its live rect is re-measured into a
+     static body on every build/resize, so the sim follows this value. */
+  bottom:clamp(74px,12.5vh,128px);
+  width:min(880px, calc(100% - 40px));
+  text-align:center;
+  pointer-events:auto;
+}
+.stage .content h1{
+  margin:0 0 14px;
+  font-size:clamp(36px,5.6vw,66px);
+  line-height:.97; letter-spacing:-.045em; font-weight:700;
+}
+.stage .content .sub{margin:0 auto 22px; max-width:520px; color:var(--muted); font-size:clamp(14px,1.6vw,16.5px); line-height:1.5}
+.search{
+  display:flex; align-items:center; gap:10px;
+  background:var(--surface); border:1px solid var(--hair);
+  border-radius:999px; padding:14px 20px; margin:0 auto 16px;
+  max-width:520px; font-family:var(--mono); font-size:14.5px; color:var(--muted);
+  text-align:left;
+}
+.search .cursor{
+  margin-left:auto; width:9px; height:19px; border-radius:2px;
+  background:var(--accent); animation:blink 1.15s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+.chips{display:flex; flex-wrap:wrap; gap:8px; justify-content:center}
+.chip{
+  font:500 12px/1 var(--mono); color:var(--muted);
+  border:1px solid var(--hair); border-radius:999px; padding:7px 13px;
+}
+@media(max-width:640px){ .search{padding:12px 16px; font-size:13px} .chips{display:none} }
+
+.hint{
+  position:absolute; z-index:4; left:50%; transform:translateX(-50%);
+  bottom:8px; font:500 10.5px/1 var(--mono); letter-spacing:.09em;
+  color:var(--muted); opacity:.75; text-transform:uppercase; white-space:nowrap;
+}
+@media(max-width:640px){ .hint{display:none} }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  .stage *{animation:none !important; transition:none !important}
+  .search .cursor{animation:none}
+}
+
+/* ---------- token remap (integration-notes §1: remap in ONE place) ---------- */
+.stage{
+  --ink: var(--color-text);
+  --paper: var(--color-bg);
+  --accent: var(--color-accent);
+  --muted: var(--color-text-muted);
+  --hair: var(--color-border);
+  --surface: var(--color-surface);
+  --sans: var(--font-sans);
+  --mono: var(--font-mono);
+}
+
+/* ---------- real hero content (replaces the demo's fake search + chips) ---------- */
+.stage .content .hero-actions{
+  display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:0 0 12px;
+}
+.stage .content .hero-friction{
+  margin:0 0 16px; font-family:var(--mono); font-size:var(--text-xs);
+  line-height:1rem; color:var(--muted);
+}
+.stage .content .hero-search{ max-width:520px; margin:0 auto; text-align:left; }
+.stage .hero-seed{
+  position:absolute; z-index:4; right:16px; top:16px;
+  font:500 11px/1 var(--mono); letter-spacing:.06em; color:var(--muted); opacity:.75;
+}
+@media(max-width:640px){ .stage .hero-seed{display:none} }
+
+</style>
+
+<script>
+  // matter.js is SELF-HOSTED at /vendor/matter.min.js — no CDN origin (A4).
+  // The demo's `onerror="window.__GB_NO_MATTER=1"` is an inline event handler, which
+  // §10.7's CSP (`script-src 'self'`, no 'unsafe-inline') blocks — so the same flag is
+  // set from JS here, preserving the static-pile fallback exactly. Injecting it from the
+  // island also guarantees load order: the sim never boots before Matter is defined.
+  const ensureMatter = () =>
+    new Promise<void>((resolve) => {
+      if ((window as unknown as { Matter?: unknown }).Matter) return resolve();
+      const tag = document.createElement('script');
+      tag.src = '/vendor/matter.min.js';
+      tag.defer = true;
+      tag.addEventListener('load', () => resolve());
+      tag.addEventListener('error', () => {
+        (window as unknown as { __GB_NO_MATTER?: number }).__GB_NO_MATTER = 1;
+        resolve();
+      });
+      document.head.appendChild(tag);
+    });
+
+  await ensureMatter();
+  await import('../scripts/hero.js');
+</script>

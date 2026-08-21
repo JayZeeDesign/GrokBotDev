@@ -1,0 +1,107 @@
+---
+// §4.3.12 + §6.2 — integration hubs. Identical to the category hub minus the subcategory
+// row, plus the tool's canonical name and homepage from `src/data/integrations.json`.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import StatBar from '../../components/StatBar.astro';
+import EntryCard from '../../components/EntryCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import Chip from '../../components/Chip.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import integrations from '../../data/integrations.json';
+import categories from '../../data/categories.json';
+import { hubEligible, integrationSlug, integrationsOf, kindOf, sortForIndex, urlOf } from '../../lib/entries';
+import { breadcrumbList, collectionPage, integrationHubDescription, integrationHubTitle, itemList } from '../../lib/seo';
+import { hubIntro } from '../../lib/hubIntros';
+
+export async function getStaticPaths() {
+  return integrations.map((tool) => ({
+    params: { tool: integrationSlug(tool.canonical_name) },
+    props: { tool },
+  }));
+}
+
+const { tool } = Astro.props;
+const pool = await hubEligible();
+const entries = sortForIndex(pool.filter((e) => integrationsOf(e).includes(tool.canonical_name)));
+
+const url = `/integrations/${integrationSlug(tool.canonical_name)}/`;
+const title = integrationHubTitle(tool.canonical_name);
+const description = integrationHubDescription(tool.canonical_name);
+const intro = hubIntro(`integrations/${integrationSlug(tool.canonical_name)}`);
+const isThin = entries.length < 3;
+
+const stats = {
+  plugins: entries.filter((e) => kindOf(e) === 'plugin').length,
+  useCases: entries.filter((e) => kindOf(e) === 'use-case').length,
+  collections: 0,
+  generatedAt: new Date().toISOString(),
+};
+
+// §6.10: an integration hub cross-links the category hubs represented among its entries.
+const catSlugs = [...new Set(entries.map((e) => e.data.category))];
+
+const crumbs = [
+  { label: 'home', href: '/' },
+  { label: 'integrations', href: '/integrations/' },
+  { label: tool.canonical_name },
+];
+
+const graph = [
+  collectionPage(url, title, description),
+  breadcrumbList(crumbs),
+  itemList(entries.map((e) => ({ url: urlOf(e), name: e.data.name }))),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  robots={isThin ? 'noindex,follow' : undefined}
+  graph={graph}
+>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">
+        Grok Bot prompts &amp; plugins for {tool.canonical_name}
+      </h1>
+      {intro && <div class="max-w-prose text-base text-text-muted" set:html={intro} />}
+      <p class="font-mono text-sm text-text-muted">
+        signs in with {tool.auth_type} ·
+        <a href={tool.url} target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-accent-text">
+          {tool.canonical_name} ↗
+        </a>
+      </p>
+      <StatBar stats={stats} variant="inline" hideCollections />
+    </header>
+
+    {
+      entries.length > 0 ? (
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+          {entries.map((entry) => (
+            <EntryCard entry={entry.data as never} variant={kindOf(entry)} showType />
+          ))}
+        </div>
+      ) : (
+        <EmptyState variant="hub" />
+      )
+    }
+
+    {
+      catSlugs.length > 0 && (
+        <nav aria-label="categories here" class="flex flex-wrap items-center gap-2">
+          {catSlugs.map((slug) => (
+            <Chip
+              variant="category"
+              label={categories.find((c) => c.slug === slug)?.label ?? slug}
+              href={`/categories/${slug}/`}
+            />
+          ))}
+        </nav>
+      )
+    }
+
+    <NewsletterRow source="hub" />
+  </div>
+</BaseLayout>
