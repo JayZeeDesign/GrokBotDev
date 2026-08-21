@@ -1,13 +1,24 @@
 ---
-// §4.2.16 TweetEmbed — SANCTIONED ISLAND #3, click-to-load ONLY (§10.3 / Ruling 5).
-// ZERO third-party requests occur before a user click: no IntersectionObserver, no
-// scroll/proximity trigger, no x.com markup in the initial HTML. `unloaded` is the
-// default AND permanent state until the user clicks.
-// The styled quote card is the permanent rendering when JS is off, when widgets.js
-// fails, or before a click — it must look finished, not broken.
-// Copy CP-034 (KEEP, bundle): `load tweet from x` · `@{handle} on x ↗`.
-import { CP_034_TWEET_LOAD_LABEL } from '../lib/copy';
-
+// §4.2.16 TweetEmbed — SANCTIONED ISLAND #3.
+//
+// ── F5 (operator, Stage 5B) — SUPERSEDES the click-to-load consent model in §10.3,
+// §4.2.16 and §2 Q16 (Ruling 5). The operator saw `/wall/` as a column of consent cards
+// and overruled it: every post renders as a REAL X embed, no click.
+//
+// What replaces the consent click is NOT "load everything up front":
+//   · an IntersectionObserver with a 200px rootMargin, so a 10-embed wall fetches only what
+//     the reader is actually approaching — the perf argument for click-to-load is answered
+//     without making the reader pay a click for it;
+//   · widgets.js injected ONCE per page, and only when the first embed comes into range;
+//   · our styled quote card is still built into the HTML and is the state shown WHILE the
+//     embed loads and PERMANENTLY if it never does (deleted post, blocked network, JS off).
+//
+// The attribution row sits OUTSIDE the swap on purpose: `@handle on x ↗` must survive every
+// failure path, because a use case's whole claim to honesty is that the post it came from is
+// named and reachable (§10.1 item 5).
+//
+// Copy: CP-034 `load tweet from x` is RETIRED by F5 — there is no button any more. The
+// constant stays in `lib/copy.ts` so the pack key still resolves to something readable.
 interface Props {
   tweetUrl: string;
   authorHandle: string;
@@ -18,14 +29,27 @@ interface Props {
 }
 
 const { tweetUrl, authorHandle, excerpt, postedAt, class: className = '' } = Astro.props;
+
+// Resolved at BUILD time, not in the island: a malformed URL should surface as one card
+// keeping its fallback, never as a runtime parse error that kills the page's whole island.
+const tweetId = tweetUrl.match(/status\/(\d+)/)?.[1] ?? '';
 ---
 
 <figure
   class:list={['tweet-embed flex flex-col gap-3 border border-border-interactive bg-surface p-4', className]}
   data-tweet-embed
   data-tweet-url={tweetUrl}
+  data-tweet-id={tweetId}
+  data-tweet-state="pending"
 >
-  <blockquote class="border-l-2 border-l-border-strong pl-4 text-base text-text" data-tweet-fallback>
+  {/* widgets.js renders the real post here. Empty until then, so it takes no space. */}
+  <div class="tweet-embed__mount" data-tweet-mount></div>
+
+  {/* Loading state AND permanent failure state. Never removed from the DOM — only hidden. */}
+  <blockquote
+    class="tweet-embed__fallback border-l-2 border-l-border-strong pl-4 text-base text-text"
+    data-tweet-fallback
+  >
     <p>{excerpt}</p>
   </blockquote>
 
@@ -33,82 +57,162 @@ const { tweetUrl, authorHandle, excerpt, postedAt, class: className = '' } = Ast
     <a href={tweetUrl} target="_blank" rel="noopener" class="hover:text-accent-text">
       @{authorHandle} on x <span aria-hidden="true">↗</span>
     </a>
-    <span class="flex items-center gap-3">
-      {postedAt && <time datetime={postedAt}>{postedAt.slice(0, 10)}</time>}
-      <button
-        type="button"
-        hidden
-        data-tweet-load
-        class="tweet-embed__btn"
-      >
-        {CP_034_TWEET_LOAD_LABEL}
-      </button>
-    </span>
+    {postedAt && <time datetime={postedAt}>{postedAt.slice(0, 10)}</time>}
   </figcaption>
 </figure>
 
 <style>
-  .tweet-embed__btn {
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
-    padding: 6px 12px;
-    border: 1px solid var(--color-border-interactive);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--color-text);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    cursor: pointer;
-    transition:
-      color 0.15s,
-      border-color 0.15s;
+  /* X sizes its own iframe (max 550px wide) and will happily set an inline width wider than
+     its container. These two rules are what keep the embed inside our card at 390. */
+  .tweet-embed__mount {
+    max-inline-size: 100%;
+  }
+  .tweet-embed__mount :global(iframe),
+  .tweet-embed__mount :global(.twitter-tweet) {
+    max-inline-size: 100% !important;
+    margin-block: 0 !important;
   }
 
-  .tweet-embed__btn:hover {
-    border-color: var(--color-accent);
+  /* Once the real post is on screen the excerpt is a duplicate of it. */
+  .tweet-embed[data-tweet-state='loaded'] .tweet-embed__fallback {
+    display: none;
   }
 </style>
 
 <script>
-  // Click loader. widgets.js is injected ONCE per page, and only after a real click.
+  // SANCTIONED ISLAND #3 — auto-loading X embeds (F5). NOT a new island: this is the same
+  // component that already owned the third-party embed, with the trigger changed from a
+  // click to proximity.
   const WIDGETS_SRC = 'https://platform.twitter.com/widgets.js';
+  const NEAR_VIEWPORT = '200px';
+  const RENDER_TIMEOUT_MS = 8000;
 
-  function ensureWidgets(): void {
-    if (document.querySelector(`script[src="${WIDGETS_SRC}"]`)) {
-      (window as unknown as { twttr?: { widgets?: { load?: () => void } } }).twttr?.widgets?.load?.();
-      return;
-    }
-    const tag = document.createElement('script');
-    tag.src = WIDGETS_SRC;
-    tag.async = true;
-    document.head.appendChild(tag);
+  interface Widgets {
+    createTweet: (
+      id: string,
+      target: HTMLElement,
+      options?: Record<string, unknown>
+    ) => Promise<HTMLElement | undefined>;
+  }
+  const w = window as unknown as {
+    twttr?: { widgets?: Widgets };
+    grokbotTrack?: (event: string, props?: Record<string, string>) => void;
+  };
+
+  let widgetsPromise: Promise<Widgets | null> | null = null;
+
+  /** Injected ONCE per page, on the first embed that comes into range. */
+  function loadWidgets(): Promise<Widgets | null> {
+    if (widgetsPromise) return widgetsPromise;
+    widgetsPromise = new Promise((resolve) => {
+      if (w.twttr?.widgets) {
+        resolve(w.twttr.widgets);
+        return;
+      }
+      const tag = document.createElement('script');
+      tag.src = WIDGETS_SRC;
+      tag.async = true;
+      // A blocked or offline network must RESOLVE, not hang — every embed downstream of
+      // this promise has to be told to keep its fallback.
+      tag.addEventListener('load', () => resolve(w.twttr?.widgets ?? null));
+      tag.addEventListener('error', () => resolve(null));
+      document.head.appendChild(tag);
+    });
+    return widgetsPromise;
   }
 
-  document.querySelectorAll<HTMLElement>('[data-tweet-embed]').forEach((figure) => {
-    const button = figure.querySelector<HTMLButtonElement>('[data-tweet-load]');
-    const url = figure.dataset.tweetUrl;
-    if (!button || !url) return;
+  /**
+   * The mode the SITE is actually rendering in — deliberately not the OS preference.
+   * `tokens.css` sets `color-scheme: light` on :root and `dark` under [data-theme="dark"],
+   * so the computed value is the site's own answer and it starts tracking a toggle the
+   * moment one ships. Reading `prefers-color-scheme` directly would be wrong TODAY: the
+   * site does not honour it (there is no toggle and no media query — see the dark-mode note
+   * in BUILD-NOTES), so a dark-preferring visitor would get a dark embed inside a light
+   * page. matchMedia stays only as a last resort if `color-scheme` is unreadable.
+   */
+  function siteTheme(): 'light' | 'dark' {
+    const attr = document.documentElement.dataset.theme;
+    if (attr === 'dark' || attr === 'light') return attr;
+    const scheme = getComputedStyle(document.documentElement).colorScheme;
+    if (scheme?.includes('dark') && !scheme.includes('light')) return 'dark';
+    if (scheme?.includes('light')) return 'light';
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
 
-    button.removeAttribute('hidden');
+  async function render(figure: HTMLElement): Promise<void> {
+    const mount = figure.querySelector<HTMLElement>('[data-tweet-mount]');
+    const id = figure.dataset.tweetId;
+    if (!mount || !id) {
+      figure.dataset.tweetState = 'failed';
+      return;
+    }
 
-    button.addEventListener(
-      'click',
-      () => {
-        figure.setAttribute('aria-busy', 'true');
-        const quote = document.createElement('blockquote');
-        quote.className = 'twitter-tweet';
-        const link = document.createElement('a');
-        link.href = url;
-        quote.appendChild(link);
-        figure.replaceChildren(quote);
-        ensureWidgets();
-        // §9.7 tweet_embed_load — only ever fires on a real click (§10.3 consent model).
-        (window as unknown as { grokbotTrack?: (e: string, p?: Record<string, string>) => void })
-          .grokbotTrack?.('tweet_embed_load', { page: window.location.pathname });
-        window.setTimeout(() => figure.removeAttribute('aria-busy'), 1200);
-      },
-      { once: true }
-    );
-  });
+    figure.dataset.tweetState = 'loading';
+    figure.setAttribute('aria-busy', 'true');
+
+    const widgets = await loadWidgets();
+    if (!widgets) {
+      // widgets.js never arrived — keep the quote card, permanently.
+      figure.dataset.tweetState = 'failed';
+      figure.removeAttribute('aria-busy');
+      return;
+    }
+
+    // X refuses widths outside 220–550. Clamp to the card so 390 never overflows.
+    const width = Math.max(220, Math.min(550, mount.clientWidth || 550));
+
+    const timeout = new Promise<undefined>((resolve) => {
+      window.setTimeout(() => resolve(undefined), RENDER_TIMEOUT_MS);
+    });
+
+    let el: HTMLElement | undefined;
+    try {
+      el = await Promise.race([
+        widgets.createTweet(id, mount, {
+          theme: siteTheme(),
+          width,
+          align: 'left',
+          conversation: 'none',
+          // Do-Not-Track mode. It does not undo the fact that the embed is a third-party
+          // request (see the §10.8 note in BUILD-NOTES) but it is the strictest setting the
+          // widget offers, and it costs nothing.
+          dnt: true,
+        }),
+        timeout,
+      ]);
+    } catch {
+      el = undefined;
+    }
+
+    figure.removeAttribute('aria-busy');
+    if (el) {
+      // Only now does the excerpt card get hidden. Attribution stays either way.
+      figure.dataset.tweetState = 'loaded';
+      // §9.7 tweet_embed_load — now fires on a real render rather than a consent click.
+      w.grokbotTrack?.('tweet_embed_load', { page: window.location.pathname });
+    } else {
+      // Deleted, protected, timed out, or blocked. The quote card is the answer.
+      figure.dataset.tweetState = 'failed';
+    }
+  }
+
+  const figures = Array.from(document.querySelectorAll<HTMLElement>('[data-tweet-embed]'));
+  if (figures.length) {
+    if (!('IntersectionObserver' in window)) {
+      // No observer: render them all rather than showing nobody a post.
+      figures.forEach((figure) => void render(figure));
+    } else {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            observer.unobserve(entry.target);
+            void render(entry.target as HTMLElement);
+          }
+        },
+        { rootMargin: NEAR_VIEWPORT }
+      );
+      figures.forEach((figure) => observer.observe(figure));
+    }
+  }
 </script>

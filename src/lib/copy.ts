@@ -19,6 +19,8 @@ export const CP_017_NEWSLETTER_ERROR = 'signup is down — email hello@grokbot.d
 
 /** §4 / §6 — prompt + embed chrome (KEEP rows: do not reword). */
 export const CP_024_PROMPT_MICROHINT = 'then paste it into Grok';
+/** RETIRED at F5 — the operator overruled §10.3's click-to-load, so there is no button.
+ *  Kept so the pack key still resolves; nothing renders it. */
 export const CP_034_TWEET_LOAD_LABEL = 'load tweet from x';
 export const CP_026_RELATED_HEADING = 'related';
 export const CP_026_APPEARS_IN_HEADING = 'appears in';

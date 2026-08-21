@@ -5,7 +5,9 @@
 // Integrity rule (B2): a wall item exists ONLY where a live entry has a real
 // `source_tweets[]` post. No fabrication, no placeholders. `status: demo` is excluded —
 // the page owns that filter; this component only renders what it is handed.
-// Reuses the §10.3 click-to-load consent model via TweetEmbed (zero requests pre-click).
+// Renders through TweetEmbed, which since F5 auto-loads the REAL X embed as it comes into
+// range (§10.3's click-to-load consent model was overruled by the operator). The wall is the
+// densest use of it — 10 embeds — which is why TweetEmbed lazy-loads rather than eager-loads.
 // Copy CP-099 (KEEP, B2 verbatim): `→ posted on grokbot.dev: {entry_name}`.
 import TweetEmbed from './TweetEmbed.astro';
 import { CP_099_WALL_LINK_CHIP, fillCopy } from '../lib/copy';

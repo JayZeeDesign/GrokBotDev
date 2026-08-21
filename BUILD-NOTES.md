@@ -1399,15 +1399,133 @@ fill. Three call sites moved: `Button` solid, `FeaturedTag`, `InstallModal`'s pr
 Side-by-side for the operator's judgement:
 `images/grokbot-m7-qa/F4-sidebyside-1440.png` · `F4-sidebyside-390.png`.
 
+### F5 · every post is a real X embed, auto-loaded
+
+**Supersedes the click-to-load consent model in §10.3, §4.2.16 and §2 Q16 (Ruling 5) — all
+three said the same thing and all three are now stale.** The operator opened `/wall/` and saw
+a column of consent cards instead of posts, and overruled it.
+
+What replaced the click is deliberately **not** "load everything up front":
+
+- `TweetEmbed` renders the real post through `twttr.widgets.createTweet()`;
+- an **IntersectionObserver with a 200px rootMargin** means a 10-embed wall fetches only what
+  the reader is approaching — the perf argument that justified click-to-load is answered
+  without charging the reader a click for it;
+- `widgets.js` is injected **once per page**, on the first embed to come into range;
+- the styled quote card is still built into the HTML: it is the state shown **while** the
+  embed loads and **permanently** if it never arrives.
+
+`createTweet` was chosen over dropping a `blockquote.twitter-tweet` and calling
+`widgets.load()` for one reason: it returns a promise that resolves to the element on success
+and to `undefined` on failure, so "the post is gone" is a value we can branch on rather than a
+silence we have to guess at. A deleted, protected or blocked post keeps its quote card instead
+of leaving a hole. An 8s race guards the case where the promise never settles at all.
+
+**The attribution row sits outside the swap.** `@handle on x ↗` and the date are never
+replaced and never hidden, on any path — verified with `platform.twitter.com` blocked at the
+network layer. A use case's whole claim to honesty is that the post it came from is named and
+reachable (§10.1 item 5); that must not depend on a third party being up.
+
+**Measured, on the built site:**
+
+| check | result |
+|---|---|
+| `/wall/` at 390 · 768 · 1440 | **5 of 5 real embeds render**, 5 iframes, avatars/badges/quoted posts/video thumbs |
+| lazy-load actually lazy | first paint renders only what is in range (3 of 5 at 390); the other two go `pending → loading → loaded` on approach |
+| `widgets.js` injected once | 1 tag from us; the second `platform.twitter.com` script is widgets.js's own `js/tweet.<hash>.js` bundle |
+| entry detail (`/use-cases/factored-digest/`) | both source posts embed, 390 and 1440 |
+| horizontal overflow | **none** at 390/768/1440; widest iframe 324px at 390, 530px at 1440 |
+| blocked network (`platform.twitter.com` aborted) | 0 iframes, **5 of 5 fallback cards visible with excerpt**, attribution present on every one |
+| theme | follows the SITE, not the OS — see below |
+| `dnt=true` | present in every embed URL |
+
+**Theme (F5 item 4) — it follows the site, deliberately not `prefers-color-scheme`.**
+`siteTheme()` reads `data-theme` first, then the computed `color-scheme` of `<html>` (which
+`tokens.css` sets to `light` on `:root` and `dark` under `[data-theme="dark"]`). Reading the OS
+preference directly would be **wrong today**: the site does not honour it, so a dark-preferring
+visitor would have got a dark embed inside a light page. Verified both ways — with the OS
+emulated dark the site stays light and all five embeds request `theme=light`; forcing the root
+to dark (`bg rgb(11,11,12)`) makes the rule return `dark`.
+
+⚠️ **Finding surfaced by that check, out of F5's scope: dark mode is currently unreachable.**
+`[data-theme="dark"]` exists in `tokens.css` and is never set — there is no toggle and no
+`prefers-color-scheme` fallback, so every dark token on the site is dead code today. A1 says
+"Dual mode mandatory; DEFAULT = light with dark toggle". Flagged rather than fixed: shipping a
+theme toggle is a design decision and a new control, not a polish item. The embed is wired to
+follow whatever ships.
+
+### F5 · CSP — and a real gap found while checking it
+
+**No CSP was widened.** §10.7's table already carried `platform.twitter.com` and
+`syndication.twitter.com` in `script-src`/`script-src-elem`, and `platform.twitter.com` /
+`x.com` / `twitter.com` in `frame-src`, because the click-to-load model needed the same hosts.
+F5 changed **when** the request fires, not **which** host makes it.
+
+**But `infra/security-headers.conf` shipped from M0 with only three of §10.7's seven headers.**
+Missing: `Strict-Transport-Security`, `X-Frame-Options`, `Cross-Origin-Opener-Policy` and —
+the one that matters — **the entire `Content-Security-Policy`**. Seven milestones passed
+without it being caught, because no gate reads deploy-time nginx config. It surfaced only
+because F5 sent me to check that the embed hosts were permitted. The file now carries §10.7's
+table verbatim.
+
+**`audit-scripts.mjs` extended so it cannot happen again** (this is the "audit guard updated"
+item, and it is a tightening, not a loosening). It already policed built HTML for inline JS and
+off-`/_astro/` script tags — correct, and untouched. It now *additionally* asserts, on the
+nginx conf:
+
+- all seven §10.7 `add_header` lines are present;
+- the CSP carries every required source, checked **per directive** rather than "appears
+  somewhere in the policy": `platform.twitter.com` **and** `syndication.twitter.com` in
+  `script-src-elem`, `platform.twitter.com` in `frame-src`, `'wasm-unsafe-eval'` in
+  `script-src`, `hub.vemetric.com` in `connect-src`. Losing any one of them breaks something
+  in production only, which is the expensive way to find out;
+- `'unsafe-inline'` never appears in `script-src` or `script-src-elem` (it is legitimate in
+  `style-src`, so the check is per-directive there too).
+
+Proven by regression, four ways: dropping the whole CSP → **exit 1** with 8 violations;
+dropping `platform.twitter.com` from `script-src-elem` alone → exit 1 naming that directive;
+dropping it from `frame-src` alone → exit 1 naming that one; adding `'unsafe-inline'` to
+`script-src` → exit 1. (The first cut of the guard failed on its own documentation — the
+comment block legitimately says "no `'unsafe-inline'` … in `script-src`" — so it now strips
+`#` lines and parses the header value rather than grepping the file.)
+
+**No new island.** `TweetEmbed` was already sanctioned island #3; only its trigger changed.
+The count stays **nine**.
+
+### F5 · privacy copy corrected, because the old line stopped being true
+
+§10.8 says the site sets no cookies and does no cross-site tracking, and `/about/` said so.
+With embeds auto-loading, X now receives a request on page view and may set cookies in its own
+frame — so that sentence was about to become a false claim on a page whose entire subject is
+what we do with your data. §10.8's own escalation rule covers exactly this ("if any future
+feature introduces cookies or personal-data processing … log the decision").
+
+The operator overruled the consent model, so **no consent wall came back**. What changed is the
+claim: `/about/` now says the site sets no cookies **of its own**, and adds a plain paragraph
+saying X embeds are loaded from X as you scroll to them, that X may set its own cookies there,
+that we ask for do-not-track, that we can't speak for what X does, and that blocking
+`platform.twitter.com` still leaves a working page with our quote of the post. **Operator: this
+is the one part of F5 that is a judgement call rather than a mechanical change — flagging it
+rather than burying it.**
+
+CP-034 (`load tweet from x`) is **retired** — there is no button. The constant stays in
+`lib/copy.ts` marked retired so the pack key still resolves.
+
 ### Verification
 
 - **Full gate suite green:** validate 10 entries · negative fixtures still rejected ·
   check-contrast every gated pair + the F4 guard · hub-intros ARMED 83/83 ·
   keyword-placements OK · links 108 pages 0 broken · audit-scripts **9 bundles, 0 inline JS** ·
   `astro check` 0 errors 0 warnings · build exit 0 · raw-colour and arbitrary-value greps clean.
-- **Full QA sweep re-run:** 19 templates × 390/768/1440 = **57 combos, 0 overflow, 0 landmark
-  defects**. Screenshots refreshed in `images/grokbot-m7-qa/`, plus `F1-F4-home-*.png`,
-  `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`.
+- **Full QA sweep re-run after F5:** 19 templates × 390/768/1440 = **57 combos, 0 overflow, 0
+  landmark defects**. Screenshots refreshed in `images/grokbot-m7-qa/`, plus `F1-F4-home-*.png`,
+  `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`,
+  `F5-wall-embeds-{390,768,1440}.png`, `F5-entry-detail-embed-{390,1440}.png`,
+  `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`.
+  **Screenshot caveat worth knowing:** a `--full` full-page capture does not repaint
+  cross-origin iframes, so the wall's embeds photograph as blank boxes in a full-page shot even
+  when they are rendering correctly. The F5 wall captures are therefore VIEWPORT shots, and the
+  iframe heights (456 / 365 / 742 / 702 / 523px) are the evidence that all five really rendered.
 - **Lighthouse — accessibility 100 and SEO 100** on `/`, a use-case page and an indexed hub,
   with **zero failing a11y audits**, so F4's white-on-darker-amber holds the score A10's ink
   had won. ⚠️ **Performance is NOT measurable on this box right now and none of the numbers

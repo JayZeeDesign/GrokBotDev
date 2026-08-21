@@ -84,6 +84,88 @@ for (const [src, count] of [...externals].sort()) {
 console.log(`audit-scripts: ${inlineDataBlocks} inline application/ld+json blocks (allowed)`);
 console.log(`audit-scripts: ${inlineJsBlocks} inline script blocks with JS (must be 0)`);
 
+// ── §10.7 header completeness (added at F5) ──────────────────────────────────────────────
+// The scan above only sees BUILT HTML, which is the right scope for the no-inline-JS rule
+// but is blind to the thing that actually permits a third-party script at runtime: the
+// nginx CSP. That file shipped from M0 with 4 of its 7 headers missing — including the whole
+// Content-Security-Policy — and nothing noticed for seven milestones, because no gate read
+// deploy-time config. It does now.
+//
+// NOTE ON F5: this is NOT a loosening. `platform.twitter.com` / `syndication.twitter.com`
+// were already in §10.7's table for the click-to-load model; F5 changed when the request
+// fires, not which host makes it. The assertion below is what stops a future edit dropping
+// them and breaking every embed in production only.
+const HEADERS_CONF = 'infra/security-headers.conf';
+const REQUIRED_HEADERS = [
+  'Strict-Transport-Security',
+  'X-Content-Type-Options',
+  'X-Frame-Options',
+  'Referrer-Policy',
+  'Permissions-Policy',
+  'Cross-Origin-Opener-Policy',
+  'Content-Security-Policy',
+];
+const REQUIRED_CSP_TOKENS = [
+  "default-src 'self'",
+  "'wasm-unsafe-eval'", // Pagefind — removing it kills search in production only
+  'https://platform.twitter.com', // F5 embeds (script-src + frame-src)
+  'https://syndication.twitter.com', // F5 embeds
+  'https://hub.vemetric.com', // §9.7 ingest
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+];
+
+if (!existsSync(HEADERS_CONF)) {
+  violations.push(`${HEADERS_CONF} is missing — §10.7 has no header set to include`);
+} else {
+  // Directives only — the `#` prose in this file legitimately names `script-src` and
+  // `'unsafe-inline'` in the same breath while explaining why they must never meet, and
+  // matching against the comments made the guard fail on its own documentation.
+  const conf = readFileSync(HEADERS_CONF, 'utf8')
+    .split('\n')
+    .filter((line) => !line.trimStart().startsWith('#'))
+    .join('\n');
+  const csp = conf.match(/add_header\s+Content-Security-Policy\s+"([^"]*)"/)?.[1] ?? '';
+
+  const missingHeaders = REQUIRED_HEADERS.filter((h) => !conf.includes(`add_header ${h} `));
+  const missingCsp = REQUIRED_CSP_TOKENS.filter((t) => !csp.includes(t));
+  for (const h of missingHeaders) violations.push(`${HEADERS_CONF}: §10.7 header missing — ${h}`);
+  for (const t of missingCsp) violations.push(`${HEADERS_CONF}: CSP is missing \`${t}\``);
+
+  // Per-directive, not just "appears somewhere in the policy": an embed needs the host in
+  // script-src-elem to fetch widgets.js AND in frame-src to render the iframe. Losing
+  // either one breaks embeds in production only, which is the expensive way to find out.
+  const directiveOf = (name) =>
+    csp.split(';').map((d) => d.trim()).find((d) => d.split(/\s+/)[0] === name) ?? '';
+  const perDirective = [
+    ['script-src-elem', 'https://platform.twitter.com'],
+    ['script-src-elem', 'https://syndication.twitter.com'],
+    ['frame-src', 'https://platform.twitter.com'],
+    ['script-src', "'wasm-unsafe-eval'"],
+    ['connect-src', 'https://hub.vemetric.com'],
+  ];
+  for (const [name, token] of perDirective) {
+    if (!directiveOf(name).includes(token)) {
+      violations.push(`${HEADERS_CONF}: CSP \`${name}\` is missing \`${token}\``);
+    }
+  }
+
+  // 'unsafe-inline' is legitimate in style-src and forbidden in script-src, so test the
+  // script directives specifically rather than the policy as a whole.
+  for (const directive of csp.split(';').map((d) => d.trim())) {
+    if (/^script-src(-elem)?\b/.test(directive) && directive.includes("'unsafe-inline'")) {
+      violations.push(
+        `${HEADERS_CONF}: 'unsafe-inline' in ${directive.split(' ')[0]} — islands are bundled, never inline (§4.2)`
+      );
+    }
+  }
+  if (!missingHeaders.length && !missingCsp.length) {
+    console.log(
+      `audit-scripts: §10.7 headers complete (${REQUIRED_HEADERS.length}/${REQUIRED_HEADERS.length}) · CSP carries every required source`
+    );
+  }
+}
+
 if (violations.length) {
   console.error(`\naudit-scripts: ${violations.length} violation(s)`);
   for (const violation of violations) console.error(`  ${violation}`);
