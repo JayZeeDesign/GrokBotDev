@@ -1752,6 +1752,7 @@ full-width-bottom escape hatch; it pairs cleanly with `project` (3 links each).
 tablet with room to spare; four columns there is 162px per column, comfortable for the longest
 label. The ruled composition is unchanged — still four groups — it just arrives one breakpoint
 earlier. **Read §4.5's footer row as 2 / 2 / 4 / 4** (it previously read 1 / 2 / 4).
+**APPROVED at the F8 ack** — the reasoning was accepted and the composition is unchanged.
 
 | width | before | after | columns | links under 44px |
 |---|---|---|---|---|
@@ -2110,12 +2111,11 @@ hit-test: drag engages only when the touch STARTS on a bot; a touch on empty her
 left alone so the page scrolls. The `defaultPrevented` root-cause work carried over intact —
 it is what made the conditional version possible at all.
 
-**Still open, awaiting a call (neither blocks anything):**
+**Both items raised here are now CLOSED — nothing from this entry is outstanding:**
 
-- **§4.5's footer row now reads 2 / 2 / 4 / 4** after F8 took the four-column step from `lg`
-  down to `md`. Flagged in the F8 report; trivially revertible to `lg` if 768 should stay at
-  two columns.
-- **Dark mode is unreachable** — `[data-theme="dark"]` exists in `tokens.css` and is never
-  set: no toggle, no `prefers-color-scheme` fallback, so every dark token is dead code. A1
-  says dual mode is mandatory. Raised at F5; a theme toggle is a design decision and a new
-  control, not a polish item.
+- ~~§4.5's footer row~~ — **APPROVED at the F8 ack.** §4.5's footer row officially reads
+  **2 / 2 / 4 / 4**; the 162px-per-column reasoning was accepted and the composition is
+  unchanged (still four groups, reached one breakpoint earlier). Not revisitable.
+- ~~Dark mode is unreachable~~ — **CLOSED by F9** (commit `2c1ec49`). `[data-theme]` is now
+  set by a real toggle, persisted, and applied before first paint. Every dark token in
+  `tokens.css` is live for the first time since M0.
