@@ -131,7 +131,8 @@ const watchUrl = youtubeWatchUrl(videoId, startSeconds);
           statement to the reader, and it has to survive a reader who never plays the video. */}
       {timestamp && <span class="yt-embed__stamp">at {timestamp}</span>}
     </span>
-    {postedAt && <time datetime={postedAt}>{postedAt.slice(0, 10)}</time>}
+    {/* Direct round (operator): publish date is not relevant and is never displayed —
+        removed. View counts were never rendered. */}
   </figcaption>
 </figure>
 

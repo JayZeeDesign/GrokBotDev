@@ -314,15 +314,19 @@ for (const entry of entries) {
             `primary_source url "${primary.url}" is not a YouTube video URL — accepted shapes are youtube.com/watch?v=…, youtu.be/… and youtube.com/shorts/…`
           );
         } else {
+          // Keyed on video id + timestamp: a compilation video (e.g. "11 use cases in one
+          // walkthrough") legitimately sources several distinct use cases, each pointing at a
+          // different moment. Same video AND same moment still collides — that is a real dup.
           const id = youtubeVideoId(primary.url);
-          if (youtubeIds.has(id)) {
+          const key = `${id}@${primary.timestamp ?? ''}`;
+          if (youtubeIds.has(key)) {
             fail(
               file,
               '§5.6 #3',
-              `duplicate youtube video "${id}" — already used by ${youtubeIds.get(id)} (matched on video id, so a youtu.be link and a watch link for the same video still collide)`
+              `duplicate youtube source "${id}${primary.timestamp ? ' @ ' + primary.timestamp : ''}" — already used by ${youtubeIds.get(key)} (same video and same timestamp)`
             );
           } else {
-            youtubeIds.set(id, file);
+            youtubeIds.set(key, file);
           }
         }
         if (!primary.title || !primary.channel) {
