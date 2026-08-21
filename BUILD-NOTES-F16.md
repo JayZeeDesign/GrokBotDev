@@ -70,6 +70,55 @@ The ten real avatars were catalogued by connected-component detection, not by ey
 | horizontal pill | teal |
 | rounded square | purple |
 
+### 2.1 · THE FORBIDDEN PAIRS — read this before adding any bot to family v2
+
+This is the **durable constraint**, not just a record of what F16 did. Family v2 is a system
+that will get new forms; every one of them has to clear this table, or the "cousin, not copy"
+guarantee quietly stops being true the day someone adds a thirteenth bot.
+
+**A form may not combine any of these nine silhouette + colour pairs:**
+
+| # | silhouette | colour | which real avatar it would clone |
+|---|---|---|---|
+| 1 | circle | grey | shot A, avatar 1 |
+| 2 | circle | orange | shot A avatar 3 · shot B avatar 6 |
+| 3 | circle | teal | shot B, avatar 5 |
+| 4 | circle | blue | shot B, avatar 9 |
+| 5 | circle | red | shot B, avatar 10 |
+| 6 | rounded triangle | orange | shot A, avatar 2 |
+| 7 | rounded triangle | purple | shot B, avatar 7 (indigo) |
+| 8 | horizontal pill | teal | shot A, avatar 4 |
+| 9 | rounded square | purple | shot B, avatar 8 |
+
+Read the other way round, this is what is still **available**:
+
+| silhouette | colours left open |
+|---|---|
+| circle | **purple only** — this is why the family's one circle is purple |
+| rounded triangle | blue · teal · red · grey |
+| horizontal pill | blue · orange · purple · red · grey |
+| rounded square / squircle | blue · orange · teal · red · grey |
+| rounded rectangle (`r` < short-axis/2) | all six — no reference avatar is one |
+| vertical capsule | all six — no reference avatar is one |
+| ellipse (aspect ≥ 1.3) | all six — no reference avatar is one |
+
+**Procedure for adding a form (v3, or any later addition):**
+
+1. Check the new form's silhouette + colour against the nine pairs above. If it hits one, pick
+   a different colour — a footnote does not clear it.
+2. Add it to `FORMS_V2` in `src/scripts/botFamilyV2.js`.
+3. Re-run `node scripts/qa/f16-deniability-grid.mjs <cropDir> <out.html>`. It **mechanically
+   re-derives** the verdict from its own `REFERENCES` array, so it will catch a clash even if
+   this table was not consulted. It prints `N/N pass` and marks any failing bot in red.
+4. If the silhouette is a genuinely new class, extend `silhouette()` in that script too —
+   an unclassified shape silently falls through to `squircle` and could mask a clash.
+5. Keep every colour on at least two forms. With twelve forms and six colours, a roll dropping
+   a whole colour sits at ~1.5%; with a singleton colour it jumps to ~9%.
+
+The machine-readable copy of this table is the `REFERENCES` array in
+`scripts/qa/f16-deniability-grid.mjs`. **These two must be kept in step** — if new reference
+avatars are ever catalogued, update both.
+
 **The decision this forced: colour is baked into the FORM, not rolled per bot.** A circle is
 spoken for in five of our six colours. Had colour been rolled the way v1 rolled its amber
 pick, some seeds would have produced a grey circle or a teal pill — an exact shape+colour
@@ -251,7 +300,8 @@ on the box.
    v1 `.s-solid` / `.s-accent` / `.s-outline` / `.s-halftone` rules and the `#gbHalftone`
    `<defs>`, which nothing on the home page uses any more — v2 paints from its own stylesheet
    under its own class names. That block was left in place *because F16 was not allowed to
-   edit that file*, not because it is needed. Cleanup is one contiguous deletion. Keep
+   edit that file*, not because it is needed. **Cleanup is assigned to the INTEGRATION step**
+   (per the F16 checkpoint ruling) and is one contiguous deletion. Keep
    `.bot .eyes { transform-box: fill-box; transform-origin: center }` — integration-notes §8
    says blinks scale from the wrong origin without it.
 

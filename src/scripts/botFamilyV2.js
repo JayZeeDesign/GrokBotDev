@@ -72,13 +72,34 @@ export var PALETTE_V2 = {
 /* ---------------------------------------------------------------------------
    DENIABILITY — why colour is a property of the FORM and not of the roll.
 
-   Catalogued from the reference screenshots, the real avatars use these
-   shape × colour pairs:
-
-     circle            × grey, teal, orange, blue, red-orange   (five of six!)
-     rounded triangle  × orange, indigo/purple
-     horizontal pill   × teal
-     rounded square    × purple
+   ┌──────────────────────────────────────────────────────────────────────────┐
+   │ THE FORBIDDEN PAIRS — CHECK BEFORE ADDING ANY FORM TO THE ROSTER BELOW.   │
+   │                                                                          │
+   │ Catalogued from the reference screenshots, the real avatars use these     │
+   │ nine shape × colour pairs. A v2 form may not reproduce any of them:       │
+   │                                                                          │
+   │   circle            × grey, orange, teal, blue, red    (five of six!)     │
+   │   rounded triangle  × orange, purple                                      │
+   │   horizontal pill   × teal                                                │
+   │   rounded square    × purple                                              │
+   │                                                                          │
+   │ Which leaves open:                                                        │
+   │   circle            → PURPLE ONLY (hence `dot` below)                     │
+   │   rounded triangle  → blue, teal, red, grey                               │
+   │   horizontal pill   → blue, orange, purple, red, grey                     │
+   │   rounded square    → blue, orange, teal, red, grey                       │
+   │   rounded rect / vertical capsule / ellipse → all six, no reference       │
+   │                       avatar uses any of these shapes at all              │
+   │                                                                          │
+   │ ADDING A FORM: pick a colour that clears the table, add it below, then    │
+   │ re-run `node scripts/qa/f16-deniability-grid.mjs` — it re-derives the     │
+   │ verdict mechanically from its own REFERENCES array, so it catches a       │
+   │ clash even if this comment was skipped. If the shape is a NEW silhouette  │
+   │ class, extend silhouette() in that script too: an unclassified shape      │
+   │ falls through to `squircle` and could mask a clash. Keep every colour on  │
+   │ at least two forms (a roll dropping a whole colour: ~1.5% at two, ~9% at  │
+   │ one). Full table + procedure: BUILD-NOTES-F16.md §2.1.                    │
+   └──────────────────────────────────────────────────────────────────────────┘
 
    A circle is therefore spoken for in five of our six colours. If colour were
    rolled per bot the way v1 rolled its amber pick, some seeds would land a grey
