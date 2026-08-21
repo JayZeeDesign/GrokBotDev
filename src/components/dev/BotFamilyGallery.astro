@@ -1,0 +1,173 @@
+---
+/**
+ * BotFamilyGallery — the /dev/components section for the two bot families.
+ * (M8 · F16)
+ *
+ * ── WIRING (deliberately NOT done here) ───────────────────────────────────────
+ * F16 ran in parallel with another executor holding src/pages/dev/[gallery].astro,
+ * so this partial ships unwired. Two lines land it, and nothing else changes:
+ *
+ *     import BotFamilyGallery from '../../components/dev/BotFamilyGallery.astro';
+ *     ...
+ *     <BotFamilyGallery />
+ *
+ * Suggested position: straight after the `#c-markglyph` section, since this is
+ * identity/illustration material rather than a UI component. The section id is
+ * `c-botfamily`, matching the page's `c-*` convention.
+ *
+ * Like every other /dev/components section this is dev-only output: the page's
+ * getStaticPaths returns nothing unless INCLUDE_DEV_PAGES is set, so `npm run
+ * build` never emits it.
+ */
+import { FORMS_V2, PALETTE_V2, buildBotSVGV2 } from '../../scripts/botFamilyV2.js';
+import { FORMS_V1, botGroupV1 } from '../../lib/botFamilyV1';
+import '../../styles/hero-bots.css';
+import '../../styles/bots-v1.css';
+
+const SIZE = 96;
+
+// The eyedropped source hexes, kept beside the shipped ones so the derivation is
+// auditable from the style guide and not only from a build note.
+const SOURCE: Record<string, { src: string; L: string }> = {
+  blue:   { src: '#3C82F6', L: '0.665' },
+  orange: { src: '#F19D38', L: '0.730' },
+  teal:   { src: '#1CC3AF', L: '0.705' },
+  purple: { src: '#885CF5', L: '0.668' },
+  red:    { src: '#ED712E', L: '0.670' },
+  grey:   { src: '#959595', L: '0.665' },
+};
+
+const v2 = FORMS_V2.map((f: (typeof FORMS_V2)[number]) => ({
+  id: f.id,
+  color: f.color,
+  shape: f.geo.t,
+  svg: buildBotSVGV2(f, SIZE),
+}));
+
+const v1 = FORMS_V1.map((f) => ({
+  id: f.id,
+  style: f.style,
+  svg: `<svg width="${SIZE}" height="${SIZE}" viewBox="-60 -60 120 120">`
+    + botGroupV1(f, 'gbHalftoneDevV1') + '</svg>',
+}));
+
+const halftoneDefs =
+  '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
+  + '<pattern id="gbHalftoneDevV1" width="11" height="11" patternUnits="userSpaceOnUse">'
+  + '<circle cx="2.9" cy="2.9" r="2.3"/><circle cx="8.4" cy="8.4" r="2.3"/>'
+  + '</pattern></defs></svg>';
+---
+
+<section id="c-botfamily" class="flex flex-col gap-6">
+  <h2 class="font-mono text-sm lowercase text-text-muted">bot families</h2>
+
+  <!-- ── the rule that must travel with this section ─────────────────────── -->
+  <p class="max-w-prose rounded-sm border border-border bg-surface p-4 text-base text-text">
+    <strong>Circles are allowed in the hero illustration family only.</strong>
+    Addendum A3's trademark rule — no circle silhouettes as marks, solid, hollow or
+    dotted — is unchanged and remains absolute for the logo, the favicon, OG cards
+    and chips. The one circular form below (<code class="font-mono text-sm">dot</code>)
+    is decorative illustration inside an <code class="font-mono text-sm">aria-hidden</code>
+    bot layer, and that is the only place a circle is permitted.
+  </p>
+
+  <!-- ── family v2 · hero ─────────────────────────────────────────────────── -->
+  <div class="flex flex-col gap-4">
+    <h3 class="font-mono text-sm lowercase text-text">
+      family v2 — hero · flat solid · fixed palette · theme-invariant
+    </h3>
+    <p class="max-w-prose text-base text-text-muted">
+      Twelve forms, ten drawn per desktop assembly and six under 720px. Colour is a
+      property of the form, not of the roll: it is what keeps every seed a cousin of
+      the real Grok Bot avatars rather than a copy of one. These hexes do
+      <em>not</em> invert with the theme — real avatars do not either.
+    </p>
+    <div class="grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+      {
+        v2.map((b) => (
+          <figure class="flex flex-col items-center gap-2 rounded-sm border border-border bg-surface p-3">
+            <div set:html={b.svg} />
+            <figcaption class="text-center font-mono text-xs lowercase text-text-muted">
+              {b.id}
+              <br />
+              {b.shape} · {b.color}
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- ── the six ──────────────────────────────────────────────────────────── -->
+  <div class="flex flex-col gap-4">
+    <h3 class="font-mono text-sm lowercase text-text">the six — eyedropped, then harmonised</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left font-mono text-xs">
+        <thead>
+          <tr class="border-b border-border text-text-muted">
+            <th class="py-2 pr-4 font-medium">swatch</th>
+            <th class="py-2 pr-4 font-medium">name</th>
+            <th class="py-2 pr-4 font-medium">shipped</th>
+            <th class="py-2 pr-4 font-medium">eyedropped</th>
+            <th class="py-2 pr-4 font-medium">oklch L</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            Object.entries(PALETTE_V2).map(([name, hex]) => (
+              <tr class="border-b border-border">
+                <td class="py-2 pr-4">
+                  <span
+                    class="inline-block h-6 w-10 rounded-sm"
+                    style={`background:${hex}`}
+                  />
+                </td>
+                <td class="py-2 pr-4 text-text">{name}</td>
+                <td class="py-2 pr-4 text-text">{hex}</td>
+                <td class="py-2 pr-4 text-text-muted">{SOURCE[name]?.src}</td>
+                <td class="py-2 pr-4 text-text-muted">{SOURCE[name]?.L}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="max-w-prose text-base text-text-muted">
+      Raw lightness spread across the sampled avatars was 0.581–0.811; harmonised to
+      0.665–0.720. Not flattened — the warm hues keep a small lead, because forcing
+      orange down to a cool hue's lightness turns it to mud. White facial features
+      clear 3:1 on all six (grey is the tight one, 3.05:1).
+    </p>
+  </div>
+
+  <!-- ── family v1 · about ────────────────────────────────────────────────── -->
+  <div class="flex flex-col gap-4">
+    <Fragment set:html={halftoneDefs} />
+    <h3 class="font-mono text-sm lowercase text-text">
+      family v1 — /about · token-driven · theme-reactive
+    </h3>
+    <p class="max-w-prose text-base text-text-muted">
+      The original cluster: ink, paper and one Ash Amber bot, with outline and
+      halftone treatments. Superseded on the hero, kept in the repo, and rendered as
+      a decorative build-time static pile on <code class="font-mono text-sm">/about/</code>
+      — no physics island, no client JS. It reads <code class="font-mono text-sm">--ink</code>,
+      <code class="font-mono text-sm">--paper</code> and
+      <code class="font-mono text-sm">--accent</code>, so unlike v2 it does invert with
+      the theme.
+    </p>
+    <div class="bots-v1 grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+      {
+        v1.map((b) => (
+          <figure class="flex flex-col items-center gap-2 rounded-sm border border-border bg-surface p-3">
+            <div set:html={b.svg} />
+            <figcaption class="text-center font-mono text-xs lowercase text-text-muted">
+              {b.id}
+              <br />
+              {b.style}
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </div>
+</section>
