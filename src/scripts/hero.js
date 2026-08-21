@@ -229,6 +229,29 @@ function releaseDue(now){
     var z=dropZone(b.size);
     var x=rr(z.l, z.r);
     M.Body.setStatic(b.body,false);
+    // ── F16 fix: WAKE THE BODY ON RELEASE ────────────────────────────────────
+    // A bot waits off-stage as a static body until its stagger delay fires. With
+    // `enableSleeping:true`, Sleeping.update does NOT skip static bodies — it
+    // sees zero motion and, after sleepThreshold (60 frames ≈ 1s), flags the
+    // parked bot asleep. Body.setStatic(body,false) restores mass and
+    // restitution but deliberately does not clear `isSleeping`, and
+    // Engine._bodiesUpdate skips sleeping bodies outright — so the bot is
+    // released, repositioned and given a velocity that is never integrated. It
+    // hangs above the stage forever, clipped by `overflow:hidden`, and the hero
+    // renders NINE bots.
+    //
+    // It bites the LAST bots in the stagger, whose delay (i*rr(70,150)+rr(0,120))
+    // crosses the ~1s threshold — i.e. i>=8 — which is why it is intermittent.
+    // Measured before the fix: 4 of 8 seeds lost a bot, at an IDENTICAL rate on
+    // the pre-F16 build (also 4 of 8), so this is a long-standing bug that F16
+    // inherited, not one it introduced. It only became worth fixing here because
+    // family v2's bots are large and brightly coloured, so a missing one reads.
+    //
+    // This RESTORES the 10-desktop / 6-mobile count A4 and integration-notes
+    // lock, rather than changing it, and it is the same idiom integration-notes
+    // §7 already documents for the idle nudges ("explicitly wake bodies via
+    // Sleeping.set(body, false)") and that idleBehaviours() uses below.
+    M.Sleeping.set(b.body, false);
     b.body.collisionFilter.mask = 0xFFFFFFFF;
     M.Body.setPosition(b.body, {x:x, y:-b.size-rr(30,160)});
     M.Body.setVelocity(b.body, {x:rr(-0.7,0.7), y:rr(1,3)});
