@@ -2,7 +2,14 @@
 // §4.3.14 — /about/: the engine story, the independence disclaimer prominently (§10.5,
 // FENCED CP-110), the CRHQ cross-link and StatBar full. A7 comms rules bind this page:
 // Scouts / the Curator / the Builder, and "always on" — never a cadence.
+//
+// M8 · F16 — bot family v1 lives here now. The home hero moved to family v2
+// (flat fixed-palette avatars); the original ink/paper/amber cluster is kept as
+// a decorative, build-time-rendered static pile under the agents story. No
+// physics island, no client JS, no caption (A7: the illustration says nothing,
+// the prose beside it already uses the sanctioned names and "always on").
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutBotPile from '../../components/AboutBotPile.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Callout from '../../components/Callout.astro';
 import StatBar from '../../components/StatBar.astro';
@@ -52,6 +59,10 @@ const [privacyEmbedsBefore, privacyEmbedsAfter] = CP_120_ABOUT_PRIVACY_EMBEDS.sp
         read it. If an entry is stale, it says so on the page.
       </p>
     </section>
+
+    {/* bot family v1, as a decorative static pile — see AboutBotPile.astro */}
+    <AboutBotPile />
+
 
     <section class="flex max-w-prose flex-col gap-4">
       <SectionHeading title="who built it" variant="sub" level={2} />

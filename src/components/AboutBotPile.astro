@@ -1,0 +1,72 @@
+---
+/**
+ * AboutBotPile — the decorative home for BOT FAMILY v1.  (M8 · F16)
+ *
+ * F16 re-skinned the home hero to family v2 (soft silhouettes, flat fixed
+ * palette). The original ink/paper/amber cluster was not thrown away: it is
+ * family v1, and this is where it lives now — a static pile beside the "who
+ * keeps it current" story on /about/.
+ *
+ * THREE CONSTRAINTS, ALL BINDING (F16 directive point E):
+ *  · NO second physics island. There is no matter.js on /about/, no client
+ *    script, no rAF loop. The pile is generated at BUILD TIME by
+ *    renderStaticPileV1() and inlined as one <svg>. /about/ stays light.
+ *  · It reuses hero.js's own renderStatic() layout — the same pileRows 6/3/1,
+ *    the same row inset and tilt formulas — so it is recognisably the same
+ *    object the hero falls back to under reduced motion, not a new drawing.
+ *  · NO CAPTION. A7 binds every public string on this page (agents are only
+ *    ever the Scouts, the Curator and the Builder; cadence is only ever "always
+ *    on"). The safest way to honour that on a decorative illustration is to ship
+ *    no copy at all — so this is aria-hidden with no label, and the section it
+ *    sits under already carries the A7-correct prose.
+ *
+ * The paint rules live in src/styles/bots-v1.css, scoped under `.bots-v1` and
+ * shared with the /dev/components section. HeroStage.astro still declares its
+ * own global copy of `.s-*` for the home page; scoping is what guarantees the
+ * two can never fight, and the halftone <pattern> is id-namespaced for the same
+ * reason. Only LAYOUT is local to this component.
+ */
+import { renderStaticPileV1 } from '../lib/botFamilyV1';
+import '../styles/bots-v1.css';
+
+const pile = renderStaticPileV1({
+  width: 760, // stands in for the hero's #content block -> how wide the pile spreads
+  stageWidth: 1180, // full desktop bot scale, so cluster:bot stays ~7.3:1 like the hero
+  height: 300, // room for all three rows of the 6/3/1 taper
+  count: 10, // the desktop assembly size, so the pile reads 6/3/1 like the hero's
+  seed: 4173, // fixed: a build-time illustration must not re-roll between deploys
+  // A1: amber means now/do, and no more than ONE element per viewport may carry
+  // it. /about already spends its accent budget elsewhere on the page, and a
+  // decorative pile is not a now/do element — so v1's one-amber-bot rule is
+  // switched off here deliberately, rather than left to whichever form the seed
+  // happens to land the accent pick on.
+  accent: false,
+  patternId: 'gbHalftoneAboutV1',
+});
+---
+
+<div class="botpile-v1 bots-v1" aria-hidden="true" set:html={pile} />
+
+<style is:global>
+  /* Layout only — the paint is in src/styles/bots-v1.css under `.bots-v1`. */
+  .botpile-v1 {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    /* decorative: it must never be the loudest thing in the section */
+    opacity: 0.9;
+  }
+  .botpile-v1 .botpile-v1-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Under 640px the pile scales below the point where an eleven-form roster
+     still reads as distinct silhouettes, so it steps back rather than shrinking
+     into noise. Nothing on the page depends on it. */
+  @media (max-width: 640px) {
+    .botpile-v1 { opacity: 0.75; }
+  }
+</style>

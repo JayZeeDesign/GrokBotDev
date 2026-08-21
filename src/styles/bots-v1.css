@@ -1,0 +1,49 @@
+/* ============================================================================
+   BOT PAINT — family v1.  (M8 · F16)
+
+   The original ink / paper / Ash Amber treatment, lifted from the pre-F16 hero.
+   It is no longer the hero's paint — F16 moved the home page to family v2
+   (src/styles/hero-bots.css) — but v1 is still rendered in two places, so the
+   rules live in a shared file rather than inside whichever component happened to
+   need them first:
+
+     · src/components/AboutBotPile.astro   — the decorative /about pile
+     · src/components/dev/BotFamilyGallery.astro — the style-guide section
+
+   Everything is scoped under `.bots-v1`. HeroStage.astro still declares its own
+   global `.s-*` block for the home page, so the scope is what guarantees the two
+   copies can never fight over specificity.
+
+   UNLIKE FAMILY v2, THIS ONE IS THEME-REACTIVE, AND THAT IS THE POINT. v1 reads
+   --ink / --paper / --accent and inverts with the theme; v2 is fixed hexes in
+   both modes because real Grok Bot avatars do not invert. If you are making them
+   behave the same way, you have collapsed the distinction between the families.
+   ========================================================================== */
+
+.bots-v1 {
+  /* integration-notes §1: the bots read --ink/--paper/--accent and nothing else,
+     and the remap happens in ONE place. This is that place for family v1. */
+  --ink: var(--color-text);
+  --paper: var(--color-bg);
+  --accent: var(--color-accent);
+}
+
+.bots-v1 .s-solid { fill: var(--ink); stroke: none; }
+.bots-v1 .s-solid .eye { fill: var(--paper); }
+/* the rounded triangle's corners come from a fat round-joined stroke, so its
+   stroke has to be its own fill colour (integration-notes §8) */
+.bots-v1 .s-solid .rt { stroke: var(--ink); }
+
+.bots-v1 .s-accent { fill: var(--accent); stroke: none; }
+.bots-v1 .s-accent .eye { fill: var(--paper); }
+.bots-v1 .s-accent .rt { stroke: var(--accent); }
+
+.bots-v1 .s-outline { fill: none; stroke: var(--ink); }
+.bots-v1 .s-outline .eye { fill: var(--ink); stroke: none; }
+
+/* `.s-halftone` deliberately does NOT set `fill` here: the fill is written as an
+   attribute on the element so it can point at a namespaced <pattern> id, which
+   is what lets more than one copy of the family coexist on a page. */
+.bots-v1 .s-halftone { stroke: var(--ink); }
+.bots-v1 .s-halftone .eye { fill: var(--ink); stroke: none; }
+.bots-v1 pattern circle { fill: var(--ink); }
