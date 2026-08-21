@@ -80,7 +80,7 @@ function stageBox(){ return stage.getBoundingClientRect(); }
 function isMobile(){ return stageBox().width < 720; }
 
 // 10 of the 11 forms on desktop; mobile stays at 6 (small stage, small bots).
-function botCount(){ return isMobile() ? 6 : 10; }
+function botCount(){ return isMobile() ? 8 : 10; } // direct round: operator raised mobile 6 -> 8
 function botSize(f){
   var W=stageBox().width;
   var k = Math.max(0.56, Math.min(1, W/1180));
@@ -354,7 +354,7 @@ function loop(now){
    ============================================================ */
 /* A tapered pile that lands where the physics sim would settle: widest bots on
    the bottom row, resting just above the headline. Count-driven, so it follows
-   botCount() — 6/3/1 for ten on desktop, 4/2 for six on mobile. */
+   botCount() — 6/3/1 for ten on desktop; pileRows() is formula-based so eight on mobile tapers 5/3. */
 function pileRows(n){
   var r0=Math.ceil(n*0.55), rem=n-r0, r1=Math.ceil(rem*0.7), r2=rem-r1;
   return [r0,r1,r2].filter(function(c){ return c>0; });
