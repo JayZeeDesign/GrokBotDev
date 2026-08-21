@@ -10,6 +10,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { INCLUDE_DEV_PAGES } from '../../lib/buildFlags';
 
 import AgentContractBlock from '../../components/AgentContractBlock.astro';
+// F16 — the two bot families. Lives under components/dev/ because, unlike everything
+// else on this page, it is documentation of an illustration system rather than a
+// shipping UI component; nothing outside this gallery imports it.
+import BotFamilyGallery from '../../components/dev/BotFamilyGallery.astro';
 import BracketBadge from '../../components/BracketBadge.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Button from '../../components/Button.astro';
@@ -265,6 +269,13 @@ const groups = [
       <MarkGlyph variant="divider" size={14} />
       <p class="font-mono text-xs text-text-muted">divider (section motif)</p>
     </section>
+
+    {/* ---------------------------------------------------------- bot families (F16)
+        Placed here, straight after MarkGlyph, because it is identity/illustration
+        material rather than a UI component. It also carries the binding line that
+        the circle exemption is HERO-ONLY — A3's no-circle-marks rule is untouched
+        for the logo, favicon, OG cards and chips. */}
+    <BotFamilyGallery />
 
     {/* -------------------------------------------------------------- BracketBadge */}
     <section id="c-bracketbadge" class="flex flex-col gap-6">
