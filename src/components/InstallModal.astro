@@ -285,7 +285,23 @@ const defaultTrigger =
   }
 
   .install-modal__body {
+    /* F6 — the modal scrolls INTERNALLY and VERTICALLY ONLY. `overflow-x: clip` is the
+       backstop: even if some future child refuses to wrap, it gets clipped here instead of
+       widening the sheet and taking the page sideways with it. `min-inline-size: 0` cancels
+       the automatic min-content floor a flex item gets, which is what let an unbreakable URL
+       push this container wider than the viewport in the first place. */
     overflow-y: auto;
+    overflow-x: clip;
+    min-inline-size: 0;
+  }
+
+  /* Same floor on the sheet and on every direct child of the body, for the same reason. */
+  .install-modal__sheet {
+    min-inline-size: 0;
+  }
+  .install-modal__body > * {
+    min-inline-size: 0;
+    max-inline-size: 100%;
   }
 
   /* B3: mobile full-height sheet. */

@@ -17,6 +17,39 @@
     min-height: 100vh;
     margin: 0;
     background: var(--color-bg);
+    /* F6 — the page itself NEVER scrolls sideways. Individual containers may (the C4 table
+       rule: a genuinely tabular or code-formatted block scrolls within its own box), but
+       nothing is allowed to widen the document. `clip` rather than `hidden` because `hidden`
+       on body creates a scroll container and breaks `position: sticky` and scroll anchoring;
+       `clip` just refuses the overflow. */
+    overflow-x: clip;
+  }
+
+  /* ── F6 · D9 wrap contract for every prompt / contract / code surface ──────────────────
+     A prompt is PROSE, not a table: it must wrap, never scroll. `white-space: pre-wrap`
+     alone is not enough — it only breaks at existing whitespace, so one unbroken
+     `https://grokbot.dev/api/v1/collections.json` blows past the container and, inside the
+     InstallModal at 390, took the whole page sideways (the operator's F6 report).
+     `overflow-wrap: anywhere` is the operative fix, and it is chosen over
+     `word-break: break-word` deliberately: `anywhere` also shrinks the element's MIN-CONTENT
+     size, so a flex or grid parent stops being forced wider than the viewport. Without that,
+     the parent still blows out even though the text wraps.
+     `min-inline-size: 0` cancels the `auto` minimum every flex item gets, which is the other
+     half of the same problem. */
+  pre,
+  code,
+  kbd,
+  samp {
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Long bare URLs in prose (entry bodies, hub intros) are the same hazard, minus the
+     monospace. */
+  p a[href],
+  li a[href] {
+    overflow-wrap: anywhere;
   }
 
   a {

@@ -1511,6 +1511,81 @@ rather than burying it.**
 CP-034 (`load tweet from x`) is **retired** — there is no button. The constant stays in
 `lib/copy.ts` marked retired so the pack key still resolves.
 
+### F6 · horizontal overflow on mobile — root-caused, fixed at component level, D9 swept
+
+The operator hit sideways page scroll on `/plugins/aaron-marketing-skills/` with the
+InstallModal open, text clipped at BOTH edges.
+
+**Root cause.** `PromptBlock` and `AgentContractBlock` set `white-space: pre-wrap`, which only
+breaks at existing whitespace. The §7.3 routine prompt contains unbroken URLs
+(`https://grokbot.dev/api/v1/collections.json`) with no break opportunity, so the `<pre>`'s
+content was wider than its box — measured `pre [368 > 356]` at 390 — and the `<code>` rendered
+to `right=393` in a 390 viewport. Inside the modal that chained upward through
+`.prompt-body → .rounded-sm → .schedule-picker → section`, widening the sheet and taking the
+page with it. The site-level hero modal was worse (`right=413`) because its sheet is narrower.
+
+**Why `overflow-wrap: anywhere` and not `word-break: break-word`.** `anywhere` additionally
+shrinks the element's **min-content** size. Without that, a flex/grid parent is still forced
+wider than the viewport even though the text visibly wraps — the text looks fixed and the page
+still scrolls. `min-inline-size: 0` cancels the `auto` minimum every flex item carries, which
+is the other half of the same mechanism.
+
+**Fixes, all at component/global level rather than per-page:**
+
+1. **`global.css` base layer — one wrap contract for every mono surface**:
+   `pre, code, kbd, samp { max-inline-size: 100%; min-inline-size: 0; overflow-wrap: anywhere }`,
+   plus the same on `p a[href]` / `li a[href]` because a bare URL in prose is the identical
+   hazard without the monospace.
+2. **`body { overflow-x: clip }`** — the page itself can never scroll sideways again,
+   whatever a future component does. `clip` not `hidden`: `hidden` on `body` creates a scroll
+   container and breaks `position: sticky` and scroll anchoring; `clip` simply refuses.
+3. **`InstallModal`** — `overflow-x: clip` + `min-inline-size: 0` on `.install-modal__body`,
+   `min-inline-size: 0` on the sheet, and `min-inline-size: 0; max-inline-size: 100%` on every
+   direct child. The modal scrolls internally, vertically only. The background scroll lock was
+   already correct and was re-verified (`html.install-modal-open { overflow: hidden }`, active
+   in the live DOM).
+
+**D9 inventory — every rendered `pre`/`code` surface on the site.** 15 of 108 pages carry
+them; **160 blocks total** (61 `<pre>` + 99 `<code>`), all produced by four emitters:
+
+| emitter | surfaces | disposition |
+|---|---|---|
+| `PromptBlock` | entry-detail inline prompt · `/plugin-builder/` · collection combined setup · **both InstallModal variants, sections 1 + 2** | wraps (the fix) |
+| `AgentContractBlock` | `/agent/` v1 contract | wraps (the fix) |
+| `/agent/` endpoint table `<code>` | 10 endpoint URLs + MCP | already `break-all`; now also min-width-0 |
+| `ContributeSteps` | `/contribute/` steps · `/submit/` frontmatter templates | wraps; keeps its own `overflow-x: auto` as the C4 own-container escape hatch, now unable to widen the page |
+
+By route family: use-cases 74 · plugins 50 · agent 12 · collections 8 · home 8 · submit 4 ·
+contribute 2 · plugin-builder 2. Verified in-browser at 390 across all eight route types:
+**every visible `pre`/`code` computes `overflow-wrap: anywhere`, and zero fail to wrap.**
+
+**New guard: `scripts/qa/check-overflow.sh` + `overflow-probe.js`.** 15 routes × 3 widths
+(360 / 390 / 768) = **45 combinations, all passing**, and it includes the modal-open state on
+four routes because that is where the defect lived.
+
+The probe asserts **two** things, and the second one is the point:
+
+- `documentElement.scrollWidth <= innerWidth` — the headline symptom, but it is **masked by a
+  scroll lock**. With the modal open this reads `pageOverflow: false` while the page really
+  does pan on a phone. A guard checking only this would have missed the operator's bug
+  entirely.
+- **no rendered box extends past the viewport's right edge** — which the lock cannot hide.
+
+Two exclusions, both genuine: descendants of a closed `<details>` (collapsed to ~34px, so the
+comparison is meaningless) and `.sr-only` (clipped to 1px by design). Containers that opt into
+their own `overflow-x` are allowed to scroll internally — that is the C4 table rule, and the
+page still cannot move.
+
+**Proven by regression.** Reverting the two global rules and rebuilding makes the guard fail
+**4 modal routes** at 390, naming exactly the reported defect —
+`pastViewport: ["code right=393 (vw 390)"]` with the chain
+`pre [368 > 356] → .prompt-body → .rounded-sm → .schedule-picker → section` — and reporting
+`pageOverflow: false, scrollLockActive: true`, which is the masking behaviour above, caught.
+Restoring the rules returns 45/45.
+
+Screenshot: `images/grokbot-m7-qa/F6-modal-390.png` — modal open at 390, the long API URLs
+wrapping mid-token, nothing clipped at either edge, vertical scroll only.
+
 ### Verification
 
 - **Full gate suite green:** validate 10 entries · negative fixtures still rejected ·
@@ -1521,7 +1596,7 @@ CP-034 (`load tweet from x`) is **retired** — there is no button. The constant
   landmark defects**. Screenshots refreshed in `images/grokbot-m7-qa/`, plus `F1-F4-home-*.png`,
   `F1-F4-hub-engineering-*.png`, `F1-drawer-open-390.png`, `F4-sidebyside-*.png`,
   `F5-wall-embeds-{390,768,1440}.png`, `F5-entry-detail-embed-{390,1440}.png`,
-  `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`.
+  `F5-fallback-blocked-390.png`, `F5-dark-theme-1440.png`, `F6-modal-390.png`.
   **Screenshot caveat worth knowing:** a `--full` full-page capture does not repaint
   cross-origin iframes, so the wall's embeds photograph as blank boxes in a full-page shot even
   when they are rendering correctly. The F5 wall captures are therefore VIEWPORT shots, and the
