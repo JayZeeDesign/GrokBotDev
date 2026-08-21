@@ -294,29 +294,33 @@ bot scale) separately, which reproduces the hero's real cluster-to-bot ratio of 
 was added** — the QA harness drives the `agent-browser` CLI and system Python that are already
 on the box.
 
-### Two follow-ups for whoever integrates this
+### Two integration tasks — both DONE at the merge
 
-1. **`HeroStage.astro` now contains dead code.** Its `<style is:global>` still declares the
-   v1 `.s-solid` / `.s-accent` / `.s-outline` / `.s-halftone` rules and the `#gbHalftone`
-   `<defs>`, which nothing on the home page uses any more — v2 paints from its own stylesheet
-   under its own class names. That block was left in place *because F16 was not allowed to
-   edit that file*, not because it is needed. **Cleanup is assigned to the INTEGRATION step**
-   (per the F16 checkpoint ruling) and is one contiguous deletion. Keep
+Both were deferred out of the F16 branch because they touch files another executor held
+while F16 was built. The single-writer role transferred at integration and both landed
+then; they are recorded here as history, not as outstanding work.
+
+1. **✅ The dead v1 paint is gone from `HeroStage.astro`.** Its `<style is:global>` had kept
+   the v1 `.s-solid` / `.s-accent` / `.s-outline` / `.s-halftone` rules and the `#gbHalftone`
+   `<defs>` after the hero moved to v2's own stylesheet. Both blocks were deleted at
+   integration — 17 lines, nothing else in that file touched (F10's transform-free `#content`
+   centring is untouched). **Kept deliberately:**
    `.bot .eyes { transform-box: fill-box; transform-origin: center }` — integration-notes §8
-   says blinks scale from the wrong origin without it.
+   says blinks scale from the wrong origin without the CSS half.
 
-2. **Wiring the style-guide section.** `BotFamilyGallery.astro` needs two lines in
-   `src/pages/dev/[gallery].astro`:
+   Left alone, and worth a future tidy rather than a rushed one: `.stage`'s alias block still
+   declares `--ink` and `--paper`, which nothing inside `.stage` reads now that v2 paints from
+   fixed hexes. `--accent`, `--muted`, `--hair`, `--surface`, `--mono` and `--sans` in that
+   same block ARE still live (the search cursor, hint and chips use them), so it is a
+   two-line trim inside a load-bearing block, not a block deletion. Out of scope for an
+   integration window whose remit was "delete only the dead paint".
 
-   ```astro
-   import BotFamilyGallery from '../../components/dev/BotFamilyGallery.astro';
-   ...
-   <BotFamilyGallery />
-   ```
-
-   Suggested position: straight after `#c-markglyph`, since it is identity/illustration
-   material rather than a UI component. Section id is `c-botfamily`, matching the page's
-   `c-*` convention. Verified rendering via a throwaway page, which was deleted before commit.
+2. **✅ The style-guide section is wired.** `src/pages/dev/[gallery].astro` gained the import
+   (alphabetical, between `AgentContractBlock` and `BracketBadge`) and `<BotFamilyGallery />`
+   immediately after the `#c-markglyph` section, since this is identity/illustration material
+   rather than a UI component. Section id `c-botfamily` matches the page's `c-*` convention.
+   Verified in a dev build: the section renders both families and `/dev/components/` still
+   returns 404 in a production build.
 
 ---
 
