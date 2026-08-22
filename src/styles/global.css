@@ -52,6 +52,21 @@
     overflow-wrap: anywhere;
   }
 
+  /* F6 extension (operator, "make it perfect"): prose block text itself must wrap, not only
+     links inside it. An entry summary carrying an unbreakable token — the arrow string
+     `brief→observe→correct→schedule→deliver` has no soft-wrap opportunity — was overflowing its
+     grid column and taking the whole page ~15px sideways at 375px (proven the scroll-causer by
+     hide-and-remeasure, not inferred). `anywhere` rather than `break-word` is deliberate: it
+     also shrinks the element's MIN-CONTENT size, so the flex/grid parent stops being forced
+     wider than the viewport. Normal prose is unaffected — a break only ever happens when a run
+     genuinely cannot fit. */
+  p,
+  li,
+  dd,
+  figcaption {
+    overflow-wrap: anywhere;
+  }
+
   a {
     color: inherit;
     text-decoration: none;
