@@ -13,12 +13,14 @@ There is **no CI/CD** — deploys are a single self-contained script on the box.
 | `deploy.sh` | The deploy script. Kept **outside** `repo/` so `git reset` can't clobber it mid-run. |
 | `_archive/` | `coming-soon-dist.tgz` (the pre-launch landing) + the retired AM2studio placeholder checkout. |
 
-## Deploy — publish whatever is on `main`
+## Deploy — publish the `production` branch
+Production serves the **`production`** branch, not `main`. Normal flow is `infra/promote.sh` from
+the dev box (fast-forwards `production` to a reviewed `main`, then runs this). Manual prod deploy:
 ```bash
 ssh crhq-products
 sudo -u agent /opt/projects/user/grokbot/deploy.sh
 ```
-`deploy.sh`: `git reset --hard origin/main` → `npm ci` → `npm run build` (the **full gate** —
+`deploy.sh`: `git reset --hard origin/production` → `npm ci` → `npm run build` (the **full gate** —
 a red build aborts **before** anything is swapped, so the live site is never a broken release)
 → snapshot `dist/` to `releases/<ts>/` → atomically `ln -sfn` the `current` symlink → prune to 5.
 Zero-downtime: the swap is a single symlink flip.
