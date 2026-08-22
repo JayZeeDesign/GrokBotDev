@@ -34,6 +34,8 @@ interface Props {
   layout?: 'cards' | 'table';
   /** Operator: /plugins/ and /use-cases/ carry one rotating sponsored slot. */
   showSponsorSlot?: boolean;
+  /** Operator: two server-rendered sort views (newest default, or by Awesome Score). */
+  sort?: { current: 'newest' | 'score'; newestUrl: string; scoreUrl: string };
 }
 
 const {
@@ -49,6 +51,7 @@ const {
   laneLabel,
   layout = 'cards',
   showSponsorSlot = false,
+  sort,
 } = Astro.props;
 
 const categoryLabel = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
@@ -103,6 +106,17 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
     }
     <FilterBar facets={facets} options={options} clearHref={baseUrl} />
   </div>
+
+  {
+    sort && (
+      <div class="sortControl" role="group" aria-label="sort order">
+        <span class="sortControl__label">sort:</span>
+        <a href={sort.newestUrl} class:list={['sortControl__opt', sort.current === 'newest' && 'is-active']} aria-current={sort.current === 'newest' ? 'true' : undefined}>newest</a>
+        <span class="sortControl__sep" aria-hidden="true">·</span>
+        <a href={sort.scoreUrl} class:list={['sortControl__opt', sort.current === 'score' && 'is-active']} aria-current={sort.current === 'score' ? 'true' : undefined}>awesome score</a>
+      </div>
+    )
+  }
 
   {showSponsorSlot && <RotatingSponsorSlot />}
 
@@ -192,6 +206,38 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
 </div>
 
 <style>
+  /* Operator: two-view sort control (newest default · awesome score). Plain links to the two
+     server-rendered views — static, SEO-clean, correct across the whole set (not just a page). */
+  .sortControl {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-start: -0.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+  .sortControl__label {
+    color: var(--color-text-muted);
+    text-transform: lowercase;
+  }
+  .sortControl__opt {
+    color: var(--color-text-muted);
+    text-transform: lowercase;
+    text-underline-offset: 3px;
+  }
+  .sortControl__opt:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+  }
+  .sortControl__opt.is-active {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+  }
+  .sortControl__sep {
+    color: var(--color-border-interactive);
+  }
+
   /* Operator: plugin listing = table. The wrapper is the ONLY thing that scrolls (C4 high-pri:
      a table never widens the page past the viewport); the table keeps a min-width so on a phone
      the columns stay legible and you swipe sideways instead of them crushing. */

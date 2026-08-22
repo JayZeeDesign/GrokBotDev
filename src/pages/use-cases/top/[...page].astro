@@ -1,0 +1,46 @@
+---
+// Operator: the "order by Awesome Score" view of /use-cases/. Same list, sorted by score
+// (sortByScore). A server-rendered alternate view (toggle in LaneIndexPage) so the ordering is
+// correct across the WHOLE set, not just one page — and it paginates. noindex to avoid
+// duplicate-content with the canonical newest view.
+import type { GetStaticPaths, Page } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import LaneIndexPage from '../../../components/LaneIndexPage.astro';
+import { allUseCases, sortByScore, urlOf } from '../../../lib/entries';
+import type { AnyDoc } from '../../../lib/entries';
+import { META, breadcrumbList, collectionPage, itemList, paginate } from '../../../lib/seo';
+
+export const getStaticPaths = (async ({ paginate: paginateFn }) => {
+  const useCases = sortByScore(await allUseCases());
+  return paginateFn(useCases, { pageSize: 24 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props as { page: Page<AnyDoc> };
+const pool = sortByScore(await allUseCases());
+
+const meta = paginate(META.useCases, page.currentPage, page.lastPage);
+const url = page.currentPage === 1 ? '/use-cases/top/' : `/use-cases/top/${page.currentPage}/`;
+const crumbs = [{ label: 'home', href: '/' }, { label: 'use cases', href: '/use-cases/' }, { label: 'by score' }];
+const graph = [
+  collectionPage(url, meta.title, meta.description),
+  breadcrumbList(crumbs),
+  itemList(page.data.map((entry) => ({ url: urlOf(entry), name: entry.data.name }))),
+];
+---
+
+<BaseLayout title={meta.title} description={meta.description} graph={graph} robots="noindex,follow" laneFeed="use-cases">
+  <LaneIndexPage
+    h1="Awesome Use Cases"
+    intro="every use case, ranked by Awesome Score — the highest-quality, most-reproducible setups first."
+    entries={page.data}
+    page={page}
+    baseUrl="/use-cases/top/"
+    variant="use-case"
+    facets={['category']}
+    source="use-cases-index"
+    pool={pool}
+    laneLabel="use cases"
+    showSponsorSlot={true}
+    sort={{ current: 'score', newestUrl: '/use-cases/', scoreUrl: '/use-cases/top/' }}
+  />
+</BaseLayout>
