@@ -12,6 +12,8 @@ install_steps:
 prompt: "You have access to StayingAPI (https://stayingapi.com) with my key. When I ask about a place to stay, search booking sites — hotels, Booking.com, Airbnb-style listings — for the dates and location I give you and return the available options with prices so I can compare. Never invent a listing or a price; if the API returns nothing, say so."
 works_with: []
 project_url: "https://stayingapi.com"
+founder:
+  x_handle: "Scheemunai"
 author:
   handle: "stayingapi"
   url: "https://stayingapi.com"

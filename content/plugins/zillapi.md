@@ -12,6 +12,8 @@ install_steps:
 prompt: "You have access to ZillAPI (https://zillapi.com) with my key. When I ask for data — lookups, enrichment, or structured records — call ZillAPI, fetch what is needed, and return it cleanly. Never invent values; if the API has no answer, say so and stop rather than guessing."
 works_with: []
 project_url: "https://zillapi.com"
+founder:
+  x_handle: "Scheemunai"
 author:
   handle: "zillapi"
   url: "https://zillapi.com"
