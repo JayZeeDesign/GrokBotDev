@@ -64,4 +64,4 @@ Stop if dates are missing or I did not name a cabin.
 
 ## Why it's cool
 
-Ben Lang collected internal Grok Bot use cases; the one to copy is his: find/book flights biased toward Starlink access. Peer one-liners (contractors, recipes, film scans) skipped — this is the job with a clear preference.
+Ben Lang collected a pile of internal use cases, and this is the one worth copying because it treats a personal preference — inflight wifi quality — as a hard constraint the bot has to trade off against time and price, rather than a nice-to-have buried in a normal flight search.

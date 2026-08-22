@@ -55,4 +55,4 @@ When done, save the confirmation PDF and propose a calendar event for the new ex
 
 ## Why it's cool
 
-Same tweet: he had it handle DMV registration — the boring civic errand agents are actually good at. It shows how a single Grok Bot can own dmv runner end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Civic paperwork is a near-perfect agent job: one official site, a form with known fields, and a hard stop at payment and identity. It's unglamorous next to a trading bot or a media buyer, but it's also one of the least risky ways to hand a bot real authority over a task you'd otherwise put off for weeks.

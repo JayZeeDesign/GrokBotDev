@@ -58,4 +58,4 @@ Save a weekly markdown doc. Do not comment, like, subscribe, or upload anything.
 
 ## Why it's cool
 
-One of Peter's five bots is a YouTube outlier researcher — it hunts videos that outperform the channel's baseline so you can learn the format, not copy the topic blindly.
+The 3x-the-channel-median threshold is doing real work: it's tuned to find a video that outperformed its own channel's normal pattern, not just whatever has the most raw views. That distinction turns this into a format-mining tool instead of a lazy 'show me popular videos' scrape.

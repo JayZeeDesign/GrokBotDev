@@ -62,4 +62,4 @@ Stop if a workspace login needs 2FA I have not completed.
 
 ## Why it's cool
 
-Same Yu-kai setup: the bot informs him of any message from five email addresses and six Slack servers that requires his attention, and keeps him organized. Ping only what needs him.
+The job here is triage, not summarization: five inboxes and six Slack workspaces get watched, but the bot only speaks up when something actually needs a human. Silence is the deliverable on a normal day — a rarer design goal than the usual tell-me-everything digest bot.

@@ -62,4 +62,4 @@ Stop if the CRM account is missing or you cannot tell which Slack channel is the
 
 ## Why it's cool
 
-Krista Letz’s SpaceXAI GTM write-up describes a Customer Expert: one agent per strategic account that watches Slack, Gmail, Gong, and Granola, answers from running context, and flags feature requests plus support tickets. Same article as her weekly GTM operator.
+The trick isn't the tool list — it's the boundary. One agent owns exactly one account, so when you ask where the security review stalled, you get dates and links instead of a search across the whole pipeline. Splitting context by account, not by function, is what makes the running brief actually trustworthy.

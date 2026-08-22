@@ -61,4 +61,4 @@ Stop if a COI is expired and the job starts today — flag me before any send.
 
 ## Why it's cool
 
-Same contractor run: it found a discrepancy in subcontractor insurance certificates and drafted/sent email to their brokers; wrote a work order for a sub from a customer contract plus a materials list; filled out a credit application for a new supplier and emailed the right person.
+Catching a subcontractor insurance certificate that doesn't match what the job actually requires is the kind of gap a busy office misses under deadline pressure. Chasing the broker, writing the work order from the contract, and filling a supplier credit app in the same run shows the bot working the paperwork a job actually generates.

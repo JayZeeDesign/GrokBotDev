@@ -65,4 +65,4 @@ Stop if you cannot see my existing bots — ask me to paste the roster.
 
 ## Why it's cool
 
-Debbie O’Brien’s CoS tweet is the prompt: look at me, look at the bots I already created, tell me what to change, how to manage the team, and what else would make me productive. The screenshot is the answer she got back.
+Turning the mirror on her own bot roster is the twist — instead of asking Grok Bot to do a task, Debbie asked it to audit the tasks she'd already automated and recommend what to merge or add. Starting a chief-of-staff bot by inventorying your existing agents is a good move before bolting on a third or fourth one.

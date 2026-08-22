@@ -59,4 +59,4 @@ Never drive the robot unless I confirm the first live run. Never share credentia
 
 ## Why it's cool
 
-Yun-Ta Tsai had his 'Chief Engineer' bot build a feature so he can text his Matic robot vacuum from Grok Bot. Video/thread. 2.7K likes / 1.8M views. It shows how a single Grok Bot can own vacuum controller end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+One bot building a feature for another bot to use is the layer worth noticing: a 'Chief Engineer' agent wired up texting access to a Matic vacuum's existing app, rather than Yun-Ta wiring it up by hand. Letting an agent extend your own toolset, not just operate it, is a different level of delegation than most of these use cases show.

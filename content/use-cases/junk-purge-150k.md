@@ -66,4 +66,4 @@ Stop if a batch would trash more than 20% of a sender you have not shown me.
 
 ## Why it's cool
 
-Yu-kai Chou used Grok Bot to clean up 150,000 junk emails and unsubscribe from senders he never reads. Same tweet as the attention watch on five addresses and six Slack workspaces. This is Yu-kai’s 150k, not the separate 90k two-account purge.
+A dry-run before a single deletion is what separates 150,000 trashed emails from a horror story: sender counts and proposed rules come first, real deletes and unsubscribes only after approval. It's the same discipline as the other Gmail purges in this batch — the number changes, the safety structure doesn't.

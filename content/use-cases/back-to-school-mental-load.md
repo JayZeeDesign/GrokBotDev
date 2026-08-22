@@ -65,4 +65,4 @@ Stop if a form needs a parent signature or a payment — put it on my list with 
 
 ## Why it's cool
 
-Stella used Grok Bot on her back-to-school emails and to-dos for multiple kids, plus other household jobs it handled independently that week. 787 likes / 1.9M views.
+Splitting one shared inbox into a checklist per kid is the small idea that makes this replicable: forms, supplies, and signatures stop blurring together across children, and the household jobs that don't touch the school get handled independently instead of piling onto the mental load.

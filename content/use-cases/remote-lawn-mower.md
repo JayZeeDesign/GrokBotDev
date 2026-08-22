@@ -56,4 +56,4 @@ Log start/stop times and which zone. Never share the live camera publicly. Never
 
 ## Why it's cool
 
-Sawyer set up Grok Bot to remotely control his autonomous lawn mower, 50 miles from home. Two-minute setup. Video. 3.6K likes / 269K views. It shows how a single Grok Bot can own remote driver end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Fifty miles is the detail that makes this land: a status / mow / dock / stop command set is simple, but running it from that far away only works if the bot reliably relays state back, not just commands out. A two-minute setup for hardware control is a low bar to clear before trying a riskier device.

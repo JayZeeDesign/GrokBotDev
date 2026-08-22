@@ -65,4 +65,4 @@ Stop if the admin MCP is down — summarise only.
 
 ## Why it's cool
 
-Jesse Hanley’s thread is not a one-liner dump: he already runs a support bot against Bento Chat / helpdesk. It sweeps a few times a day, summarises what is assigned or escalated, and he texts back what to do — then it hits the admin MCP. “This is what I’ve done and it’s fantastic.”
+The loop closes because Jesse can just text back what to do — 'refund X', 'reply Y', 'ignore' — and the bot executes through the admin MCP instead of him clicking through a helpdesk himself. A running list of questions the docs still don't answer is the byproduct that quietly improves the next sweep.

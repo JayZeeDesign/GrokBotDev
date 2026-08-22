@@ -61,4 +61,4 @@ Stop if the merchant has no obvious cancel path — flag it, do not rage-click.
 
 ## Why it's cool
 
-Royce’s bot helped cut $50 in monthly subscriptions in the first 24 hours — one of the line items that made Grok Bot earn its keep for a non-programmer. It shows how a single Grok Bot can own subscription cutter end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+A table of recurring charges is easy; walking the actual cancel flow and screenshotting the confirmation is the part people skip. Royce's bot did the second half too, which is why $50 a month became a real number instead of a spreadsheet nobody acted on.

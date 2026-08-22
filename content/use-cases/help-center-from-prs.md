@@ -64,4 +64,4 @@ Stop if the PR and the current article contradict and you cannot tell which is s
 
 ## Why it's cool
 
-Damon’s Intercom + GitHub bot watches every merged PR, decides whether a help-center article needs updating, then drafts and publishes it. 82 likes / 11.4K views.
+Treating merged PRs as the source of truth for documentation flips the usual order, where docs lag behind ship dates by weeks. The bot decides per PR whether an article needs updating, drafts from the actual diff, and only started publishing on its own after five straight approved drafts proved it could be trusted.

@@ -65,4 +65,4 @@ Stop if you cannot find a primary source for a claim you want to put in the brie
 
 ## Why it's cool
 
-Lenny Rachitsky got early access and listed real jobs that made his life better — including “really good” briefs for upcoming podcast guests. Same tweet as his support auto-replies.
+A guest brief that's actually usable in the chair needs more than a bio: three threads worth pulling, quotes and numbers from the guest's own work, and a suggested first question, built from research instead of a template. That it made Lenny's own list of jobs that improved his life, next to support replies, says which use case people underrate.

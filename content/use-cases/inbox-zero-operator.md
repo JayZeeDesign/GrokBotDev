@@ -61,4 +61,4 @@ End with a count: unread at start, unread now, drafts waiting. If unread barely 
 
 ## Why it's cool
 
-Matthew Berman used Grok Bot for inbox zero (plus calendar, DMV, Amazon — split out). 509 likes / 41K views. It shows how a single Grok Bot can own inbox operator end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Running triage twice a day, not continuously, keeps this bot from turning into a nervous notification stream. It archives noise and drafts replies in your voice, but never sends — and it ends every run with a count of unread-at-start vs unread-now so you can tell at a glance whether it actually moved the needle.

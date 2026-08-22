@@ -65,4 +65,4 @@ Stop if Drive is huge and you cannot tell duplicates from versions — show samp
 
 ## Why it's cool
 
-Peter Yang’s five-bot tutorial includes a digital Marie Kondo that audits Gmail, Google Drive, and paid subscriptions, then proposes a cleanup plan. It only unsubscribes, deletes, renames, or cancels after he approves each action. Same tweet as the advisor / YouTube / X-scout crew.
+Capping each cleanup list at ten items per run is the detail worth copying: instead of a bot proposing to touch thousands of files at once, it queues the rest for tomorrow and waits for you to approve specific rows today. 'Spark joy' as a filter for digital clutter is a decent one when a bot, not a person, applies it.

@@ -64,4 +64,4 @@ Stop if the preferred item is out of stock and the substitute is a different all
 
 ## Why it's cool
 
-Rhys’s benchmark for agents is automated grocery ordering. Grok Bot was the first to do it well: a dedicated groceries chat that remembers preferences, a browser signed into Amazon and Costco, scheduled orders, and calendar updates for what to cook — cheaper and more granular than HelloFresh.
+Rhys uses grocery ordering as his personal benchmark for whether an agent is actually useful, and the bar it cleared was memory: a standing 'no olives' rule that survives every reorder, a browser signed into the stores he actually uses, and a calendar that shows meals instead of a dump of SKUs.

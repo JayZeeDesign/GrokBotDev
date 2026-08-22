@@ -64,4 +64,4 @@ Stop if the serial/port is ambiguous or the board does not enumerate — ask whi
 
 ## Why it's cool
 
-Dan connected Grok Bot to his Arduino and turned the LED display into a live scrolling SPCX stock ticker with a line graph plus SpaceX headlines. Video in the post. 350 likes / 149.8K views.
+Most Grok Bot demos stay inside a browser; this one drives a physical LED strip. Confirming the serial port before any write is the detail that matters — it's the difference between a fun ticker and a bricked board, and the same caution any hardware-facing agent needs before it touches a device it can't undo.

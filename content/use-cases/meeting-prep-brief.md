@@ -64,4 +64,4 @@ Stop if calendar is disconnected. Do not prep personal holds (doctor, school, bl
 
 ## Why it's cool
 
-Krista’s daily meeting-prep routine pulls Salesforce, Gmail, Slack, Granola, and Gong into a short, skimmable brief she can read on her phone. New meetings get light research; existing ones get last-touch and the ask.
+The bot treats new and existing meetings differently, which is the detail that keeps the brief from being padded: a first-time contact gets light public research labeled as research, while a returning account just gets last-touch and the open ask. Reading it on a phone before the meeting is the actual bar it's held to.

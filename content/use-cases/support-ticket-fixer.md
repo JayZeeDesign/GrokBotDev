@@ -66,4 +66,4 @@ Stop if logs and the ticket disagree on the account.
 
 ## Why it's cool
 
-Wilson (euboid) built the loop after asking whether Grok Bot could debug tickets, open a PR, and draft a reply. Incoming ticket → agent reads Fern docs, codebase, Axiom logs → bug gets RCA + PR + Linear, feature request hits the board, customer reply is drafted in his voice. Mornings are approve/reject. Saves ~4–6 hours/week.
+One ticket triggers three different outputs depending on what it actually is — a root-caused PR for a bug, a logged item for a feature request, always a drafted reply in Wilson's voice — because the agent reads the docs, the codebase, and the logs before deciding which path applies. Mornings are just approve or reject, and Wilson puts the saved time at four to six hours a week.

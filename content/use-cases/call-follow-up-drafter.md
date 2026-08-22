@@ -62,4 +62,4 @@ Stop if there is no transcript and no notes — do not write from the invite tit
 
 ## Why it's cool
 
-In the same GTM article, Krista automates follow-up drafts from Granola or Gong notes after external calls. Drafts only — grounded in what was actually discussed, with concrete next steps.
+Drafts stay grounded in what was actually said on the call, not generic 'great connecting with you' filler, because the bot reads the Granola or Gong notes before writing anything. If the notes are thin, it says so and drafts a short recap instead of manufacturing one — the harder discipline for a tool built to sound confident by default.

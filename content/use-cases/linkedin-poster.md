@@ -61,4 +61,4 @@ Stop if LinkedIn session died — hand me the screen, do not guess a password.
 
 ## Why it's cool
 
-Debbie created a LinkedIn bot, signed in on the bot’s computer (it never sees the password), let it learn her existing posts, dumped a messy voice note, and told it to post. It posted. Receipt, not a draft-only demo.
+Most social-bot demos stop at a draft; this one has a receipt of an actual post. The bot signs into LinkedIn on its own machine and never sees the password, learns Debbie's voice from her existing posts, and only publishes after she types 'post it' — proof beats another mockup screenshot.

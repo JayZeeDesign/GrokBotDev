@@ -57,4 +57,4 @@ At 48 hours write a report: what you drafted, what I approved, what you ignored,
 
 ## Why it's cool
 
-Daniel gave a bot a full macOS machine plus Gmail and an X account. It ran for two days posting and joining group chats. 353 likes / 86K views. It shows how a single Grok Bot can own always-on poster end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+A 48-hour timebox is the whole design. Instead of an agent that runs forever and drifts, Daniel's bot gets a hard stop and a single report at the end — drafts queued for approval, group chats summarized, and a flag for anything that smelled like a scam. Bounded runs like this are easier to trust than always-on ones.

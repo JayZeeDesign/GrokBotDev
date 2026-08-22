@@ -65,4 +65,4 @@ Stop if a “fire” is legal/money and you do not have the thread — link it, 
 
 ## Why it's cool
 
-Jesse’s Chief of Staff reads Gmail, Calendar, Slack/Discord, and sends a 5am summary with fires. Unlike his old script, he can ask it to do something after: it noticed he was ignoring Nate Berkopec, opened SavvyCal, and found a time in both timezones.
+The 5am summary is table stakes; what makes this one different from a script is that Jesse can tell it to act on what it found. Noticing he'd been ignoring a specific person, it opened the scheduling link itself and found a slot that worked in both timezones — one concrete follow-through, not a wall of suggestions.

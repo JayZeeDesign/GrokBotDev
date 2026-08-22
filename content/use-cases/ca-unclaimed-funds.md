@@ -63,4 +63,4 @@ Stop at the official portal’s identity step and hand me the screen.
 
 ## Why it's cool
 
-Royce’s 24-hour Grok Bot receipts start with $300 in unclaimed funds from the state of California. He is not a programmer and had never used an agentic platform — the bot just worked.
+Royce had never touched an agentic platform before this, which is the point: searching official state treasurer sites for money under your own name is a task with no ambiguity and no code required, so it's a good first real job to hand a bot rather than a toy demo.

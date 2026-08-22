@@ -68,4 +68,4 @@ Never send messages. Never refund or change Stripe. Never create Notion pages un
 
 ## Why it's cool
 
-A non-developer connected Slack, email, meeting notes, Notion, and Stripe so one Grok Bot chat knows the business better than he does. 1.8K likes / 705K views. It shows how a single Grok Bot can own company cos end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Six tools feeding one chat isn't new; what's notable is who built it — a non-developer, in one sitting, with normal logins and zero code. The daily brief format (decisions, money moved, who's waiting, what you said you'd do) is a template anyone can copy without touching an API.

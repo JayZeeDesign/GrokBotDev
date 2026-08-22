@@ -63,4 +63,4 @@ Stop if Stripe and Xero disagree by more than a rounding error — show both.
 
 ## Why it's cool
 
-Same Jesse thread: a CFO bot on Stripe, Xero/QuickBooks, and Gmail. Weekly spend scan for things he missed, a COGS audit, a monthly CFO report. He told people to get concrete, not theatrical — connect the three systems and look.
+Jesse's advice was blunt: get concrete, not theatrical — connect Stripe, Xero or QuickBooks, and billing mail, then actually look. The bot's monthly report leaves out runway entirely if cash-in-bank was never given to it, a small honesty check most finance dashboards skip.

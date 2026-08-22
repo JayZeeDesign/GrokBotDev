@@ -58,4 +58,4 @@ Never reply, like, bookmark, follow, or quote-tweet. Never draft a copycat. If n
 
 ## Why it's cool
 
-Another of Peter's bots watches X for tweets that are breaking out, so he can see which angles travel before he writes. It shows how a single Grok Bot can own viral tweet finder end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Watching for velocity against an account's own baseline, not raw engagement counts, is what makes this scout useful instead of just another trending-now feed — it's built to surface which angles are traveling before you write, so the research happens ahead of the draft instead of after it flops.

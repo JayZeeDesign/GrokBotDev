@@ -61,4 +61,4 @@ Do not publish. Do not upload to YouTube/X. If the math is beyond a clean visual
 
 ## Why it's cool
 
-He asked Grok Bot to generate a 4:22 animated video explaining rank, spectral power, and optimization vs Adam/Muon/Aurora. Video attached. 377 likes / 1.7M views (Elon quote-tweet did 2.1M).
+Turning a dense concept like spectral power or optimizer comparisons into a short animated explainer is a genuinely different output than most agent demos — text summaries and spreadsheets are common, a finished video is not. It's a reminder that 'draft me a document' isn't the ceiling of what a prompt can ask for.

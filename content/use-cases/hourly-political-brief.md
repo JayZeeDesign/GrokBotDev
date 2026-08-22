@@ -61,4 +61,4 @@ Stop if a topic list was never given — ask for 3–7 named topics before the f
 
 ## Why it's cool
 
-From the same Gmail-connected setup, he created standing agents, including an hourly political update on his work topics and a rule to always check with him on key decisions. No posting. Cite sources. Stay quiet if nothing new.
+Staying quiet is the hard part of a monitoring bot, and this one is built around it: no post, no reply, nothing recycled from the last hour, just a cited brief when something on a named topic actually changed. A 'needs a decision' flag is reserved for the rare case that truly requires you, not every headline.

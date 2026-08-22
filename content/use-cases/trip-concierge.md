@@ -63,4 +63,4 @@ Stop if the confirmation is missing a locator or the name on the ticket is not m
 
 ## Why it's cool
 
-The fifth bot in Peter’s tutorial is a personal concierge that saves money on trips. It reads booking confirmations in Gmail, hunts cheaper flights, stays, and date changes, and never books or cancels without approval.
+Reading booking confirmations that already sit in Gmail is the trick — the bot doesn't need to be told about a trip, it notices one from the confirmation email and then goes looking for a cheaper fare or stay for it. It never books or cancels, so the savings hunt never turns into an unwanted change.

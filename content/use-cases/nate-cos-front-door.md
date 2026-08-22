@@ -60,4 +60,4 @@ Stop if two bots claim the same job — ask which description to keep.
 
 ## Why it's cool
 
-Nate’s second run job: Klaus is the only bot he talks to. Before doing work, Klaus checks whether another Grok Bot owns it, delegates, and brings the result back to the main thread. Specialists stay narrow; he does not want a four-bot org chart to babysit.
+Klaus's first move on any task is to check whether another bot already owns it — delegate before doing, not the other way around. That one habit is what keeps a growing bot roster from turning into duplicate, competing versions of the same job, which is the actual failure mode multi-bot setups tend to hit.

@@ -64,4 +64,4 @@ Stop if payment is required and I have not typed “book it”.
 
 ## Why it's cool
 
-Shane Mac spent a month trying to make agents useful in groups. Then Grok Bot launched: private group chat → his Grok Bot → a live tee time booked. Screen recording. That was the TestFlight.
+A month of trying to make agents useful in group chats went nowhere until this: the bot listens for the group to actually settle on a plan, then books a real tee time instead of just summarizing the debate. That it happened during Grok Bot's TestFlight is what makes it a launch story, not a rehearsed demo.

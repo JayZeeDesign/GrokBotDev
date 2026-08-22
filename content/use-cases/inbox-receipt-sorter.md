@@ -64,4 +64,4 @@ Stop if two merchants share a confusing parent company — ask before merging th
 
 ## Why it's cool
 
-tetsuoai set up two bots so Grok Bot would pay for itself. The first has Gmail and keeps the inbox sorted so it knows where receipts and billing mail live — the feed for the subscription killer sitting next to it.
+This bot doesn't negotiate or cancel anything — its only job is knowing where every recurring charge lives in the inbox, so the sibling bot next to it has a clean list to work from. Splitting 'find the spend' from 'act on the spend' into two narrow bots is a cleaner design than one bot trying to do both.

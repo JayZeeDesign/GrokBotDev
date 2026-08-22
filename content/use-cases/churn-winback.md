@@ -69,4 +69,4 @@ Stop and ask if the cancel list is empty, the CRM is missing, or a draft would r
 
 ## Why it's cool
 
-Liam gave Grok Bot one job: win back churned customers. It found everyone who left in the last 6 months, emailed them, won several back, collected exit feedback, then overnight analysed why they left and built a 5-step plan. The bot covered its own subscription cost. 3.4K likes / 34M views; Elon quote-tweeted it.
+What makes this one worth studying is the loop, not the send: find who lapsed, email in the founder's voice, log every reply, then feed those replies into a plan for why people actually left. The bot earning back its own subscription cost is a real number, not a marketing line, and it only happened because the whole loop closed.

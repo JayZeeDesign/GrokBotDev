@@ -65,4 +65,4 @@ Stop if payment is required or the TMS wants a new bank or card.
 
 ## Why it's cool
 
-A supply-chain CEO with limited product knowledge stood up a dispatch bot in a few hours: it tracked hundreds of loads, texted 100+ drivers, booked loads, requested proofs of delivery, and uploaded them to the TMS. He is on the $300/month plan.
+A supply-chain CEO with limited product knowledge got this running in a few hours, which says more about the task shape than the tool: dispatch is mostly short texts and status updates, the kind of repetitive coordination an agent can hold once the first batch of samples is approved.

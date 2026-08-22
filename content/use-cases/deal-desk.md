@@ -62,4 +62,4 @@ Stop if CRM is empty or I own zero opps.
 
 ## Why it's cool
 
-Same Eric Osiu post: a deal-desk bot whose job is to move the ball on stalled, lost, and lookalike deals — every day, not a weekly pipeline poem. It shows how a single Grok Bot can own deal advancer end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+The cadence is the idea: daily, not weekly, so a stalled deal gets a drafted next move before it goes cold. Pairing every stalled or lost opp with a lookalike worth reopening turns pipeline review from a status meeting into a running list of small, concrete actions.

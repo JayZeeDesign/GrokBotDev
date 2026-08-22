@@ -64,4 +64,4 @@ Stop if a draft names a price I have not confirmed this month.
 
 ## Why it's cool
 
-Jon ONeill (HouseHackerJon) hired a Grok Bot named Mary as marketing manager for his Phoenix plumbing company. She owns the weekday content planner (date, keyword, title, draft, live URL), reviews Webflow posts, and catches pricing-claim and HTML mistakes before publish — work that was costing him a $2k/month review bottleneck.
+Mary's value shows up in the number attached to the review step: catching pricing-claim and HTML mistakes before a post goes live on Webflow was costing Jon a $2k-a-month bottleneck before a bot with an actual job title — marketing manager, not 'content bot' — took it over.

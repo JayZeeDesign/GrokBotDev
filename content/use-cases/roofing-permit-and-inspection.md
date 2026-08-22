@@ -63,4 +63,4 @@ Stop on captcha, 2FA, or payment — that is my screen.
 
 ## Why it's cool
 
-A roofing contractor spent two days with Grok Bot on live jobs. Among the runs: it filled out and pulled an online roofing permit, then filled out and booked a roof inspection via an online form that had a captcha. Same thread as the proposal and sub/COI work.
+Getting through a government permit form and an inspection booking with a captcha is a small, unglamorous proof that the bot can operate real government and insurer websites, not just APIs built for automation — a harder and more valuable skill for a field-services business than most flashier demos suggest.

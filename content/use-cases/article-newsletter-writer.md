@@ -64,4 +64,4 @@ Stop if the brief is just “write something viral” — ask for a topic.
 
 ## Why it's cool
 
-Farzad’s Grok Bot team list is mostly names; the job to copy is Writey — article/newsletter writer. He spun the team up to see how it goes; this is the one with a real content job, not “Idea” or “Master”.
+Farzad's team list reads like a lineup card, but Writey is the one entry with an actual job description: turn a transcript or a URL dump into a full draft in his voice, with claims linked and a 'cut this if unsure' box. Flagging its own weak spots is worth copying more than the bot name.

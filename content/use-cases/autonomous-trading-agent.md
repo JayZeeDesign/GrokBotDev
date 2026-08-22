@@ -63,4 +63,4 @@ Stop on any login, 2FA, or “wire/withdraw” screen.
 
 ## Why it's cool
 
-RitOnchain posted a Stanford researcher’s write-up: an autonomous trading agent built entirely with Grok Bots. Screenshot of the agent stack. Bookmark-it-before-it’s-lost energy — research/paper first, not a hot-tip bot.
+The interesting constraint is what it won't do: paper trades only, no live money until a human explicitly arms a small size. Built as a small team of specialist bots — data, thesis, risk, execution — it treats trading as a thesis to falsify, not a signal to chase.

@@ -68,4 +68,4 @@ Stop if the portal throws a captcha or 2FA I have to complete — hand me the sc
 
 ## Why it's cool
 
-Jon ONeill (HouseHackerJon), a plumbing-company owner, spent about four hours on a Grok Bot free trial after a week of ~80% Claude work. He automated work-order intake, capacity planning, and booking across Gmail, Slack, ServiceTitan, Quo, and a facility-maintenance client portal, then ran a live lead start to finish. Five to six time-sensitive work orders a day (review the job, find calendar slots, confirm the customer, book — about 10 minutes if the customer replies); he hit the credit cap mid-run and bought Cursor Ultra at $200/month. Different thread from his Phoenix content-planner bot.
+Ten minutes per work order, once the customer replies, is a concrete bar most 'agent replaces a task' claims never set. Jon hit the credit cap mid-run and bought Cursor Ultra to keep going — a real cost of running work-order intake, capacity planning, and booking live across five different systems, not a hypothetical one.

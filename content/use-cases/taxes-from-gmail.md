@@ -66,4 +66,4 @@ Stop at the signature / PIN / payment screen and hand me the machine.
 
 ## Why it's cool
 
-A non-coder connected Gmail (~40,000 emails) and asked Grok Bot to do his taxes. It found the documents in mail and assembled the return. Same tweet as the Japan award-ticket hunt and the hourly political brief — he is not a programmer.
+Forty thousand emails is not a mailbox most people would search by hand for a years-old tax document, which is exactly why this task suits an agent: find what already exists in the inbox, assemble what it adds up to, and flag the gaps instead of guessing at them.

@@ -64,4 +64,4 @@ Stop if you are about to touch secrets, billing, or auth without a test.
 
 ## Why it's cool
 
-Kun rabbit-holed into Grok Ship — a software factory inside Grok Bot. He said yesterday alone, hundreds of issues and PRs across his repos got done by it. Captain the ship; it ships.
+The metric here is closes, not cleverness: hundreds of small, evidenced PRs across repos in a day beats one theatrical rewrite. Every close needs proof — a test, a screenshot, or a note that it was already fixed on main — which keeps a high-throughput agent honest instead of just marking issues done.

@@ -61,4 +61,4 @@ Stop if you cannot run or read the tests that the issue is about.
 
 ## Why it's cool
 
-Debbie spun up a coding bot on debs-obrien/playwright-movies-app. It checked issue 29, found the tests already used waitForURL with no hard waits, asked if it should close, then closed it with a note after GitHub was connected — she clicked through to GitHub to confirm.
+Claiming an issue is fixed isn't enough here — the bot re-checked the actual test file, found the tests already used waitForURL with no hard waits, and asked before closing with a note. Debbie clicking through to GitHub to confirm is the verification step every 'AI closed my issue' claim should come with.

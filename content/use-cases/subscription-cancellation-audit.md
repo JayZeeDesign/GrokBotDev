@@ -58,4 +58,4 @@ Never invent a charge. If a merchant is ambiguous, ask. Never store full card nu
 
 ## Why it's cool
 
-Same Todd Saunders tweet: after the unsubscribes, the bot audited all subscriptions and recommended cancellations. One tweet, two jobs. It shows how a single Grok Bot can own subscription killer end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Building the audit from receipts, Stripe, and store mail instead of asking a person to remember what they're paying for is the point — the same tweet that got 120 days of marketing mail unsubscribed also produced a keep / cancel / ask-me recommendation for every subscription still standing.

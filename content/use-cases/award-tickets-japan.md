@@ -61,4 +61,4 @@ Stop if login needs extra ID and I am not at the screen.
 
 ## Why it's cool
 
-Same non-coder run: he asked Grok Bot to find first-class award tickets to Japan. With permission it logged into his airline accounts and found three first-class Japan tickets for 60K points. He stopped it because the dates were not firm — it would have booked.
+The part worth noticing is where he stopped it, not what it found. The bot logged into real airline accounts and surfaced three first-class Japan itineraries for 60K points, then held at the ticket screen because the travel dates weren't locked — exactly the judgment call a booking agent needs to get right.

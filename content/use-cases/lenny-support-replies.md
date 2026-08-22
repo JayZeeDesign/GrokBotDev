@@ -61,4 +61,4 @@ Stop if you are not sure this is support vs a personal friend.
 
 ## Why it's cool
 
-Lenny’s same early-access note: auto-replying to support emails, which he said saves him hours. Drafts in his voice; he stays on the send button. It shows how a single Grok Bot can own reply drafter end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Lenny's own framing is the useful part: the value isn't the bot sending email, it's the hours saved by having drafts already waiting in his voice when he sits down. Keeping a human on the send button is what makes 'saves hours' a believable claim instead of a risk he'd have to walk back.

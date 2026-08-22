@@ -64,4 +64,4 @@ Stop on any payment screen I have not typed “buy it” for.
 
 ## Why it's cool
 
-Wayne Sutton installed Convex and Cloudflare plugins, built a demo site (front and backend), bought the domain, and set up Cloudflare redirect rules — all in two prompts from his phone (tryground.dev). 377 likes / 566K views.
+Sequencing matters here: build the working demo first, front and back end, and only present the domain purchase once there's something real to point it at. Doing the whole thing from a phone, in two prompts, is what makes 'built a site on my commute' a literal claim rather than a stretch.

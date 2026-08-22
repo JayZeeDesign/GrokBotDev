@@ -63,4 +63,4 @@ If I have no specialists yet, propose the next one to create and wait.
 
 ## Why it's cool
 
-Peter Yang's setup tutorial starts with a bot-manager / advisor that coordinates the rest of the crew (YouTube researcher, X scout, and others). 1.5K likes / 8.9M views.
+Peter Yang's crew works because one bot explicitly refuses to do specialist work — Foreman's whole job is keeping a roster current and retrying a stalled specialist once before flagging a human. A manager that doesn't also do the writing or scouting is what keeps a multi-bot setup from becoming one overloaded generalist.

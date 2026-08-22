@@ -60,4 +60,4 @@ Stop if the site build fails or the canonical URL 404s.
 
 ## Why it's cool
 
-After the first-look video, Debbie set up a content pipeline: write with her add-content skill, publish on debbie.codes, syndicate to Dev.to with a canonical URL, then draft LinkedIn and X. She called it the start of the workflow, not a toy list.
+The canonical URL is the whole trick: publish once on your own site, then let Dev.to point back to it before anything gets drafted for LinkedIn or X. It's a small SEO habit most creators skip when they're moving fast, and exactly the kind of step a standing bot can be trusted never to forget.

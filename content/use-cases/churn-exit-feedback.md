@@ -59,4 +59,4 @@ No strategy theatre (no “north star”, no 90-day roadmap, no TAM). Do not ema
 
 ## Why it's cool
 
-After the win-back emails, Liam's bot analysed overnight why people left and turned that into a 5-step plan. Same tweet as the win-back campaign — this is the research half of the job.
+This is the research half of Liam's win-back build, and it deliberately skips the roadmap theater: no north-star language, just five reasons people left with counts, and five ship-this-week steps tied to how they'll be measured in 14 days. A thin cluster gets labeled thin instead of padded.

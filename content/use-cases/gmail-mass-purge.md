@@ -62,4 +62,4 @@ Never trash: mail from my accountant, lawyer, banks, domains I list, or anything
 
 ## Why it's cool
 
-Mike P let Grok Bot go through 90,000 emails across two Gmail accounts and delete the junk. Follow-up screenshots in the thread. 1.2K likes / 7.9M views; Elon amplified it.
+90,000 emails across two accounts is the headline number, but the dry-run-first structure is what makes it repeatable: counts by sender, proposed rules, and an explicit skip list for banks and legal mail before a single message gets trashed. The scale got the views; the guardrails are why nothing important got lost.

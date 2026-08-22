@@ -60,4 +60,4 @@ Stop if login needs extra ID and I am not at the screen.
 
 ## Why it's cool
 
-Same 24-hour run: Royce’s bot found a $150 Southwest flight credit he thought he had misplaced. Receipt, not a generic “travel agent” prompt. It shows how a single Grok Bot can own flight hunter end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Finding a forgotten $150 airline credit is a smaller number than the same 24-hour run's bigger wins, but it's the same underlying move: search your own confirmations and accounts for money you already have, instead of a generic 'plan my trip' travel prompt.

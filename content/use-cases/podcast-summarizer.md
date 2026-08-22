@@ -60,4 +60,4 @@ Do not post. Do not email anyone. Do not invent quotes. If the episode is paywal
 
 ## Why it's cool
 
-Gavin Baker built a podcast summarizer in about 15 seconds inside Grok Bot that beat the tool he was already paying for. Said his personal AI usage jumped ~100x. 5.7K likes / 5.2M views.
+Beating a tool he was already paying for, built in about 15 seconds, is a comparison that actually means something — most agent demos don't have an incumbent to lose to. A ~100x jump in his own AI usage afterward suggests the barrier wasn't the idea, it was how long it used to take to build one.

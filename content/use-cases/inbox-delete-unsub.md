@@ -62,4 +62,4 @@ Stop if a batch would trash more than 20% of a sender you have not shown me.
 
 ## Why it's cool
 
-Same Royce tweet: the bot cleaned the inbox — 6,000 deletions and 40+ unsubscribes so far — as part of earning its keep in under 24 hours. It shows how a single Grok Bot can own inbox cleaner end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+6,000 deletions and 40 unsubscribes sound aggressive, but the batch-and-tally structure is what makes them safe: nothing gets trashed until rules are approved, and a running count of trashed / unsubscribed / skipped / remaining means you can stop the run the moment something looks off.

@@ -65,4 +65,4 @@ Stop if an account is missing spend data — do not guess CPA.
 
 ## Why it's cool
 
-A media buyer paid Cursor Ultra $200 vs ~$100 for Codex/Claude and gave Grok Bot one job: be my media buyer. It connected ad accounts, spreadsheets, analytics, and campaign context. Morning run: checked yesterday’s performance, found ads burning money, a CPA jump on one campaign, compared losing vs winning creatives, suggested pauses, shifted budget toward better ad sets, wrote new hooks from winning angles, and sent a summary of why. He still checks its work.
+Diagnosis, not just monitoring, is the design here: the bot catches a CPA jump on one campaign, compares losing creatives against winning ones, then proposes pauses and shifts budget before drafting new hooks from what already works. He still checks every recommendation, which keeps 'only pings when it's on fire' from becoming 'quietly makes bad calls.'

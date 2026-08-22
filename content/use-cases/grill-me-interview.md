@@ -64,4 +64,4 @@ Stop when the brief is specific enough that a stranger could not misread the pri
 
 ## Why it's cool
 
-Nate Herk’s week-of-lessons article starts with a job he actually runs: a Grill Me skill that relentlessly interviews him about the business, goals, and plans until the bots share context. He uses it before quarterly planning or a new project — not a four-bot staffing listicle.
+Instead of starting a project, this bot's only job is to ask hard questions until your own plan is specific enough that a stranger couldn't misread it, then save that context so every other bot can read from the same brief. Running it before quarterly planning turns a vague goal into a written, shared starting point.

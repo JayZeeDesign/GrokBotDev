@@ -60,4 +60,4 @@ Never send email without approval. Never update CRM fields that change stage or 
 
 ## Why it's cool
 
-Krista Letz (GTM) published the actual enterprise go-to-market workflows she runs on Grok Bot — not a toy demo. 3.3K likes / 1.5M views. It shows how a single Grok Bot can own enterprise operator end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+What separates this from a generic sales-bot pitch is that Krista published the actual weekly loop she runs, not a hypothetical one: stalled-opp flags, one-pagers for tomorrow's meetings, a Monday scoreboard. Every step still stops short of touching CRM stage or amount without her say-so.

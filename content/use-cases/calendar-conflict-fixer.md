@@ -55,4 +55,4 @@ Never accept or decline an invite without my say. Never create events on other p
 
 ## Why it's cool
 
-Same Matthew Berman tweet: the bot handled calendar conflict scheduling. It shows how a single Grok Bot can own calendar fixer end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+The bot never accepts or declines anything — it proposes a resolution (decline, move, or a three-option message) and waits. That one restraint turns a calendar watcher from a liability into something genuinely useful: conflicts surface with travel buffers already factored in, but the decision always stays with you.

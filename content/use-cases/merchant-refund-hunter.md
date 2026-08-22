@@ -64,4 +64,4 @@ Stop if you cannot find a matching order/return receipt for a row — drop it fr
 
 ## Why it's cool
 
-Darian told Grok Bot to pay its own fee: it scanned email for lost money and emailed five merchants that never refunded his returns — already net-positive vs the subscription. 136 likes / 110.5K views.
+The bot was explicitly told to pay for its own subscription, and it did — scanning email for returns nobody ever got refunded, then emailing five merchants only after Darian approved each one. Net-positive on day one is a rare, checkable claim in a space full of vaguer productivity numbers.

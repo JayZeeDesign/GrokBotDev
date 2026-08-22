@@ -59,4 +59,4 @@ Never post, like, or reply unless I type ‘post this’. Never invent metrics. 
 
 ## Why it's cool
 
-Scotty documented how he automated X end to end with Grok Bot: research, design, copy, analytics, and timing. 1.4K likes / 4.5M views. It shows how a single Grok Bot can own x content pipeline end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Automating research, design, copy, analytics, and timing end to end is a bigger claim than most of the single-step bots in this batch, and Scotty documented the whole loop rather than one screenshot of a post going out — which is what makes it checkable instead of just a claimed number.

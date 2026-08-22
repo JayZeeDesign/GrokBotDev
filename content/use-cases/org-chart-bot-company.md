@@ -56,4 +56,4 @@ Never create more than 10. Never give any bot authority to spend money or send c
 
 ## Why it's cool
 
-Ridark gave Grok Bot an org chart instead of tasks. Eight bots running the company; he shared the full design. 1.6K likes / 409K views. It shows how a single Grok Bot can own company operator end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Starting from an org chart instead of a task list changes what gets built: named roles with explicit missions and tools, rather than a pile of disconnected one-off automations. Ridark sharing the full design, not just the result, is what makes this one actually reproducible instead of just impressive to look at.

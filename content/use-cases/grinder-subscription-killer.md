@@ -61,4 +61,4 @@ Stop on payment, identity, or “are you sure?” — that is my button.
 
 ## Why it's cool
 
-The second bot is Grinder. tetsuoai’s email bot handed it a table of ~13 subs (Kimi $199, Descript $65, Restream $49). Grinder refused to open anything until he typed “run it”, got through Restream’s chat to a human, asked for a retention price, and stopped on the final cancel button — then flagged that the next charge was already $39.20. He kept it. Bot does not get annoyed.
+Grinder won't even open a merchant's support chat until you type 'run it', and it stops again at the final cancel button. That double gate is what let it push Restream's chat to a human, land a retention offer, and still catch that the next charge had already crept up to $39.20 — persistence most people give up on well before this.

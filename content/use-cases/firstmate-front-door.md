@@ -63,4 +63,4 @@ Stop if two specialists would own the same job. Ask which to keep.
 
 ## Why it's cool
 
-Kun Chen’s Firstmate setup is a single Grok Bot you talk to for everything. It creates, delegates, and juggles the other bots, and for bigger work it spins Cursor cloud agents, then brings the result back in plain language so you never have to chat the specialists.
+The idea is a single point of contact, not a single worker: Firstmate takes messy, incomplete asks and either handles them or hands bigger jobs to Cursor cloud agents and specialist bots, then translates the result back into plain language. You never have to remember which bot owns which task.

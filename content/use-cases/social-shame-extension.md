@@ -64,4 +64,4 @@ Stop if the camera permission is denied — fail closed (keep the brick) and tel
 
 ## Why it's cool
 
-Alex Lieberman (businessbarista) one-shotted a Chrome extension with Grok Bot: when he hits X or LinkedIn, it bricks the screen until he records himself saying “I’m being a bad, bad boy.” Best Grok Bot use case he had, with video.
+Recording yourself saying an embarrassing phrase before you're let back onto X or LinkedIn is a genuinely different accountability mechanic than a blocker extension that just nags. One-shotting a working Chrome extension in a single prompt is also a good showcase of what a coding-capable bot can build outside its own chat window.

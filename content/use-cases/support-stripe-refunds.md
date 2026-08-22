@@ -57,4 +57,4 @@ Never refund above $X. Never refund to a different payment method. Never argue w
 
 ## Why it's cool
 
-Gergely Orosz hooked Grok Bot to customer support email and the Stripe API so routine refunds run as an agentic workflow. 764 likes / 366K views. It shows how a single Grok Bot can own support agent end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+The definition of 'in-policy' is doing the real work here: an order ID present, inside 30 days, no existing chargeback, under a dollar cap Gergely sets. Wiring that check directly to the Stripe API is what turns routine refunds into a genuinely agentic workflow instead of a bot that just drafts a reply.

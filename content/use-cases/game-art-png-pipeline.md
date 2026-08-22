@@ -65,4 +65,4 @@ Stop if the generator page is down or login fails — do not swap in a third-par
 
 ## Why it's cool
 
-A game developer had Grok Bot drive his custom art-gen webpage to generate game art assets and prep them as transparent PNGs in a consistent style. 992 likes / 375.8K views.
+The bot doesn't get to invent a new look — it drives an existing art-gen page and has to match the last approved style, rejecting anything that breaks palette or line weight instead of shipping 'close enough.' Constraining an agent to reproduce a style consistently is harder, and more useful, than generating something new each time.

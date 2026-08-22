@@ -63,4 +63,4 @@ Stop if GSC/Ahrefs are disconnected and you would be guessing volume.
 
 ## Why it's cool
 
-Eric Osiu, Grok Botting on Starlink, described an AEO/SEO bot: ingest top content (sales calls, customer calls, podcasts, YouTube), combine ClickFlow / GA4 / Ahrefs / GSC, and draft into the CMS on autopilot. Listed as an agent to build, with a real stack, not a one-word role.
+What's worth stealing here is the input list, not the output. Most content bots start from a keyword; this one starts from the calls, podcasts, and videos a team already produced, then checks GA4, Ahrefs, and Search Console before it drafts — so the queue reflects what already resonates instead of a fresh guess.

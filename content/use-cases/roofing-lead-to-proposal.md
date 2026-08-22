@@ -61,4 +61,4 @@ Stop if measurements and the photos disagree on squares — show both and wait.
 
 ## Why it's cool
 
-Same two-day roofing run: it pulled roof measurements for a new inbound lead, built a full proposal/estimate with the contract staged pending his approval, then filled out, drafted, and emailed two change orders via e-signature.
+Staging a full proposal pending approval, not sending it, is what keeps this useful for a business that can't afford a bot committing it to a price by accident. Drafting and e-signing two change orders in the same run shows the bot handling a whole deal lifecycle, not just the first quote.

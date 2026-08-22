@@ -58,4 +58,4 @@ Never unsubscribe from transactional mail (banks, receipts, shipping, government
 
 ## Why it's cool
 
-Todd had Grok Bot unsubscribe him from 120 days of marketing mail. Same tweet also audited paid subscriptions. 2.1K likes / 422K views. It shows how a single Grok Bot can own email purger end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+List-Unsubscribe headers first, web forms second — that ordering is what makes 120 days of marketing mail tractable instead of a manual slog through footer links. The same run also doubled as a subscription audit, the kind of two-for-one a standing inbox bot should be looking for by default.

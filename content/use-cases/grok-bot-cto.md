@@ -64,4 +64,4 @@ Stop if you cannot see the repo or cloud agents fail to start.
 
 ## Why it's cool
 
-Ray Fernando handed Grok Bot the GitHub repo and told it to run the show: spin up cloud agents off his machine, follow the PRs, hire child bots (PRs, Convex backend, auth) that talk to each other while he reads view-only. Honest caveat: token burn is real; do not use the expensive mode for everything.
+Handing over a GitHub repo is common; what's notable is the org structure that formed around it — one bot spinning up child bots for PRs, backend, and auth that coordinate with each other while Ray reads the threads view-only. The daily token-cost note is the detail that keeps 'run the show' from becoming an invisible bill.

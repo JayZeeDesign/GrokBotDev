@@ -55,4 +55,4 @@ Never save card numbers in chat. Never change the default address. If Telegram i
 
 ## Why it's cool
 
-Same tweet: Amazon tasks with a Telegram hookup so he can tap the bot from his phone. It shows how a single Grok Bot can own amazon runner end to end, from the first trigger to the finished result — the kind of standing job people used to keep in their own heads.
+Texting a bot 'buy X' from your phone and getting a cart to approve, not a purchase, is the useful part. The Telegram bridge turns an errand you'd normally do at a laptop into something you can dispatch from a couch, while the $40 approval line keeps it from ever surprising you with a checkout.
