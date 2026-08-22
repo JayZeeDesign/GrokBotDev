@@ -13,6 +13,18 @@
 //
 // Copy: CP-102 title · CP-103/104 section headings · CP-105 body · CP-106 schedules ·
 // CP-107 agent link · CP-108 browse link · CP-109 trigger · CP-112 (FENCED) CTA sentence.
+//
+// ── 2026-08-22 (operator) — THE TWO VARIANTS ARE DISJOINT AND THE `site` ONE IS GLOBAL ──
+//   · `entry` renders ONLY the entry's own install (name + prompt, or install steps). The
+//     feed/subscribe section it used to carry as well is gone from this variant — see the
+//     note on the body below for why.
+//   · `site` renders ONLY the feed/subscribe flow, and `BaseLayout` renders exactly ONE of
+//     it (`#install-site`) on every page. Three surfaces open it: the header CTA
+//     (SiteHeader), the ambient nudge (ConnectNudge) and the inline callouts
+//     (ConnectCallout) — plus the home hero's own button. All of them are real anchors
+//     carrying `data-install-trigger="install-site"`, so every one of them still works with
+//     the island disabled (§4.4 rule 7). A page that owns a BUTTON but not the panel passes
+//     `renderModal={false}`; nothing may render a second `#install-site`.
 import PromptBlock from './PromptBlock.astro';
 import {
   CP_102_INSTALL_TITLE,
@@ -40,6 +52,12 @@ interface Props {
   entryName?: string;
   /** Render the built-in trigger; pass false when the page owns the button. */
   renderTrigger?: boolean;
+  /**
+   * Render the panel itself. The `site` panel is now GLOBAL — `BaseLayout` renders exactly
+   * one `#install-site` on every page — so a page that only owns a BUTTON pointing at it
+   * passes `renderModal={false}` and gets the trigger markup without a duplicate id.
+   */
+  renderModal?: boolean;
   triggerLabel?: string;
   class?: string;
 }
@@ -51,6 +69,7 @@ const {
   installSteps = [],
   entryName,
   renderTrigger = true,
+  renderModal = true,
   triggerLabel,
   class: className = '',
 } = Astro.props;
@@ -108,7 +127,8 @@ const defaultTrigger =
   )
 }
 
-<div class="install-modal" id={modalId} data-install-modal>
+{renderModal && (
+<div class="install-modal" id={modalId} data-install-modal data-pagefind-ignore>
   <a class="install-modal__scrim" href="#main" data-install-close tabindex="-1" aria-hidden="true"
   ></a>
 
@@ -134,8 +154,18 @@ const defaultTrigger =
     </div>
 
     <div class="install-modal__body flex flex-col gap-8 p-4">
-      {/* B3(b): the site-level variant leads with section 2 and replaces section 1
-          with a browse link. B3(a): the entry variant keeps the documented order. */}
+      {/* ── THE TWO VARIANTS ARE NOW DISJOINT (operator, 2026-08-22) ────────────────────
+          B3 shipped the `entry` variant as section 1 + section 2, so pressing "install in
+          grok bot" on a single opened a panel that answered a question the reader had not
+          asked: below their entry's prompt sat the whole subscribe-to-the-feed cadence
+          picker. Operator's verdict: confusing. It is also a §A1-shaped fault — two
+          different asks stacked in one plane, neither of them clearly the point.
+
+          The feed pitch is NOT deleted; it MOVED audience, the same way CP-124's machine
+          contract moved to /agent/. It now lives on the ONE `site` panel that BaseLayout
+          renders globally, and three surfaces point at it (header CTA, ambient nudge,
+          inline callouts). So: `entry` = this entry's install, and nothing else. `site` =
+          the feed, and nothing else. */}
       {
         variant === 'entry' && (
           <section class="flex flex-col gap-3">
@@ -162,6 +192,7 @@ const defaultTrigger =
         )
       }
 
+      {variant === 'site' && (
       <section class="flex flex-col gap-4">
         {/* Operator: this is the value-prop line, not a title — extended copy, rendered as
             body text (smaller than the old display h3). It sets up the steps below. */}
@@ -233,22 +264,22 @@ const defaultTrigger =
           }
         </div>
 
+        {/* Both links are site-only now that the whole section is — the inner
+            `variant === 'site'` guard the browse link used to carry is redundant. */}
         <div class="flex flex-wrap items-center gap-4 font-mono text-sm">
-          {
-            variant === 'site' && (
-              <a href="/plugins/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">
-                {CP_108_INSTALL_BROWSE_LINK}
-              </a>
-            )
-          }
+          <a href="/plugins/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">
+            {CP_108_INSTALL_BROWSE_LINK}
+          </a>
           <a href="/agent/" class="text-text-muted underline underline-offset-4 hover:text-accent-text">
             {CP_107_INSTALL_AGENT_LINK}
           </a>
         </div>
       </section>
+      )}
     </div>
   </div>
 </div>
+)}
 
 <style is:global>
   .install-modal {

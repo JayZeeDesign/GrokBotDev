@@ -24,7 +24,7 @@
 // Copy: CP-113 (FENCED h1) · CP-002 (subline, money phrase) · CP-003 (primary CTA) ·
 // CP-004 (friction line) · CP-005 + CP-006 (KEEP).
 import InstallModal from './InstallModal.astro';
-import { CP_113_HOME_H1 } from '../lib/copy';
+import { CP_102_INSTALL_TITLE, CP_113_HOME_H1 } from '../lib/copy';
 
 // Operator: adopt the coming-soon landing's subtagline here. The §6.11 money phrase
 // ("ready-to-use Grok Bot prompts") is NOT lost — it still ships in the home <title> and
@@ -46,8 +46,19 @@ const SUBLINE =
     <p class="sub">{SUBLINE}</p>
 
     {/* Direct round: "browse plugins" CTA removed — the directory IS the next screen. */}
+    {/* 2026-08-22: the PANEL moved to BaseLayout (one `#install-site` sitewide, opened from
+        the header, the nudge and the inline callouts as well as from here). The hero keeps
+        the BUTTON and nothing else — `renderModal={false}` — because two elements carrying
+        the same id is a broken document, and `:target` would open whichever one the parser
+        saw first. The label is CP-102, which is what the literal string here always was. */}
     <div class="hero-actions">
-      <InstallModal variant="site" id="site" renderTrigger={true} triggerLabel="plug your Grok Bot in" />
+      <InstallModal
+        variant="site"
+        id="site"
+        renderTrigger={true}
+        renderModal={false}
+        triggerLabel={CP_102_INSTALL_TITLE}
+      />
     </div>
 
     <p class="hero-friction">copy one prompt. your Bot does the rest.</p>

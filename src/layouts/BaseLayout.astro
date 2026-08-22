@@ -6,6 +6,8 @@ import SiteHeader from '../components/SiteHeader.astro';
 import Footer from '../components/Footer.astro';
 import SponsorRail from '../components/SponsorRail.astro';
 import SponsorBar from '../components/SponsorBar.astro';
+import InstallModal from '../components/InstallModal.astro';
+import ConnectNudge from '../components/ConnectNudge.astro';
 import { ENABLE_RAILS, ENABLE_SPONSORS } from '../lib/buildFlags';
 import { siteStats } from '../lib/entries';
 import { SITE, baseGraph } from '../lib/seo';
@@ -37,6 +39,9 @@ const {
 
 const currentPath = Astro.url.pathname;
 const canonical = `${SITE}${currentPath}`;
+// Surface 2 is ambient and INTERNAL-ONLY: the home hero already asks for the same thing in
+// its primary CTA, so nudging there would be the site arguing with itself.
+const isHome = currentPath === '/';
 const statsUrl = import.meta.env.PUBLIC_STATS_URL ?? '';
 const stats = await siteStats();
 const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...baseGraph(), ...graph] });
@@ -101,5 +106,17 @@ const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...
       {ENABLE_RAILS && <aside class="hidden lg:block" aria-label="right rail"><slot name="rail-right" /></aside>}
     </div>
     <Footer stats={stats} statsUrl={statsUrl} />
+
+    {/* ── "connect to THE FEED" — ONE destination, rendered ONCE, sitewide ──────────────
+        `#install-site` used to exist only inside the home hero, which meant the site's
+        single most valuable action was reachable from exactly one of 231 pages. It lives
+        here now, at the end of <body> — deliberately OUTSIDE `#main` and outside the hero's
+        `#content`, because a `position: fixed` overlay inside a TRANSFORMED ancestor is
+        positioned against that ancestor rather than the viewport (the F10(1) bug).
+        Everything that opens it is a plain anchor to this id, so the `:target` fallback
+        holds with JS off. `data-pagefind-ignore` (on the panel itself) keeps the routine
+        prompt out of the search index now that it ships on every page. */}
+    <InstallModal variant="site" id="site" renderTrigger={false} />
+    {!isHome && <ConnectNudge />}
   </body>
 </html>

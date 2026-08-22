@@ -25,10 +25,21 @@
 // JS. The island below is ENHANCEMENT ONLY (scroll lock, focus trap, scrim tap, Escape),
 // exactly the shape §4.2.9 already sanctions for FilterBar, so §4.4 rule 7 holds — no
 // JS-dependent interaction is load-bearing.
+// ── Surface 1 of the "connect to THE FEED" system (operator, 2026-08-22) ────────────────
+// The header now carries the persistent entry point to `#install-site` — the ONE feed panel
+// BaseLayout renders sitewide. It is a real anchor with `data-install-trigger`, so it opens
+// the panel through the island with JS and through `:target` without it.
+//
+// §A1 ACCENT SWAP, not an accent ADDITION. The header's one amber element used to be
+// `submit`; it is now `connect your bot`, and `submit` drops to the muted NavLink treatment
+// the /agent door already uses. Net amber count per viewport is unchanged at exactly one, in
+// all three header contexts (≥md cluster · <md bar · drawer). If you are tempted to give
+// `submit` its fill back, that is a §A1 decision, not a styling one.
 import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
 import Button from './Button.astro';
 import ThemeToggle from './ThemeToggle.astro';
+import { CP_126_CONNECT_HEADER, CP_127_CONNECT_SHORT } from '../lib/copy';
 
 interface Props {
   currentPath: string;
@@ -49,7 +60,13 @@ const nav = [{ href: '/wall/', label: 'wall' }];
 ---
 
 <header class="siteHeader border-b border-border bg-bg" data-pagefind-ignore>
-  <div class="container-page flex min-h-12 flex-wrap items-center gap-x-8 gap-y-4 py-2 md:min-h-16 md:py-4">
+  {/* `gap-x-2` below md, the original `gap-x-8` from md up. The phone bar now carries FOUR
+      controls (brand · theme · connect · menu) and the numbers are genuinely tight: measured
+      at 390px the four intrinsic widths total 315px against 358px of content box, so a 32px
+      gutter between them wrapped `menu` onto a second row — the exact three-row failure F1
+      was written to kill. 8px holds the row at 360px and up. See `.headerConnect` and the
+      narrow-phone block below for the other two thirds of the fit. */}
+  <div class="container-page flex min-h-12 flex-wrap items-center gap-x-2 gap-y-4 py-2 md:min-h-16 md:gap-x-8 md:py-4">
     {/* `flex-1` only below md, where it is what pushes the drawer toggle to the right edge.
         From md up the brand must shrink to its content or it steals width from the nav and
         forces a second row at 768 — measured at F1 QA. */}
@@ -72,11 +89,20 @@ const nav = [{ href: '/wall/', label: 'wall' }];
         <NavLink href="/agent/" label="/agent" current={isCurrent('/agent/')} />
       </span>
 
-      {/* F9 — sits with the other chrome, left of the one amber element so `submit` keeps
-          A1's "one accent per viewport" position of prominence. */}
+      {/* F9 — sits with the other chrome, left of the one amber element, which keeps
+          A1's "one accent per viewport" position of prominence at the end of the row. */}
       <ThemeToggle variant="inline" />
 
-      <Button href="/submit/" variant="solid" size="sm" label="submit" />
+      {/* Demoted from `Button variant="solid"` — same link treatment as /agent above. */}
+      <NavLink href="/submit/" label="submit" current={isCurrent('/submit/')} />
+
+      <Button
+        href="#install-site"
+        variant="solid"
+        size="sm"
+        label={CP_126_CONNECT_HEADER}
+        attrs={{ 'data-install-trigger': 'install-site' }}
+      />
     </div>
 
     {/* ── the mobile drawer (below md). Native <details>; the island only enhances it. ──
@@ -91,6 +117,18 @@ const nav = [{ href: '/wall/', label: 'wall' }];
         because the button's scoped `.themeToggle{display:inline-flex}` outranks the utility
         and would keep it visible at desktop otherwise. */}
     <span class="md:hidden inline-flex"><ThemeToggle variant="inline" /></span>
+
+    {/* The <md CTA rides in the BAR, not only in the drawer: an action worth putting in
+        every header is worth reaching without opening a menu first. It carries CP-127
+        (`connect`) rather than CP-126 — measured at 360/375px, the long label is wider than
+        the row can give it beside the brand, the theme toggle and `menu`, and F1's whole
+        point was that this header stays ONE row on a phone. Display is switched in the
+        scoped CSS below, the way `.navDrawer` does it: a scoped `display: inline-flex`
+        outranks a `md:hidden` utility, which is the trap the ThemeToggle note above
+        describes. */}
+    <a href="#install-site" data-install-trigger="install-site" class="headerConnect">
+      {CP_127_CONNECT_SHORT}
+    </a>
 
     <details class="navDrawer md:hidden" data-nav-drawer>
       <summary class="navDrawer__toggle" aria-label="menu">
@@ -131,10 +169,21 @@ const nav = [{ href: '/wall/', label: 'wall' }];
           >
             <span aria-hidden="true" class="agent-glyph text-accent">▪</span> /agent
           </a>
+
+          {/* Demoted here too, for the same reason and by the same rule. */}
+          <a
+            href="/submit/"
+            class:list={['navDrawer__link', isCurrent('/submit/') && 'navDrawer__link--current']}
+            aria-current={isCurrent('/submit/') ? 'page' : undefined}
+          >
+            submit
+          </a>
         </nav>
 
-        {/* A1 accent law: submit is the ONE amber element in the drawer. */}
-        <a href="/submit/" class="navDrawer__cta">submit</a>
+        {/* A1 accent law: connect is the ONE amber element in the drawer. */}
+        <a href="#install-site" data-install-trigger="install-site" class="navDrawer__cta">
+          {CP_126_CONNECT_HEADER}
+        </a>
       </div>
     </details>
   </div>
@@ -169,6 +218,67 @@ const nav = [{ href: '/wall/', label: 'wall' }];
   @media (min-width: 1024px) {
     .brand-word {
       font-size: var(--text-xl);
+    }
+  }
+
+  /* ---------- the <md connect pill (Surface 1) ---------- */
+  /* Sized to sit level with the `menu` toggle — same 36px block size, same radius, same mono
+     — so the bar reads as two controls of one family rather than a CTA bolted onto a header.
+     36px is the height the operator already settled on for `menu` (down from 44) and it
+     clears SC 2.5.8's 24px floor with room; matching it beats re-litigating that decision on
+     the button next to it. `margin-inline-start: auto` is deliberately NOT set here — the
+     drawer carries it, so the pill sits immediately left of `menu` at the right edge. */
+  .headerConnect {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-block-size: 36px;
+    /* --text-xs + 8px of inline padding is the smallest this can be and still read as a
+       button. It is the §4.2.7 `sm` button's type size; the padding is tighter than that
+       spec's 12px because the bar has 43px of slack at 390 and none at 360. */
+    padding-inline: 0.5rem;
+    border: 1px solid var(--color-accent-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-accent-strong);
+    color: var(--color-accent-contrast);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+  .headerConnect:hover {
+    filter: brightness(0.9);
+  }
+  .headerConnect:active {
+    transform: translateY(1px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .headerConnect:active {
+      transform: none;
+    }
+  }
+  /* From md the ≥md cluster owns the CTA (with the long CP-126 label), so this one goes. */
+  @media (min-width: 768px) {
+    .headerConnect {
+      display: none;
+    }
+  }
+
+  /* ---------- narrow-phone fit (≤389px: 360, 375, 384 …) ----------
+     The last 8px. Below 390 the four controls plus their gutters run past the content box
+     and `menu` drops to a second row, so the LOCKUP gives back what the new control takes:
+     the mark stays at its full 30px (the operator's "much larger in the header" was about
+     the mark, and it is untouched) and only the wordmark steps --text-lg → --text-base with
+     a tighter mark/word gap. Measured 360px: 127 + 50 + 68 + 55 + 24 = 324 against 328.
+     This is a FIT rule with a reason, not a taste rule — if the bar ever loses a control,
+     delete it rather than keeping a smaller wordmark for no cause. */
+  @media (max-width: 389px) {
+    .brand {
+      gap: 0.5rem;
+    }
+    .brand-word {
+      font-size: var(--text-base);
     }
   }
 
@@ -408,6 +518,17 @@ const nav = [{ href: '/wall/', label: 'wall' }];
     });
 
     scrim?.addEventListener('click', () => close(true));
+
+    // The drawer's amber CTA opens `#install-site`, which is a FIXED overlay at z-index 60 —
+    // it would otherwise render on top of a drawer that is still open behind it, with the
+    // drawer's scroll lock still applied underneath the modal's. Close the drawer on the way
+    // through. `returnFocus: false` matters: the modal has already moved focus into its own
+    // sheet by then, and yanking it back to a link that is about to be display:none would
+    // break the trap. The drawer's lock is an inline style and the modal's is a class, so
+    // clearing one cannot clear the other.
+    panel?.querySelectorAll<HTMLElement>('[data-install-trigger]').forEach((trigger) => {
+      trigger.addEventListener('click', () => close(false));
+    });
 
     document.addEventListener('keydown', (event) => {
       if (!drawer.open) return;

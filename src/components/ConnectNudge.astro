@@ -1,0 +1,333 @@
+---
+// Surface 2 of the "connect to THE FEED" system (operator, 2026-08-22) — the AMBIENT nudge.
+// SANCTIONED ISLAND (operator directive) — ENHANCEMENT ONLY, in the shape §4.4 rule 7
+// requires: nothing load-bearing lives here. If this script never runs, the reader still
+// reaches the same panel from the header (Surface 1, on every page) and from the inline
+// callouts (Surface 3, no-JS-safe anchors). Losing the nudge loses a reminder, not a route.
+//
+// RENDERED ON INTERNAL PAGES ONLY — BaseLayout withholds it on `/`, where the hero's primary
+// CTA already asks for exactly this. A nudge on the home page would be the site arguing with
+// itself.
+//
+// ── THE FOUR RULES THAT KEEP IT A NUDGE AND NOT A POPUP ──────────────────────────────────
+//   1. It NEVER appears on first paint. The threshold is ~40% scroll DEPTH, and the check
+//      only ever runs from a real scroll event — so a page too short to scroll simply never
+//      shows it. Reading is the qualification.
+//   2. It never covers the page. Desktop: a small card in the bottom-right corner. Phone: a
+//      slim docked strip, one line and a button, NOT a full-screen takeover — the thing
+//      everyone actually hates. The strip is `position: fixed`, so it floats above content
+//      rather than reflowing it; the page's own bottom padding is untouched.
+//   3. Dismiss means dismissed — a 7-day cooldown in localStorage, not a session flag. Same
+//      for engaging with it: if you clicked through to the panel, you have been asked, and
+//      the timer starts either way.
+//   4. It yields. While the install modal is open, or while the mobile drawer is open, it is
+//      display:none — two fixed overlays in one corner is a stacking-order argument nobody
+//      wins. Both rules are pure CSS, so they hold even if this script is mid-flight.
+//
+// Its CTA is the same real anchor to `#install-site` every other surface uses; the modal
+// island wires it at load because the element is in the DOM from the start (hidden, not
+// absent). Nothing here injects markup.
+//
+// Copy: CP-128 (wide line) · CP-129 (narrow line) · CP-130 (wide CTA) · CP-127 (narrow CTA)
+// · CP-135 (close button's accessible name) · CP-126 (landmark label).
+import {
+  CP_126_CONNECT_HEADER,
+  CP_127_CONNECT_SHORT,
+  CP_128_NUDGE_LINE_WIDE,
+  CP_129_NUDGE_LINE_NARROW,
+  CP_130_NUDGE_CTA,
+  CP_135_NUDGE_DISMISS,
+} from '../lib/copy';
+---
+
+<aside
+  class="connectNudge"
+  data-connect-nudge
+  data-pagefind-ignore
+  aria-label={CP_126_CONNECT_HEADER}
+  hidden
+>
+  {/* Both registers ship in the markup and CSS picks one — the mechanism ThemeToggle
+      documents for its own label. A JS-written string would be a second source of truth for
+      copy that is already governed, and it would be wrong for one frame on every resize. */}
+  <p class="connectNudge__line">
+    <span class="connectNudge__wide">{CP_128_NUDGE_LINE_WIDE}</span>
+    <span class="connectNudge__narrow">{CP_129_NUDGE_LINE_NARROW}</span>
+  </p>
+
+  <a href="#install-site" data-install-trigger="install-site" class="connectNudge__cta">
+    <span class="connectNudge__wide">{CP_130_NUDGE_CTA}</span>
+    <span class="connectNudge__narrow">{CP_127_CONNECT_SHORT}</span>
+  </a>
+
+  <button type="button" class="connectNudge__close" data-connect-dismiss>
+    <span aria-hidden="true">×</span>
+    <span class="sr-only">{CP_135_NUDGE_DISMISS}</span>
+  </button>
+</aside>
+
+<style is:global>
+  /* `is:global`, like InstallModal's, and for the same reason: two of the rules below key off
+     `html` / `body` state set by OTHER components (the modal's scroll-lock class, the
+     header drawer's `open`), which a scoped selector cannot reach. Every class here is
+     `connectNudge`-prefixed, so the global scope buys reach without buying collisions. */
+
+  .connectNudge {
+    position: fixed;
+    z-index: 50; /* under the modal's 60 — it is the thing being opened, not the opener */
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    /* ── PHONE: a slim docked strip across the bottom ── */
+    inset-inline: 0;
+    inset-block-end: 0;
+    border-inline: 0;
+    border-block-end: 0;
+    padding: 0.625rem var(--page-gutter);
+    /* Home-indicator / gesture-bar clearance on iOS, and nothing anywhere else. */
+    padding-block-end: max(0.625rem, env(safe-area-inset-bottom));
+  }
+
+  /* `hidden` has to be spelled out: this element's `display: flex` outranks the UA
+     stylesheet's `[hidden] { display: none }`, which is the classic way a "hidden" element
+     ships visible. The island removes the attribute when it decides to show it. */
+  .connectNudge[hidden] {
+    display: none;
+  }
+
+  /* Appear state. The start state is only applied while the island is driving (it sets
+     `data-connect-animate`), so there is no world in which the nudge is un-hidden and then
+     stranded invisible at opacity 0. */
+  .connectNudge[data-connect-animate] {
+    opacity: 0;
+    transform: translateY(0.75rem);
+    transition:
+      opacity 220ms ease-out,
+      transform 220ms ease-out;
+  }
+  .connectNudge[data-connect-animate].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* §4.4 rule 6 — reduced motion gets the end state, never a slide. The global rule already
+     crushes the duration; this removes the translation itself, which a duration cannot. */
+  @media (prefers-reduced-motion: reduce) {
+    .connectNudge[data-connect-animate] {
+      transform: none;
+      transition: none;
+    }
+  }
+
+  .connectNudge__line {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    font-size: var(--text-sm);
+    line-height: 1.35;
+    color: var(--color-text);
+  }
+
+  /* Transient overlay on its own plane — operator-approved as the one place the amber fill
+     may sit outside the page's own accent budget. It is never on screen at the same time as
+     the modal (see the yield rules at the bottom), so §A1's count is never actually two. */
+  .connectNudge__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-block-size: 40px;
+    padding-inline: 0.875rem;
+    border: 1px solid var(--color-accent-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-accent-strong);
+    color: var(--color-accent-contrast);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+  .connectNudge__cta:hover {
+    filter: brightness(0.9);
+  }
+
+  .connectNudge__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    /* §4.6 target size: the phone strip gets the full 44px floor — a dismiss control you
+       have to aim at is the reason people learn to hate these. The desktop card steps it
+       down to 32px in the md block below, where there is a pointer. */
+    inline-size: 44px;
+    min-block-size: 44px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: 1;
+    cursor: pointer;
+  }
+  .connectNudge__close:hover {
+    border-color: var(--color-border-interactive);
+    color: var(--color-text);
+  }
+
+  .connectNudge__wide {
+    display: none;
+  }
+
+  /* ── DESKTOP (md and up, the same line the header uses to stop being a phone header):
+        a small card in the bottom-right corner, out of the reading column entirely. ── */
+  @media (min-width: 768px) {
+    .connectNudge {
+      inset-inline-start: auto;
+      inset-inline-end: 24px;
+      inset-block-end: 24px;
+      inline-size: min(320px, calc(100vw - 48px));
+      flex-wrap: wrap;
+      align-items: flex-start;
+      padding: 1rem;
+      padding-block-end: 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      /* Token-derived, not a raw rgba: §4.1.1 keeps literal colour values in tokens.css. */
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--color-text) 12%, transparent);
+    }
+    .connectNudge__line {
+      flex: 1 1 100%;
+      /* room for the × in the corner without a second layout box */
+      padding-inline-end: 1.5rem;
+      font-size: var(--text-sm);
+      line-height: var(--text-sm--line-height);
+    }
+    .connectNudge__cta {
+      min-block-size: 36px;
+    }
+    .connectNudge__close {
+      position: absolute;
+      inset-block-start: 0.375rem;
+      inset-inline-end: 0.375rem;
+      inline-size: 32px;
+      min-block-size: 32px;
+    }
+    .connectNudge__wide {
+      display: inline;
+    }
+    .connectNudge__narrow {
+      display: none;
+    }
+  }
+
+  /* ── THE YIELD RULES (rule 4 above) ──────────────────────────────────────────────────
+     Both are CSS, not JS, so they cannot lose a race with the island. The first covers the
+     modal opened through the island; the second covers it opened through `:target`, which
+     is what a no-JS visitor gets — belt and braces, since the nudge should not exist at all
+     without JS. The third keeps it out from under the mobile drawer's panel. */
+  html.install-modal-open .connectNudge,
+  html:has(.install-modal:target) .connectNudge,
+  body:has([data-nav-drawer][open]) .connectNudge {
+    display: none;
+  }
+</style>
+
+<script>
+  // Island: scroll-depth trigger + 7-day dismissal. Analytics rides the sitewide
+  // `grokbotTrack` hook (§9.7 owns the transport), same as InstallModal:
+  // connect_nudge_show · connect_nudge_click · connect_nudge_dismiss.
+  const STORAGE_KEY = 'grokbot:connect-nudge-dismissed';
+  const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+  const DEPTH = 0.4;
+
+  type Tracker = (event: string, props?: Record<string, string>) => void;
+  const track: Tracker = (event, props) => {
+    (window as unknown as { grokbotTrack?: Tracker }).grokbotTrack?.(event, props);
+  };
+
+  // localStorage throws outright in Safari's private mode and when storage is blocked by
+  // policy — a nudge is not worth an uncaught exception on someone's page, so both halves
+  // are guarded and a failed READ is treated as "not dismissed" (show it) while a failed
+  // WRITE just means the cooldown does not persist.
+  const readDismissedAt = (): number => {
+    try {
+      return Number(window.localStorage.getItem(STORAGE_KEY) ?? '0') || 0;
+    } catch {
+      return 0;
+    }
+  };
+  const writeDismissedAt = (value: number) => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, String(value));
+    } catch {
+      /* storage unavailable — the nudge simply returns next visit */
+    }
+  };
+
+  const nudge = document.querySelector<HTMLElement>('[data-connect-nudge]');
+
+  if (nudge) {
+    const dismissedAt = readDismissedAt();
+    const cooling = dismissedAt > 0 && Date.now() - dismissedAt < COOLDOWN_MS;
+
+    if (!cooling) {
+      nudge.dataset.connectAnimate = '';
+
+      let shown = false;
+      let queued = false;
+
+      const show = () => {
+        if (shown) return;
+        shown = true;
+        window.removeEventListener('scroll', onScroll);
+        nudge.hidden = false;
+        // Next frame, so the browser paints the start state and the transition actually
+        // runs instead of being coalesced away with the un-hiding.
+        requestAnimationFrame(() => nudge.classList.add('is-visible'));
+        track('connect_nudge_show', { path: window.location.pathname });
+      };
+
+      const evaluate = () => {
+        queued = false;
+        const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+        // A page too short to scroll never qualifies: the trigger is READING, and there is
+        // nothing to read past. This is also what keeps it off first paint.
+        if (scrollable <= 0) return;
+        if (window.scrollY / scrollable >= DEPTH) show();
+      };
+
+      const onScroll = () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(evaluate);
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      const retire = (event: string) => {
+        writeDismissedAt(Date.now());
+        nudge.classList.remove('is-visible');
+        window.removeEventListener('scroll', onScroll);
+        shown = true;
+        track(event, { path: window.location.pathname });
+        // Wait out the fade before pulling it from the layout entirely.
+        window.setTimeout(() => {
+          nudge.hidden = true;
+        }, 240);
+      };
+
+      nudge
+        .querySelector<HTMLButtonElement>('[data-connect-dismiss]')
+        ?.addEventListener('click', () => retire('connect_nudge_dismiss'));
+
+      // Engaging counts as being asked. The modal's own island handles the opening; this
+      // only retires the nudge so it is not sitting behind the scrim waiting to reappear.
+      nudge
+        .querySelector<HTMLAnchorElement>('[data-install-trigger]')
+        ?.addEventListener('click', () => retire('connect_nudge_click'));
+    }
+  }
+</script>

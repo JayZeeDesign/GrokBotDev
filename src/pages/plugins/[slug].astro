@@ -13,6 +13,7 @@ import Callout from '../../components/Callout.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import PromptBlock from '../../components/PromptBlock.astro';
 import InstallModal from '../../components/InstallModal.astro';
+import ConnectCallout from '../../components/ConnectCallout.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
 import PagefindMeta from '../../components/PagefindMeta.astro';
@@ -212,6 +213,11 @@ const graph = [
           </>
         )
       }
+
+      {/* Surface 3 — under the tool summary, at the end of the block that explains what this
+          tool is and how to wire it in. SECONDARY treatment: the amber on this plane belongs
+          to "install in grok bot" at the top of the section (§A1). */}
+      <ConnectCallout context="plugin" />
     </section>
 
     {

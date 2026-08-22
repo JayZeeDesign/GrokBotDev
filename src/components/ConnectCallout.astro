@@ -1,0 +1,107 @@
+---
+// Surface 3 of the "connect to THE FEED" system (operator, 2026-08-22) — the CONTEXTUAL
+// inline callout. Highest intent of the three surfaces: it is read at the exact moment the
+// reader has just found something they like, which is the only moment "send me more of this"
+// is an obvious yes rather than an interruption.
+//
+// ONE component, THREE placements (use-case single, plugin single, lane index). Only the
+// LINE changes — never the destination, never the CTA. Everything here is a plain anchor to
+// `#install-site`, the single feed panel BaseLayout renders sitewide, so this surface works
+// with JS off (`:target`) exactly like the header does. Surfaces 1 and 3 are the no-JS-safe
+// paths; the ambient nudge is the only JS-gated one.
+//
+// ── WHY THE CTA IS SECONDARY AND NOT THE AMBER BUTTON ────────────────────────────────────
+// §A1: one accent per viewport-plane. On an entry single the page's own "install in grok
+// bot" button IS the content plane's amber, and it must stay that way — it is the action the
+// reader came for. A second amber fill inside the same scroll would either compete with it
+// or, worse, read as an ad. So the band is a TINT (the sponsor-tint register, a whisper of
+// accent over surface) and the CTA is accent TEXT, underlined. Loud enough to be found,
+// quiet enough to be a suggestion.
+//
+// Copy: CP-131 (use-case) · CP-132 (plugin) · CP-133 (hub) · CP-134 (CTA, shared).
+import {
+  CP_131_CALLOUT_USE_CASE,
+  CP_132_CALLOUT_PLUGIN,
+  CP_133_CALLOUT_HUB,
+  CP_134_CALLOUT_CTA,
+} from '../lib/copy';
+
+interface Props {
+  /** Which line to render. The CTA and the destination never vary. */
+  context: 'use-case' | 'plugin' | 'hub';
+  class?: string;
+}
+
+const { context, class: className = '' } = Astro.props;
+
+const LINES = {
+  'use-case': CP_131_CALLOUT_USE_CASE,
+  plugin: CP_132_CALLOUT_PLUGIN,
+  hub: CP_133_CALLOUT_HUB,
+} as const;
+---
+
+<aside class:list={['connectCallout', className]} data-pagefind-ignore>
+  <p class="connectCallout__line">
+    <span class="connectCallout__mark" aria-hidden="true">▪</span>
+    {LINES[context]}
+  </p>
+  <a href="#install-site" data-install-trigger="install-site" class="connectCallout__cta">
+    {CP_134_CALLOUT_CTA}
+  </a>
+</aside>
+
+<style>
+  .connectCallout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    /* The sponsor-tint register: accent at a whisper over surface, not a fill. Kept flat
+       (no gradient) so it never competes with PluginSubmitCTA, which is the louder invite
+       and owns the gradient. `color-mix` keeps both themes correct from one declaration —
+       in dark, --color-surface is #141417 and the tint stays a tint. */
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  }
+
+  .connectCallout__line {
+    flex: 1 1 22rem;
+    min-inline-size: 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-sm);
+    line-height: var(--text-base--line-height);
+    color: var(--color-text-muted);
+  }
+
+  /* The same 8px accent square the /agent door uses — the house's "this is a machine-facing
+     affordance" marker. */
+  .connectCallout__mark {
+    margin-inline-end: 0.5rem;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--color-accent);
+  }
+
+  .connectCallout__cta {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    /* 44px of target on a phone without looking like a button on a desktop: the padding is
+       vertical only, so the control reads as the text link it is. */
+    min-block-size: 44px;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+  .connectCallout__cta:hover {
+    color: var(--color-text);
+  }
+</style>

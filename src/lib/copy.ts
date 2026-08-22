@@ -195,6 +195,42 @@ export const CP_124_CADENCE = {
   weekly: 'Every week',
 } as const;
 
+/**
+ * CP-126 … CP-135 — "connect to THE FEED" surfacing system (operator brief, 2026-08-22).
+ *
+ * ONE destination, THREE surfaces. Every string below is a label or line for a control that
+ * opens the SAME modal (`#install-site`, the `site` variant of InstallModal) — nothing here
+ * describes a second flow, and none of these may drift into naming one.
+ *
+ *   · CP-126/127 — Surface 1, the persistent header entry point. TWO labels for ONE control:
+ *     the long form rides the ≥md cluster and the mobile drawer; the short form rides the
+ *     <md top bar, where "connect your bot" measures wider than the row can give it without
+ *     wrapping the header onto a second line (measured at 360/375px — the operator's F1
+ *     verdict on a multi-row header stands, so the label shortens rather than the row growing).
+ *   · CP-128/129/130/135 — Surface 2, the ambient nudge. Wide/narrow lines are BOTH in the
+ *     markup and CSS picks one, the same mechanism ThemeToggle uses for its label: the nudge
+ *     appears on scroll, and a JS-written string would be a second source of truth.
+ *   · CP-131/132/133/134 — Surface 3, the inline contextual callouts. One component, three
+ *     contexts; only the line changes, never the CTA.
+ *
+ * STATUS: drafted by the operator, PENDING sign-off. Shipped verbatim as supplied. These are
+ * NOT §16 protected — they may be reworded — but they are governed: reword them HERE.
+ */
+export const CP_126_CONNECT_HEADER = 'connect your bot';
+export const CP_127_CONNECT_SHORT = 'connect';
+export const CP_128_NUDGE_LINE_WIDE =
+  'New builds like this, delivered straight to your Grok Bot.';
+export const CP_129_NUDGE_LINE_NARROW = 'Get builds like this in your Grok Bot.';
+export const CP_130_NUDGE_CTA = 'connect the feed';
+export const CP_135_NUDGE_DISMISS = 'dismiss';
+export const CP_131_CALLOUT_USE_CASE =
+  "Like this one? Connect your Grok Bot to the feed and it'll surface new builds like this — on your schedule.";
+export const CP_132_CALLOUT_PLUGIN =
+  'Want new agentic tools like this the moment they land? Connect your Grok Bot to the feed.';
+export const CP_133_CALLOUT_HUB =
+  'This whole feed can come to your Grok Bot. Connect once, get the best of it on your schedule.';
+export const CP_134_CALLOUT_CTA = 'connect the feed →';
+
 /** Interpolate `{token}` placeholders in a pack string without editorialising it. */
 export function fillCopy(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) =>

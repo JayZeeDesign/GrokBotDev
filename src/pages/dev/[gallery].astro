@@ -834,7 +834,9 @@ const groups = [
           entryName={samplePlugin.name}
           triggerLabel="install in grok bot (steps)"
         />
-        <InstallModal id="site" variant="site" />
+        {/* `id="site-demo"`, not `"site"`: BaseLayout now renders the real `#install-site`
+            on every page, and the gallery must not collide with it. */}
+        <InstallModal id="site-demo" variant="site" />
       </div>
     </section>
 
