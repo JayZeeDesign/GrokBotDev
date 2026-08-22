@@ -30,6 +30,7 @@ export const GET: APIRoute = async () => {
 ## Start here
 - [Agent contract](${SITE}/agent/): copy-paste instructions for a Grok Bot to connect and sync
 - [Feed JSON](${SITE}/api/v1/feed.json): RECOMMENDED — the complete lean list (all types, newest first, no prompt/body). Scan + rank by awesome_score here, then fetch an item's detail_url for the full record incl. the prompt.
+- [Status JSON](${SITE}/api/v1/status.json): API version, capabilities, notices, deprecations, changelog. Poll it to learn if the API changed; v1 is additive-only and every response carries a schema_revision.
 - [Per-entry detail](${SITE}/api/v1/use-cases/<slug>.json): full record for one entry (also /api/v1/plugins/<slug>.json)
 - [Latest JSON](${SITE}/api/v1/latest.json): 50 newest, full records
 - [RSS](${SITE}/rss.xml)

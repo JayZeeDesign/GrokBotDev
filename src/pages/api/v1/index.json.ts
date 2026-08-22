@@ -4,6 +4,7 @@ import type { APIRoute } from 'astro';
 import categories from '../../../data/categories.json';
 import { allCollections, allPlugins, allUseCases, hubEligible } from '../../../lib/entries';
 import { SITE_URL, envelope, included, integrationItems, jsonResponse } from '../../../lib/api';
+import { STABILITY } from '../../../lib/apiMeta';
 
 export const GET: APIRoute = async () => {
   const [plugins, useCases, collections, hubPool] = await Promise.all([
@@ -19,7 +20,8 @@ export const GET: APIRoute = async () => {
   const integrationCount = integrationItems(included(hubPool)).length;
 
   const items = [
-    { name: 'index', url: `${SITE_URL}/api/v1/index.json`, description: 'Site meta, counts, endpoint directory', count: 9 },
+    { name: 'index', url: `${SITE_URL}/api/v1/index.json`, description: 'Site meta, counts, endpoint directory', count: 10 },
+    { name: 'status', url: `${SITE_URL}/api/v1/status.json`, description: 'API self-description: version, capabilities, notices, deprecations, changelog. Poll this to learn if the API changed.', count: 0 },
     { name: 'feed', url: `${SITE_URL}/api/v1/feed.json`, description: 'RECOMMENDED. Complete lean feed (all types, newest first, no prompt/body). Scan + rank here, then fetch item.detail_url for the full record.', count: p + u + c },
     { name: 'latest', url: `${SITE_URL}/api/v1/latest.json`, description: '50 newest entries across all types (full records)', count: latestCount },
     { name: 'plugins', url: `${SITE_URL}/api/v1/plugins.json`, description: 'All plugins (full records). Per-entry detail: /api/v1/plugins/<slug>.json', count: p },
@@ -41,6 +43,8 @@ export const GET: APIRoute = async () => {
         repo_url: 'https://github.com/ZeroPointRepo/GrokBotDev',
         mcp_url: 'https://mcp.grokbot.dev/mcp',
         api_version: 'v1',
+        status_url: `${SITE_URL}/api/v1/status.json`,
+        stability: STABILITY,
       },
       counts: { plugins: p, use_cases: u, collections: c },
     })

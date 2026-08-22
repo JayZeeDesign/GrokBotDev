@@ -9,13 +9,21 @@
 import type { AnyDoc, UseCaseDoc } from './entries';
 import { categoriesOf, integrationSlug, kindOf, primarySourceOf, summaryOf, titleOf, urlOf } from './entries';
 import integrationsVocab from '../data/integrations.json';
+import { API_VERSION, SCHEMA_REVISION } from './apiMeta';
 
 export const SITE_URL = 'https://grokbot.dev';
 
-/** §7.1.1 envelope — the three keys guaranteed on every endpoint forever. */
+/**
+ * §7.1.1 envelope — the keys guaranteed on every endpoint forever. `schema_revision` +
+ * `api_version` are stamped on EVERY response so a bot can detect the API changed from any
+ * call it already makes (and know where to look: /api/v1/status.json).
+ */
 export function envelope<T>(items: T[], extra: Record<string, unknown> = {}) {
   return {
     generated_at: new Date().toISOString(),
+    api_version: API_VERSION,
+    schema_revision: SCHEMA_REVISION,
+    status_url: `${SITE_URL}/api/v1/status.json`,
     count: items.length,
     ...extra,
     items,
