@@ -16,6 +16,7 @@ import InstallModal from '../../components/InstallModal.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
 import PagefindMeta from '../../components/PagefindMeta.astro';
+import PluginIcon from '../../components/PluginIcon.astro';
 import categories from '../../data/categories.json';
 import {
   allCollections,
@@ -112,13 +113,18 @@ const graph = [
 
     <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
       <header class="flex flex-col gap-4">
-        <h1
-          class="display-track font-display text-3xl text-text md:text-4xl"
-          data-pagefind-weight="10"
-          data-pagefind-meta="name"
-        >
-          {d.name}
-        </h1>
+        {/* Operator: the product favicon sits left of the title — the same icon the listing
+            table shows (PluginIcon: local fetched mark, letter-tile fallback). */}
+        <div class="flex items-center gap-4">
+          <PluginIcon slug={d.slug} name={d.name} size="md" />
+          <h1
+            class="display-track font-display text-3xl text-text md:text-4xl"
+            data-pagefind-weight="10"
+            data-pagefind-meta="name"
+          >
+            {d.name}
+          </h1>
+        </div>
         <p class="text-lg text-text-muted" data-pagefind-meta="tagline">{d.tagline}</p>
         <div class="flex flex-wrap items-center gap-2">
           {d.verified_at && d.status === 'live' && (
