@@ -3,7 +3,7 @@
     "slug": "transcriptapi",
     "name": "TranscriptAPI",
     "url": "https://transcriptapi.com",
-    "tagline": "Audio & video to accurate transcripts in one API call.",
+    "tagline": "Give your agents access to YouTube transcripts.",
     "tint": "sky",
     "icon": "transcriptapi.png"
   },
@@ -19,7 +19,7 @@
     "slug": "crhq",
     "name": "CRHQ",
     "url": "https://crhq.ai",
-    "tagline": "Your AI control room — agents that run the work.",
+    "tagline": "Most advanced agent harness for builders.",
     "tint": "lilac",
     "icon": "crhq.svg"
   },
