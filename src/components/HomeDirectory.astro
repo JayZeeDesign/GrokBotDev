@@ -8,6 +8,7 @@ import EntryCard from './EntryCard.astro';
 import Chip from './Chip.astro';
 import PluginIcon from './PluginIcon.astro';
 import { toCardEntry, kindOf, sortSponsorsFirst } from '../lib/entries';
+import PluginSubmitCTA from './PluginSubmitCTA.astro';
 import type { AnyDoc } from '../lib/entries';
 import categories from '../data/categories.json';
 
@@ -121,6 +122,8 @@ const featuredUseCases = useCases.filter(isFeatured);
         </div>
       ))}
     </div>
+
+    <PluginSubmitCTA class="mt-2" />
   </div>
 
   {/* ── USE CASES ───────────────────────────────────────────────────────────────────── */}

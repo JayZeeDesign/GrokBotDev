@@ -12,6 +12,7 @@ import NewsletterRow from './NewsletterRow.astro';
 import PluginIcon from './PluginIcon.astro';
 import Chip from './Chip.astro';
 import RotatingSponsorSlot from './RotatingSponsorSlot.astro';
+import PluginSubmitCTA from './PluginSubmitCTA.astro';
 import { integrationSlug, integrationsOf, kindOf, toCardEntry } from '../lib/entries';
 import type { AnyDoc } from '../lib/entries';
 import type { WaitlistSource } from '../lib/types';
@@ -187,6 +188,9 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
       </div>
     )
   }
+
+  {/* Operator: the plugin hub invites tool builders to submit — directory is being populated. */}
+  {variant === 'plugin' && <PluginSubmitCTA />}
 
   {
     page.lastPage > 1 && (

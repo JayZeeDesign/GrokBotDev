@@ -1,0 +1,103 @@
+---
+// Operator: an inviting "directory is being populated — submit your agentic tool" banner for
+// the plugin surfaces (home plugins tab + /plugins/ hub). Zero JS: the "in progress" indicator
+// is a pure-CSS pulse that respects prefers-reduced-motion. CSP-clean.
+import Button from './Button.astro';
+
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<aside class:list={['pluginCta', className]} aria-label="submit a plugin">
+  <div class="pluginCta__main">
+    <p class="pluginCta__eyebrow">
+      <span class="pluginCta__live" aria-hidden="true"></span>
+      data entry in progress — new agentic tools added regularly
+    </p>
+    <p class="pluginCta__title">Built an agentic tool? <span>Get it listed.</span></p>
+    <p class="pluginCta__sub">
+      Your own page, a dofollow link, and a copy-paste prompt that wires your tool into any
+      Grok Bot. Free — takes a few minutes.
+    </p>
+  </div>
+  <Button variant="solid" href="/submit/" label="submit a plugin" class="pluginCta__btn" />
+</aside>
+
+<style>
+  .pluginCta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    /* a whisper of the accent so it reads as a friendly invite, not a system notice */
+    background: linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--color-accent) 8%, var(--color-surface)),
+      var(--color-surface) 60%
+    );
+  }
+  .pluginCta__main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-inline-size: 15rem;
+    flex: 1 1 22rem;
+  }
+  .pluginCta__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+  }
+  .pluginCta__live {
+    inline-size: 7px;
+    block-size: 7px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 60%, transparent);
+    animation: pluginCta-pulse 2s ease-out infinite;
+  }
+  .pluginCta__title {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+  .pluginCta__title span {
+    color: var(--color-accent-text);
+  }
+  .pluginCta__sub {
+    max-inline-size: 46ch;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .pluginCta__btn {
+    flex: 0 0 auto;
+  }
+
+  @keyframes pluginCta-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 55%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-accent) 0%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 0%, transparent);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pluginCta__live {
+      animation: none;
+    }
+  }
+</style>
