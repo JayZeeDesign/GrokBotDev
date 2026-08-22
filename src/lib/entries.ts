@@ -150,6 +150,25 @@ export function editorialRel(doc: AnyDoc): string | undefined {
  * verified chip, integration chips and scouted chip never rendered at all.
  * Every EntryCard / RelatedList call site goes through here, and no call site casts.
  */
+/** Resolve the card "source" line: YouTube channel, or the X handle (author, else first tweet). */
+function resolveCardSource(
+  doc: UseCaseDoc
+): { label: string; platform: 'x' | 'youtube'; url?: string } | undefined {
+  const d = doc.data as Record<string, unknown> & {
+    author?: { handle?: string; url?: string };
+    source_tweets?: Array<{ url?: string; author_handle?: string }>;
+  };
+  const primary = primarySourceOf(doc);
+  if (primary?.kind === 'youtube-video') {
+    return { label: primary.channel, platform: 'youtube', url: primary.url };
+  }
+  const st = (d.source_tweets ?? [])[0];
+  const handle = d.author?.handle ?? st?.author_handle;
+  if (!handle) return undefined;
+  const url = (primary?.kind === 'x-post' ? primary.url : undefined) ?? st?.url ?? d.author?.url;
+  return { label: `@${handle}`, platform: 'x', url };
+}
+
 export function toCardEntry(doc: AnyDoc): Entry {
   const d = doc.data as Record<string, unknown>;
   const base = {
@@ -209,6 +228,13 @@ export function toCardEntry(doc: AnyDoc): Entry {
       author: d.author as never,
       scoutedBy: d.scouted_by as never,
       replicability: d.replicability as string,
+      // FINAL model fields for the new card (fall back handled in UseCaseCard).
+      headline: d.headline as string | undefined,
+      summary: d.summary as string | undefined,
+      categories: (d.categories as string[] | undefined) ?? [d.category as string],
+      awesomeScore: d.awesome_score as number | undefined,
+      format: (d.format as 'use-case' | 'guide' | undefined) ?? 'use-case',
+      source: resolveCardSource(doc as UseCaseDoc),
     } as Entry;
   }
 

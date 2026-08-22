@@ -3,6 +3,11 @@ type: use-case
 name: Finder · Starlink Flights
 slug: starlink-flight-finder
 tagline: Find flights biased toward Starlink wifi
+headline: "Find flights biased toward Starlink wifi"
+summary: "Ben Lang collected internal Grok Bot use cases; the one to copy is his: find/book flights biased toward Starlink access. Peer one-liners (contractors, recipes, film scans) skipped — this is the job with a clear preference."
+categories: [personal]
+format: use-case
+awesome_score: 64
 category: personal
 subcategory: travel
 bot_name: Finder

@@ -3,6 +3,11 @@ type: use-case
 name: Scribe · Help-Center Updater
 slug: help-center-from-prs
 tagline: Update the help center from merged PRs
+headline: "Update the help center from merged PRs"
+summary: "Damon’s Intercom + GitHub bot watches every merged PR, decides whether a help-center article needs updating, then drafts and publishes it. 82 likes / 11.4K views."
+categories: [support]
+format: use-case
+awesome_score: 69
 category: support
 subcategory: knowledge-base
 bot_name: Scribe

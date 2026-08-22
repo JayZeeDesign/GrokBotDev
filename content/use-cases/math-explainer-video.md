@@ -3,6 +3,11 @@ type: use-case
 name: Explainer · Paper-to-Video
 slug: math-explainer-video
 tagline: Turn a hard paper into an explainer video
+headline: "Turn a hard paper into an explainer video"
+summary: "He asked Grok Bot to generate a 4:22 animated video explaining rank, spectral power, and optimization vs Adam/Muon/Aurora. Video attached. 377 likes / 1.7M views (Elon quote-tweet did 2.1M)."
+categories: [fun]
+format: use-case
+awesome_score: 64
 category: fun
 subcategory: creative
 bot_name: Explainer

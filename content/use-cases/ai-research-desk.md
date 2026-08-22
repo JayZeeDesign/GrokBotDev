@@ -3,6 +3,11 @@ type: use-case
 name: "Research Desk · AI Hedge Fund Analyst"
 slug: ai-research-desk
 tagline: "A self-improving research desk that studies the markets while you sleep."
+headline: "A research desk that studies markets while you sleep"
+summary: "Roan's article on turning Grok Bot into a self-improving AI hedge-fund research desk: an army of agents that study the markets around the clock, grade their own past calls to improve, and hand you a decision-ready brief — a desk that runs while you sleep. It researches and proposes, never trades."
+categories: [trading-crypto, data]
+format: use-case
+awesome_score: 72
 category: trading-crypto
 subcategory: markets
 bot_name: Research Desk

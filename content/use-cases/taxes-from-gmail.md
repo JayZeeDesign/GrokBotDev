@@ -3,6 +3,11 @@ type: use-case
 name: Filer · Tax Assembler
 slug: taxes-from-gmail
 tagline: Assemble a tax return from Gmail docs
+headline: "Assemble a tax return from Gmail docs"
+summary: "A non-coder connected Gmail (~40,000 emails) and asked Grok Bot to do his taxes. It found the documents in mail and assembled the return. Same tweet as the Japan award-ticket hunt and the hourly political brief — he is not a programmer."
+categories: [finance-ops]
+format: use-case
+awesome_score: 69
 category: finance-ops
 subcategory: compliance
 bot_name: Filer

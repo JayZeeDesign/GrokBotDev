@@ -3,6 +3,11 @@ type: use-case
 name: Triage · Email Partner
 slug: email-triage-partner
 tagline: "A 7:30am three-stage email triage that learns your rules."
+headline: "An inbox that triages itself every morning"
+summary: "A dedicated bot that runs a daily three-stage inbox triage: it archives what you never need to see, summarizes low-attention mail, and does full-context triage on the rest — reading prior history, cross-checking HubSpot and Drive, and drafting replies in your voice."
+categories: [work, support]
+format: use-case
+awesome_score: 77
 category: work
 subcategory: email
 bot_name: Triage

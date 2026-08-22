@@ -3,6 +3,11 @@ type: use-case
 name: Klaus · Chief of Staff
 slug: nate-cos-front-door
 tagline: "Klaus: chief of staff as the only front door"
+headline: "Klaus: chief of staff as the only front door"
+summary: "Nate’s second run job: Klaus is the only bot he talks to. Before doing work, Klaus checks whether another Grok Bot owns it, delegates, and brings the result back to the main thread. Specialists stay narrow; he does not want a four-bot org chart to babysit."
+categories: [work]
+format: use-case
+awesome_score: 61
 category: work
 subcategory: tasks
 bot_name: Klaus

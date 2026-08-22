@@ -61,6 +61,12 @@ const url = `/use-cases/${d.slug}/`;
 const rel = editorialRel(entry as never);
 const isDeprecated = d.status === 'deprecated';
 const named = splitNamedCharacter(d.name);
+// FINAL model: score eyebrow + headline hero.
+const aScore = d.awesome_score as number | undefined;
+const isGuide = d.format === 'guide';
+const scoreTier =
+  aScore == null ? '' : aScore >= 90 ? 'must-try' : aScore >= 78 ? 'awesome' : aScore >= 65 ? 'solid' : aScore >= 50 ? 'worth a look' : '';
+const heroSummary = (d.summary as string | undefined) ?? d.tagline;
 // §5.3: exactly one fenced block per use-case body, and it is the prompt.
 const prompt = extractPrompt(entry.body ?? '');
 
@@ -158,25 +164,34 @@ const graph = [
     <div class="entryGrid">
       <div class="entryGrid__main flex flex-col gap-12">
 
-    <header class="flex flex-col gap-4">
+    <header class="flex flex-col gap-3">
+      {(isGuide || aScore != null) && (
+        <div class="font-mono text-sm font-bold text-accent-text">
+          {isGuide ? (
+            <span class="text-text-muted">GUIDE · reference</span>
+          ) : (
+            <>✦ {aScore}{scoreTier && <span class="font-normal lowercase text-text-muted"> · {scoreTier}</span>}</>
+          )}
+        </div>
+      )}
       <h1
         class="display-track font-display text-3xl text-text md:text-4xl"
         data-pagefind-weight="10"
         data-pagefind-meta="name"
       >
-        {
-          named ? (
-            <>
-              <span class="font-mono">{named.character}</span>
-              <span aria-hidden="true" class="text-text-muted"> · </span>
-              <span>{named.role}</span>
-            </>
-          ) : (
-            d.name
-          )
-        }
+        {d.headline ? (
+          d.headline
+        ) : named ? (
+          <>
+            <span class="font-mono">{named.character}</span>
+            <span aria-hidden="true" class="text-text-muted"> · </span>
+            <span>{named.role}</span>
+          </>
+        ) : (
+          d.name
+        )}
       </h1>
-      <p class="text-lg text-text-muted" data-pagefind-meta="tagline">{d.tagline}</p>
+      <p class="text-lg text-text-muted" data-pagefind-meta="tagline">{heroSummary}</p>
       <div class="flex flex-wrap items-center gap-2">
         {d.verified_at && d.status === 'live' && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
         {setupLabel(d.setup_minutes) && <Chip variant="setup-time" label={setupLabel(d.setup_minutes)!} />}

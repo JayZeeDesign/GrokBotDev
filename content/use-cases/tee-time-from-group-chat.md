@@ -3,6 +3,11 @@ type: use-case
 name: Caddie · Tee Time Booker
 slug: tee-time-from-group-chat
 tagline: Book a live tee time from a group chat
+headline: "Book a live tee time from a group chat"
+summary: "Shane Mac spent a month trying to make agents useful in groups. Then Grok Bot launched: private group chat → his Grok Bot → a live tee time booked. Screen recording. That was the TestFlight."
+categories: [personal]
+format: use-case
+awesome_score: 74
 category: personal
 subcategory: home
 bot_name: Caddie

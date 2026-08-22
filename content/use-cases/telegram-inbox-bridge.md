@@ -3,6 +3,11 @@ type: use-case
 name: Bridge · Telegram Front Door
 slug: telegram-inbox-bridge
 tagline: Reach your Grok Bot from Telegram, webhooks and all.
+headline: "Reach your Grok Bot from Telegram, webhooks and all."
+summary: "Sets up an inbound Telegram bridge so you can talk to your Grok Bot from anywhere, the way an OpenClaw Telegram webhook works — using your own BotFather bot, with every real-world failure (tunnels, webhook 409s, typing timeouts) already solved inside the prompt."
+categories: [engineering]
+format: use-case
+awesome_score: 81
 category: engineering
 subcategory: agents-ops
 bot_name: Bridge

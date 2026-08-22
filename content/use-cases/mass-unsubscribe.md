@@ -3,6 +3,11 @@ type: use-case
 name: Unsub · Email Purger
 slug: mass-unsubscribe
 tagline: Mass-unsubscribe 120 days of marketing email
+headline: "Mass-unsubscribe 120 days of marketing email"
+summary: "Todd had Grok Bot unsubscribe him from 120 days of marketing mail. Same tweet also audited paid subscriptions. 2.1K likes / 422K views."
+categories: [work]
+format: use-case
+awesome_score: 64
 category: work
 subcategory: email
 bot_name: Unsub

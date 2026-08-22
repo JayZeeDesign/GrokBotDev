@@ -3,6 +3,11 @@ type: use-case
 name: Followup · Call Drafter
 slug: call-follow-up-drafter
 tagline: Post-call follow-ups in my voice
+headline: "Post-call follow-ups in my voice"
+summary: "In the same GTM article, Krista automates follow-up drafts from Granola or Gong notes after external calls. Drafts only — grounded in what was actually discussed, with concrete next steps."
+categories: [sales]
+format: use-case
+awesome_score: 64
 category: sales
 subcategory: calls
 bot_name: Followup

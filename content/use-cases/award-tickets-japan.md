@@ -3,6 +3,11 @@ type: use-case
 name: Award · Ticket Hunter
 slug: award-tickets-japan
 tagline: Hunt first-class award tickets to Japan
+headline: "Hunt first-class award tickets to Japan"
+summary: "Same non-coder run: he asked Grok Bot to find first-class award tickets to Japan. With permission it logged into his airline accounts and found three first-class Japan tickets for 60K points. He stopped it because the dates were not firm — it would have booked."
+categories: [personal]
+format: use-case
+awesome_score: 64
 category: personal
 subcategory: travel
 bot_name: Award

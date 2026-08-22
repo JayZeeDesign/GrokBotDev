@@ -3,6 +3,11 @@ type: use-case
 name: Grok Ship · Software Factory
 slug: grok-ship-factory
 tagline: "Grok Ship: a software factory across repos"
+headline: "Grok Ship: a software factory across repos"
+summary: "Kun rabbit-holed into Grok Ship — a software factory inside Grok Bot. He said yesterday alone, hundreds of issues and PRs across his repos got done by it. Captain the ship; it ships."
+categories: [engineering]
+format: use-case
+awesome_score: 64
 category: engineering
 subcategory: ci-cd
 bot_name: Grok Ship

@@ -3,6 +3,10 @@ type: use-case
 name: "Grok Bot Masterclass · Start Here"
 slug: grok-bot-masterclass
 tagline: "Avi Chawla's masterclass: understand, set up, and get real work from Grok Bot."
+headline: "The masterclass that makes Grok Bot click"
+summary: "Avi Chawla's Grok Bot Masterclass — a popular, end-to-end guide to understanding, setting up, and getting real work out of Grok Bot. It covers what a Bot actually is, how the shared computer works underneath, how Grok Bot compares to Hermes Agent, and how to put it to work."
+categories: [personal]
+format: guide
 category: personal
 subcategory: learning
 bot_name: Grok Bot Masterclass

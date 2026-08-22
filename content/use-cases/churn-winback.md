@@ -3,6 +3,11 @@ type: use-case
 name: Winback · Churn Operator
 slug: churn-winback
 tagline: Win back churned customers overnight
+headline: "Win back churned customers overnight"
+summary: "Liam gave Grok Bot one job: win back churned customers. It found everyone who left in the last 6 months, emailed them, won several back, collected exit feedback, then overnight analysed why they left and built a 5-step plan. The bot covered its own subscription cost. 3."
+categories: [sales]
+format: use-case
+awesome_score: 69
 category: sales
 subcategory: crm
 bot_name: Winback

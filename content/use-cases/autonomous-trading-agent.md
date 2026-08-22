@@ -3,6 +3,11 @@ type: use-case
 name: Trader · Autonomous Agent
 slug: autonomous-trading-agent
 tagline: Autonomous trading agent, Grok Bots only
+headline: "Autonomous trading agent, Grok Bots only"
+summary: "RitOnchain posted a Stanford researcher’s write-up: an autonomous trading agent built entirely with Grok Bots. Screenshot of the agent stack. Bookmark-it-before-it’s-lost energy — research/paper first, not a hot-tip bot."
+categories: [trading-crypto]
+format: use-case
+awesome_score: 71
 category: trading-crypto
 subcategory: markets
 bot_name: Trader

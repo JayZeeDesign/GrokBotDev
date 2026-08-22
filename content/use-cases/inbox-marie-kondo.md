@@ -3,6 +3,11 @@ type: use-case
 name: Kondo · Inbox Tidier
 slug: inbox-marie-kondo
 tagline: 24/7 Marie Kondo for Gmail, Drive, and paid subs
+headline: "24/7 Marie Kondo for Gmail, Drive, and paid subs"
+summary: "Peter Yang’s five-bot tutorial includes a digital Marie Kondo that audits Gmail, Google Drive, and paid subscriptions, then proposes a cleanup plan. It only unsubscribes, deletes, renames, or cancels after he approves each action. Same tweet as the advisor / YouTube / X-scout crew."
+categories: [personal]
+format: use-case
+awesome_score: 69
 category: personal
 subcategory: home
 bot_name: Kondo

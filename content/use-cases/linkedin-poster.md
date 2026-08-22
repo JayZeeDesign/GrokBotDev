@@ -3,6 +3,11 @@ type: use-case
 name: Poster · LinkedIn Publisher
 slug: linkedin-poster
 tagline: LinkedIn bot that actually posts
+headline: "LinkedIn bot that actually posts"
+summary: "Debbie created a LinkedIn bot, signed in on the bot’s computer (it never sees the password), let it learn her existing posts, dumped a messy voice note, and told it to post. It posted. Receipt, not a draft-only demo."
+categories: [marketing]
+format: use-case
+awesome_score: 64
 category: marketing
 subcategory: social
 bot_name: Poster

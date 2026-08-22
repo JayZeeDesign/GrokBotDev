@@ -3,6 +3,11 @@ type: use-case
 name: Planner · Plumbing Content
 slug: phoenix-plumbing-content-planner
 tagline: Weekday content planner for a Phoenix plumbing company
+headline: "Weekday content planner for a Phoenix plumbing company"
+summary: "Jon ONeill (HouseHackerJon) hired a Grok Bot named Mary as marketing manager for his Phoenix plumbing company."
+categories: [marketing]
+format: use-case
+awesome_score: 74
 category: marketing
 subcategory: content
 bot_name: Planner

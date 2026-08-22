@@ -3,6 +3,11 @@ type: use-case
 name: Buyer · Overnight Media
 slug: overnight-media-buyer
 tagline: Overnight media buyer that only pings when spend is on fire
+headline: "Overnight media buyer that only pings when spend is on fire"
+summary: "A media buyer paid Cursor Ultra $200 vs ~$100 for Codex/Claude and gave Grok Bot one job: be my media buyer. It connected ad accounts, spreadsheets, analytics, and campaign context."
+categories: [marketing]
+format: use-case
+awesome_score: 64
 category: marketing
 subcategory: ads
 bot_name: Buyer

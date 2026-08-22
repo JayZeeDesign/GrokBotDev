@@ -3,6 +3,11 @@ type: use-case
 name: GTM · Enterprise Operator
 slug: enterprise-gtm-workflows
 tagline: Run real enterprise GTM on Grok Bot
+headline: "Run real enterprise GTM on Grok Bot"
+summary: "Krista Letz (GTM) published the actual enterprise go-to-market workflows she runs on Grok Bot — not a toy demo. 3.3K likes / 1.5M views."
+categories: [sales]
+format: use-case
+awesome_score: 69
 category: sales
 subcategory: pipeline
 bot_name: GTM

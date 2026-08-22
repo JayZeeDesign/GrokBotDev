@@ -1,0 +1,106 @@
+---
+// FINAL Awesome Use Case card (approved 2026-08-21). Five parts, each justified:
+// score eyebrow · hook (headline) · summary · categories (multi, neutral chips) · source.
+// No bot name, no tags, no metrics strip. See documents/grokbot-dev/awesome-use-case-model.md.
+// Falls back to the old fields (tagline / what_it_does / category) for any entry not yet
+// backfilled, so it can never render blank during rollout.
+import { entryUrl } from '../lib/format';
+import type { UseCaseEntry } from '../lib/types';
+import categories from '../data/categories.json';
+
+interface Props {
+  entry: UseCaseEntry;
+  headingLevel?: 2 | 3;
+  class?: string;
+}
+const { entry, headingLevel = 3, class: className = '' } = Astro.props;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+
+const href = entryUrl('use-case', entry.slug);
+const labelOf = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
+
+const headline = entry.headline ?? entry.tagline;
+const summary = entry.summary ?? entry.whatItDoes ?? entry.tagline;
+const cats = (entry.categories && entry.categories.length ? entry.categories : [entry.category]).slice(0, 3);
+const score = entry.awesomeScore;
+const isGuide = entry.format === 'guide';
+
+function tier(s: number): string {
+  return s >= 90 ? 'must-try' : s >= 78 ? 'awesome' : s >= 65 ? 'solid' : s >= 50 ? 'worth a look' : '';
+}
+const src = entry.source;
+const platformMark = src?.platform === 'youtube' ? 'YouTube' : '𝕏';
+---
+
+{
+  entry.status !== 'deprecated' && (
+    <article
+      class:list={[
+        'entry-card relative flex flex-col gap-2 rounded-sm border border-border bg-surface p-4 transition-[background-color,border-color] duration-150 hover:border-border-strong hover:bg-surface-raised',
+        entry.status === 'needs-update' && 'border-l-2 border-l-warn',
+        className,
+      ]}
+      data-entry-type="use-case"
+    >
+      {/* 1 — score eyebrow */}
+      <div class="ucc-eyebrow">
+        {isGuide ? (
+          <span class="ucc-guide">GUIDE · reference</span>
+        ) : score != null ? (
+          <span class="ucc-score">✦ {score}{tier(score) && <span class="ucc-tier"> · {tier(score)}</span>}</span>
+        ) : (
+          <span class="ucc-score ucc-score--none">use case</span>
+        )}
+      </div>
+
+      {/* 2 — the hook (stretched link = the one card link) */}
+      <Heading class="font-sans text-base font-semibold leading-snug text-text">
+        <a href={href} class="entry-card__link">{headline}</a>
+      </Heading>
+
+      {/* 3 — summary */}
+      <p class="clamp-3 text-sm leading-relaxed text-text-muted">{summary}</p>
+
+      {/* 4 — categories (multi, neutral chips) */}
+      <div class="relative z-10 flex flex-wrap items-center gap-1.5">
+        {cats.map((c) => (
+          <a href={`/categories/${c}/`} class="ucc-cat">{labelOf(c)}</a>
+        ))}
+        {entry.status === 'needs-update' && <span class="ucc-cat ucc-cat--warn">needs update</span>}
+      </div>
+
+      {/* 5 — source */}
+      {src?.label && (
+        <div class="relative z-10 mt-auto border-t border-dashed border-border pt-2 font-mono text-xs text-text-muted">
+          via{' '}
+          {src.url ? (
+            <a href={src.url} target="_blank" rel="noopener" class="ucc-src">{src.label}</a>
+          ) : (
+            <span class="ucc-srcname">{src.label}</span>
+          )}{' '}
+          · <span class={src.platform === 'youtube' ? 'ucc-yt' : 'ucc-x'}>{platformMark}</span>
+        </div>
+      )}
+    </article>
+  )
+}
+
+<style>
+  .ucc-eyebrow { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.02em; }
+  .ucc-score { color: var(--color-accent-text); }
+  .ucc-tier { font-weight: 400; color: var(--color-text-muted); text-transform: lowercase; }
+  .ucc-score--none { color: var(--color-text-muted); font-weight: 400; text-transform: lowercase; }
+  .ucc-guide { color: var(--color-text-muted); }
+  .ucc-cat {
+    font-family: var(--font-mono); font-size: var(--text-xs); text-transform: lowercase;
+    color: var(--color-text-muted); border: 1px solid var(--color-border-interactive);
+    border-radius: 999px; padding: 2px 9px; text-decoration: none;
+  }
+  .ucc-cat:hover { color: var(--color-text); border-color: var(--color-border-strong); }
+  .ucc-cat--warn { color: var(--color-warn); border-color: var(--color-warn); }
+  .ucc-src { color: var(--color-text-muted); text-decoration: none; font-weight: 600; }
+  .ucc-src:hover { color: var(--color-accent-text); text-decoration: underline; text-underline-offset: 2px; }
+  .ucc-srcname { color: var(--color-text); font-weight: 600; }
+  .ucc-x { font-weight: 700; color: var(--color-text); }
+  .ucc-yt { font-weight: 700; color: #c4302b; }
+</style>

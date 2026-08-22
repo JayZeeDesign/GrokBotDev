@@ -3,6 +3,11 @@ type: use-case
 name: Presence · Always-On Poster
 slug: always-on-x-presence
 tagline: A bot that posts and sits in group chats for two days
+headline: "A bot that posts and sits in group chats for two days"
+summary: "Daniel gave a bot a full macOS machine plus Gmail and an X account. It ran for two days posting and joining group chats. 353 likes / 86K views."
+categories: [marketing]
+format: use-case
+awesome_score: 64
 category: marketing
 subcategory: social
 bot_name: Presence

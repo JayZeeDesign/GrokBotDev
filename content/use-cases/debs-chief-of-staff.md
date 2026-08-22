@@ -3,6 +3,11 @@ type: use-case
 name: Deb · Chief of Staff
 slug: debs-chief-of-staff
 tagline: Chief of staff that audits me and my bot team
+headline: "Chief of staff that audits me and my bot team"
+summary: "Debbie O’Brien’s CoS tweet is the prompt: look at me, look at the bots I already created, tell me what to change, how to manage the team, and what else would make me productive. The screenshot is the answer she got back."
+categories: [work]
+format: use-case
+awesome_score: 74
 category: work
 subcategory: tasks
 bot_name: Deb

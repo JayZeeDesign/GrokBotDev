@@ -3,6 +3,11 @@ type: use-case
 name: AEO · Content Autopilot
 slug: aeo-content-autopilot
 tagline: AEO/SEO bot that drafts to the CMS
+headline: "AEO/SEO bot that drafts to the CMS"
+summary: "Eric Osiu, Grok Botting on Starlink, described an AEO/SEO bot: ingest top content (sales calls, customer calls, podcasts, YouTube), combine ClickFlow / GA4 / Ahrefs / GSC, and draft into the CMS on autopilot. Listed as an agent to build, with a real stack, not a one-word role."
+categories: [marketing]
+format: use-case
+awesome_score: 61
 category: marketing
 subcategory: seo
 bot_name: AEO

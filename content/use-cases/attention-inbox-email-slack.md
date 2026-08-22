@@ -3,6 +3,11 @@ type: use-case
 name: Watcher · Attention Router
 slug: attention-inbox-email-slack
 tagline: Watch 5 inboxes and 6 Slack workspaces
+headline: "Watch 5 inboxes and 6 Slack workspaces"
+summary: "Same Yu-kai setup: the bot informs him of any message from five email addresses and six Slack servers that requires his attention, and keeps him organized. Ping only what needs him."
+categories: [work]
+format: use-case
+awesome_score: 64
 category: work
 subcategory: email
 bot_name: Watcher

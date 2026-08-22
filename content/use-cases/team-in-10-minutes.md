@@ -3,6 +3,11 @@ type: use-case
 name: "Chief of Staff · Team in 10 Minutes"
 slug: team-in-10-minutes
 tagline: "Stand up a whole bot team in 10 minutes, one Chief-of-Staff entry point."
+headline: "A company with no employees, in ten minutes"
+summary: "darkzodchi's guide to standing up a whole Grok Bot team in under 10 minutes: create one bot called Chief of Staff as your single entry point — its description field is the entire config, no code. It coordinates the rest, so you talk to one bot and a team does the work."
+categories: [engineering]
+format: use-case
+awesome_score: 71
 category: engineering
 subcategory: agents-ops
 bot_name: Chief of Staff

@@ -3,6 +3,11 @@ type: use-case
 name: Purge · Inbox Cleaner
 slug: gmail-mass-purge
 tagline: Purge 90,000 junk emails across two Gmail accounts
+headline: "Purge 90,000 junk emails across two Gmail accounts"
+summary: "Mike P let Grok Bot go through 90,000 emails across two Gmail accounts and delete the junk. Follow-up screenshots in the thread. 1.2K likes / 7.9M views; Elon amplified it."
+categories: [work]
+format: use-case
+awesome_score: 64
 category: work
 subcategory: email
 bot_name: Purge

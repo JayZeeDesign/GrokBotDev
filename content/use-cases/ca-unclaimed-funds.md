@@ -3,6 +3,11 @@ type: use-case
 name: Finder · Unclaimed Funds
 slug: ca-unclaimed-funds
 tagline: Find unclaimed state funds
+headline: "Find unclaimed state funds"
+summary: "Royce’s 24-hour Grok Bot receipts start with $300 in unclaimed funds from the state of California. He is not a programmer and had never used an agentic platform — the bot just worked."
+categories: [personal]
+format: use-case
+awesome_score: 61
 category: personal
 subcategory: money
 bot_name: Finder

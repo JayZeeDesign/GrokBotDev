@@ -3,6 +3,11 @@ type: use-case
 name: Writey · Newsletter Writer
 slug: article-newsletter-writer
 tagline: "Writey: article and newsletter writer"
+headline: "Writey: article and newsletter writer"
+summary: "Farzad’s Grok Bot team list is mostly names; the job to copy is Writey — article/newsletter writer. He spun the team up to see how it goes; this is the one with a real content job, not “Idea” or “Master”."
+categories: [marketing]
+format: use-case
+awesome_score: 74
 category: marketing
 subcategory: content
 bot_name: Writey

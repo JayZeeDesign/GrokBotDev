@@ -3,6 +3,11 @@ type: use-case
 name: Ticker · Arduino Display
 slug: arduino-live-ticker
 tagline: Arduino LED as a live SPCX ticker
+headline: "Arduino LED as a live SPCX ticker"
+summary: "Dan connected Grok Bot to his Arduino and turned the LED display into a live scrolling SPCX stock ticker with a line graph plus SpaceX headlines. Video in the post. 350 likes / 149.8K views."
+categories: [fun]
+format: use-case
+awesome_score: 64
 category: fun
 subcategory: media
 bot_name: Ticker

@@ -3,6 +3,11 @@ type: use-case
 name: Brain · Company CoS
 slug: company-brain-cos
 tagline: One chat that already knows the business
+headline: "One chat that already knows the business"
+summary: "A non-developer connected Slack, email, meeting notes, Notion, and Stripe so one Grok Bot chat knows the business better than he does. 1.8K likes / 705K views."
+categories: [work]
+format: use-case
+awesome_score: 74
 category: work
 subcategory: research
 bot_name: Brain

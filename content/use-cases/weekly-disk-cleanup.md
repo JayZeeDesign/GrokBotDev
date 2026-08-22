@@ -3,6 +3,11 @@ type: use-case
 name: Sweep · Disk Cleaner
 slug: weekly-disk-cleanup
 tagline: Weekly disk hygiene that categorizes by risk and never deletes.
+headline: "Weekly disk hygiene that categorizes by risk and never deletes."
+summary: "Exploits the fact that Grok Bot is a cloud agent that also has access to your machine: it scans every file weekly, finds deletion candidates, and sorts them into low, medium and high risk — with one hard rule, do not delete anything, categorize by risk."
+categories: [personal]
+format: use-case
+awesome_score: 72
 category: personal
 subcategory: home
 bot_name: Sweep

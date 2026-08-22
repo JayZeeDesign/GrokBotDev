@@ -203,6 +203,26 @@ const useCases = defineCollection({
       tagline,
       category: z.enum(categorySlugs),
       subcategory: z.string(),
+      // ── FINAL "Awesome Use Case" model (approved 2026-08-21) ─────────────────────────────
+      // The card is: score eyebrow · headline · summary · categories[] · source. See
+      // documents/grokbot-dev/awesome-use-case-model.md. Added optional during rollout;
+      // tightened to required once every entry is backfilled.
+      headline: z.string().min(10).max(100).optional(), // the hook (card title)
+      summary: z.string().min(80).max(320).optional(), // 2–3 lines; seeds from what_it_does
+      categories: z.array(z.enum(categorySlugs)).min(1).max(3).optional(), // multi; the only tagging
+      format: z.enum(['use-case', 'guide']).default('use-case'),
+      awesome_score: z.number().int().min(0).max(100).optional(), // quality, never engagement
+      score_breakdown: z
+        .object({
+          reproducibility: z.number().int(),
+          ambition: z.number().int(),
+          concreteness: z.number().int(),
+          novelty: z.number().int(),
+          evidence: z.number().int(),
+          craft: z.number().int(),
+        })
+        .strict()
+        .optional(),
       bot_name: z.string().min(1).max(30).optional(), // default: substring of name before " · "
       what_it_does: z.string().min(80).max(300), // plain-text summary; HowTo description (§6.4)
       integrations: z.array(integrationName).default([]),

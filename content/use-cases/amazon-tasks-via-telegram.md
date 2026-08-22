@@ -3,6 +3,11 @@ type: use-case
 name: Shopper · Amazon Runner
 slug: amazon-tasks-via-telegram
 tagline: Amazon chores, pinged on Telegram
+headline: "Amazon chores, pinged on Telegram"
+summary: "Same tweet: Amazon tasks with a Telegram hookup so he can tap the bot from his phone."
+categories: [personal]
+format: use-case
+awesome_score: 64
 category: personal
 subcategory: home
 bot_name: Shopper

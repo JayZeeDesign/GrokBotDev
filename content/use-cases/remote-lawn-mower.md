@@ -3,6 +3,11 @@ type: use-case
 name: Mower · Remote Driver
 slug: remote-lawn-mower
 tagline: Drive the lawn mower from 50 miles away
+headline: "Drive the lawn mower from 50 miles away"
+summary: "Sawyer set up Grok Bot to remotely control his autonomous lawn mower, 50 miles from home. Two-minute setup. Video. 3.6K likes / 269K views."
+categories: [personal]
+format: use-case
+awesome_score: 61
 category: personal
 subcategory: home
 bot_name: Mower

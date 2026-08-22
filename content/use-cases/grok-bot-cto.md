@@ -3,6 +3,11 @@ type: use-case
 name: CTO · Cloud Dev Lead
 slug: grok-bot-cto
 tagline: "Grok Bot as CTO: cloud agents and PRs off my machine"
+headline: "Grok Bot as CTO: cloud agents and PRs off my machine"
+summary: "Ray Fernando handed Grok Bot the GitHub repo and told it to run the show: spin up cloud agents off his machine, follow the PRs, hire child bots (PRs, Convex backend, auth) that talk to each other while he reads view-only."
+categories: [engineering]
+format: use-case
+awesome_score: 74
 category: engineering
 subcategory: agents-ops
 bot_name: CTO

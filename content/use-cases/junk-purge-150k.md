@@ -3,6 +3,11 @@ type: use-case
 name: Purge · Mega Cleaner
 slug: junk-purge-150k
 tagline: Purge 150,000 junk emails
+headline: "Purge 150,000 junk emails"
+summary: "Yu-kai Chou used Grok Bot to clean up 150,000 junk emails and unsubscribe from senders he never reads. Same tweet as the attention watch on five addresses and six Slack workspaces. This is Yu-kai’s 150k, not the separate 90k two-account purge."
+categories: [work]
+format: use-case
+awesome_score: 64
 category: work
 subcategory: email
 bot_name: Purge

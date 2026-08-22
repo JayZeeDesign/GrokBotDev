@@ -3,6 +3,11 @@ type: use-case
 name: "Chief of Staff · Mine My Machine into a Team"
 slug: mine-my-machine-into-a-team
 tagline: "A real chief-of-staff prompt that mines your machine and builds an agent team."
+headline: "Turn your messy machine into a real agent team"
+summary: "Avid's chief-of-staff prompt: it mines everything you've done on your machine — configs, recurring tasks, repeated prompts, the corrections you keep giving — and turns it into a real agent team with role files, skills, a verified run and a handbook, all written to files."
+categories: [engineering]
+format: use-case
+awesome_score: 91
 category: engineering
 subcategory: agents-ops
 bot_name: Chief of Staff

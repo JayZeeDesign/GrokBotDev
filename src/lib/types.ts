@@ -112,6 +112,14 @@ export interface UseCaseEntry extends EntryBase {
   author?: EntryAuthor;
   scoutedBy?: ScoutedBy;
   replicability: string;
+  // FINAL Awesome Use Case model — see documents/grokbot-dev/awesome-use-case-model.md.
+  headline?: string;
+  summary?: string;
+  categories?: string[];
+  awesomeScore?: number;
+  format?: 'use-case' | 'guide';
+  /** Resolved for the card: who/where it came from. */
+  source?: { label: string; platform: 'x' | 'youtube'; url?: string };
 }
 
 export interface CollectionEntry extends EntryBase {

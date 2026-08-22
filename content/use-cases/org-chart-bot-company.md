@@ -3,6 +3,11 @@ type: use-case
 name: OrgChart · Company Operator
 slug: org-chart-bot-company
 tagline: Run the company from an org chart, not a to-do list
+headline: "Run the company from an org chart, not a to-do list"
+summary: "Ridark gave Grok Bot an org chart instead of tasks. Eight bots running the company; he shared the full design. 1.6K likes / 409K views."
+categories: [work]
+format: use-case
+awesome_score: 71
 category: work
 subcategory: tasks
 bot_name: OrgChart

@@ -3,6 +3,11 @@ type: use-case
 name: "Marketing OS · Full Marketing Department"
 slug: marketing-os
 tagline: "An open-source marketing department you hand to Grok Bot as one link."
+headline: "Your whole marketing team, open-sourced"
+summary: "Vlad Dubchak's team (Maxfusion) open-sourced their marketing department as one skill — Marketing OS. Fourteen modules cover audits scored 0-100, an 18-tactic hook engine, graded copy, ad diagnosis, GEO, email, social, launches and positioning. Hand Grok Bot the repo link and it's ready in minutes."
+categories: [marketing]
+format: use-case
+awesome_score: 93
 category: marketing
 subcategory: content
 bot_name: Marketing OS

@@ -3,6 +3,11 @@ type: use-case
 name: Shame · Focus Enforcer
 slug: social-shame-extension
 tagline: Chrome extension that bricks X/LinkedIn until a shame video
+headline: "Chrome extension that bricks X/LinkedIn until a shame video"
+summary: "Alex Lieberman (businessbarista) one-shotted a Chrome extension with Grok Bot: when he hits X or LinkedIn, it bricks the screen until he records himself saying “I’m being a bad, bad boy.” Best Grok Bot use case he had, with video."
+categories: [fun]
+format: use-case
+awesome_score: 74
 category: fun
 subcategory: creative
 bot_name: Shame

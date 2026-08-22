@@ -3,6 +3,11 @@ type: use-case
 name: "Company OS · Role-Based Agent Team"
 slug: role-based-agent-team
 tagline: "Run daily GTM and dev with a team of role-based Grok Bot agents."
+headline: "Run daily GTM and dev on collaborating agents"
+summary: "Chris Maconi on how Hechura runs on Grok Bot: a team of role-based agents — a Head of Sales and a Head of Product Marketing running the daily GTM motion, plus agents collaborating on daily development work — so the company's day-to-day is operated by agents that specialize and coordinate."
+categories: [sales, marketing, engineering]
+format: use-case
+awesome_score: 74
 category: work
 subcategory: tasks
 bot_name: Company OS

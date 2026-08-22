@@ -3,6 +3,11 @@ type: use-case
 name: Errand · DMV Runner
 slug: dmv-errand
 tagline: Do the DMV paperwork
+headline: "Do the DMV paperwork"
+summary: "Same tweet: he had it handle DMV registration — the boring civic errand agents are actually good at."
+categories: [personal]
+format: use-case
+awesome_score: 74
 category: personal
 subcategory: home
 bot_name: Errand

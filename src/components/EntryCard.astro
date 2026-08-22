@@ -6,6 +6,7 @@
 // the guard below is a belt-and-braces backstop.
 import Chip from './Chip.astro';
 import FeaturedTag from './FeaturedTag.astro';
+import UseCaseCard from './UseCaseCard.astro';
 import { entryUrl, memberSummary, splitNamedCharacter } from '../lib/format';
 import type { CollectionEntry, Entry, PluginEntry, UseCaseEntry } from '../lib/types';
 
@@ -51,8 +52,13 @@ const scouted = (useCase?.sourceTweets?.length ?? 0) > 0;
 const typeLabel = entry.type === 'use-case' ? 'use case' : entry.type;
 ---
 
+{/* FINAL model: use cases render the dedicated UseCaseCard; plugins/collections keep this card. */}
+{variant === 'use-case' && entry.status !== 'deprecated' && (
+  <UseCaseCard entry={entry as UseCaseEntry} headingLevel={headingLevel} class={className} />
+)}
+
 {
-  entry.status !== 'deprecated' && (
+  variant !== 'use-case' && entry.status !== 'deprecated' && (
     <article
       class:list={[
         'entry-card relative flex flex-col gap-3 rounded-sm border border-border bg-surface p-4 transition-[background-color,border-color] duration-150 hover:border-border-strong hover:bg-surface-raised',

@@ -3,6 +3,11 @@ type: use-case
 name: Grinder · Subscription Killer
 slug: grinder-subscription-killer
 tagline: "Grinder: negotiate or cancel so the bot pays for itself"
+headline: "Grinder: negotiate or cancel so the bot pays for itself"
+summary: "The second bot is Grinder. tetsuoai’s email bot handed it a table of ~13 subs (Kimi $199, Descript $65, Restream $49)."
+categories: [finance-ops]
+format: use-case
+awesome_score: 64
 category: finance-ops
 subcategory: subscriptions
 bot_name: Grinder

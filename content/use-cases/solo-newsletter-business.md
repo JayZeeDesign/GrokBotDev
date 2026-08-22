@@ -3,6 +3,11 @@ type: use-case
 name: "Newsroom · Solo Newsletter Business"
 slug: solo-newsletter-business
 tagline: "Run a whole newsletter business with a team of Grok Bot agents."
+headline: "Run a whole newsletter business while you sleep"
+summary: "Greg Isenberg's thread on his friend Billy: a non-technical solo founder runs an entire newsletter business on a team of Grok Bot agents — research, drafting, editing, scheduling and growth handled by the agents, so one person operates what used to need a small team."
+categories: [marketing]
+format: use-case
+awesome_score: 82
 category: marketing
 subcategory: content
 bot_name: Newsroom

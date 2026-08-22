@@ -3,6 +3,11 @@ type: use-case
 name: Foreman · Bot Team Manager
 slug: bot-team-manager
 tagline: A manager bot that runs the other bots
+headline: "A manager bot that runs the other bots"
+summary: "Peter Yang's setup tutorial starts with a bot-manager / advisor that coordinates the rest of the crew (YouTube researcher, X scout, and others). 1.5K likes / 8.9M views."
+categories: [work]
+format: use-case
+awesome_score: 64
 category: work
 subcategory: tasks
 bot_name: Foreman

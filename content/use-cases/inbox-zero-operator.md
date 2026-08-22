@@ -3,6 +3,11 @@ type: use-case
 name: Zero · Inbox Operator
 slug: inbox-zero-operator
 tagline: Inbox zero as a standing job
+headline: "Inbox zero as a standing job"
+summary: "Matthew Berman used Grok Bot for inbox zero (plus calendar, DMV, Amazon — split out). 509 likes / 41K views."
+categories: [work]
+format: use-case
+awesome_score: 64
 category: work
 subcategory: email
 bot_name: Zero
