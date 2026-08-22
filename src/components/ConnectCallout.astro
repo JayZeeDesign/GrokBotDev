@@ -20,6 +20,7 @@
 //
 // Copy: CP-131 (use-case) · CP-132 (plugin) · CP-133 (hub) · CP-134 (CTA, shared).
 import {
+  CP_136_CONNECT_HEADLINE,
   CP_131_CALLOUT_USE_CASE,
   CP_132_CALLOUT_PLUGIN,
   CP_133_CALLOUT_HUB,
@@ -42,10 +43,13 @@ const LINES = {
 ---
 
 <aside class:list={['connectCallout', className]} data-pagefind-ignore>
-  <p class="connectCallout__line">
-    <span class="connectCallout__mark" aria-hidden="true">▪</span>
-    {LINES[context]}
-  </p>
+  <div class="connectCallout__text">
+    <p class="connectCallout__head">
+      <span class="connectCallout__mark" aria-hidden="true">▪</span>
+      {CP_136_CONNECT_HEADLINE}
+    </p>
+    <p class="connectCallout__line">{LINES[context]}</p>
+  </div>
   <a href="#install-site" data-install-trigger="install-site" class="connectCallout__cta">
     {CP_134_CALLOUT_CTA}
   </a>
@@ -68,9 +72,23 @@ const LINES = {
     background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
   }
 
-  .connectCallout__line {
+  /* Headline + body share one text column; the CTA sits to its side (or wraps below on a
+     narrow container). The headline names the pain ("never wonder what to build next"); the
+     body is the same message on every placement, only shorter on the hub. */
+  .connectCallout__text {
     flex: 1 1 22rem;
     min-inline-size: 0;
+  }
+
+  .connectCallout__head {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .connectCallout__line {
+    margin-block-start: 0.25rem;
     max-inline-size: 62ch;
     font-size: var(--text-sm);
     line-height: var(--text-base--line-height);

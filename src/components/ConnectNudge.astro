@@ -31,6 +31,7 @@
 // Copy: CP-128 (wide line) · CP-129 (narrow line) · CP-130 (wide CTA) · CP-127 (narrow CTA)
 // · CP-135 (close button's accessible name) · CP-126 (landmark label).
 import {
+  CP_136_CONNECT_HEADLINE,
   CP_126_CONNECT_HEADER,
   CP_127_CONNECT_SHORT,
   CP_128_NUDGE_LINE_WIDE,
@@ -50,6 +51,10 @@ import {
   {/* Both registers ship in the markup and CSS picks one — the mechanism ThemeToggle
       documents for its own label. A JS-written string would be a second source of truth for
       copy that is already governed, and it would be wrong for one frame on every resize. */}
+  {/* The headline shows only on the desktop card (it has room for two lines); the phone strip
+      stays a single line — heading + body there would make it the takeover we are avoiding. */}
+  <p class="connectNudge__head">{CP_136_CONNECT_HEADLINE}</p>
+
   <p class="connectNudge__line">
     <span class="connectNudge__wide">{CP_128_NUDGE_LINE_WIDE}</span>
     <span class="connectNudge__narrow">{CP_129_NUDGE_LINE_NARROW}</span>
@@ -181,6 +186,11 @@ import {
     display: none;
   }
 
+  /* Headline: desktop card only (turned on in the md block below). */
+  .connectNudge__head {
+    display: none;
+  }
+
   /* ── DESKTOP (md and up, the same line the header uses to stop being a phone header):
         a small card in the bottom-right corner, out of the reading column entirely. ── */
   @media (min-width: 768px) {
@@ -198,12 +208,25 @@ import {
       /* Token-derived, not a raw rgba: §4.1.1 keeps literal colour values in tokens.css. */
       box-shadow: 0 8px 24px color-mix(in srgb, var(--color-text) 12%, transparent);
     }
+    .connectNudge__head {
+      display: block;
+      flex: 1 1 100%;
+      margin-block-end: 0.25rem;
+      /* clear the × in the corner, same as the line below */
+      padding-inline-end: 1.5rem;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: var(--text-sm);
+      line-height: var(--text-sm--line-height);
+      color: var(--color-text);
+    }
     .connectNudge__line {
       flex: 1 1 100%;
       /* room for the × in the corner without a second layout box */
       padding-inline-end: 1.5rem;
       font-size: var(--text-sm);
       line-height: var(--text-sm--line-height);
+      color: var(--color-text-muted);
     }
     .connectNudge__cta {
       min-block-size: 36px;
