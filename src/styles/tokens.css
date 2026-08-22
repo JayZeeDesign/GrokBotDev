@@ -25,6 +25,7 @@
      value worth considering. Operator retains the one-token overrule either way. */
   --color-accent-strong: #867458;
   --color-accent-contrast: #FFFFFF;
+  --color-youtube: #c4302b;   /* YouTube brand red — same in both themes (source-badge only) */
   --color-accent-tint: #FFFFFF;
   --color-success: #8C7A5C;
   /* warn/danger keep their §4.1.2 values: Addendum A1's table does not define them, and
