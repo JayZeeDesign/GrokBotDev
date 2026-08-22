@@ -21,7 +21,6 @@ const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless
 {
   items.length > 0 && (
     <aside class:list={['sponsorRail', `sponsorRail--${side}`]} aria-label={`${side} sponsors`}>
-      <a href="/sponsors/" class="sponsorRail__label">sponsors</a>
       <div class="sponsorRail__viewport">
         <ul
           class:list={['sponsorRail__tape', scroll && 'sponsorRail__tape--scroll']}
@@ -52,6 +51,13 @@ const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless
           ))}
         </ul>
       </div>
+      {side === 'right' && (
+        <a href="/sponsors/" class="sponsorRail__cta">
+          <span class="sponsorRail__ctaPlus" aria-hidden="true">+</span>
+          <span class="sponsorRail__ctaTitle">Become a sponsor</span>
+          <span class="sponsorRail__ctaText">Get your tool in front of Grok Bot builders.</span>
+        </a>
+      )}
     </aside>
   )
 }
@@ -75,7 +81,10 @@ const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless
      widths). 1600px leaves a clean 12px gap; narrower screens get the SponsorBar instead. */
   @media (min-width: 1600px) {
     .sponsorRail {
-      display: block;
+      /* flex column so the rotating sponsor cards sit at the top and the "become a sponsor"
+         box (right rail only) follows as the last slot. */
+      display: flex;
+      flex-direction: column;
     }
   }
   .sponsorRail--left {
@@ -84,24 +93,61 @@ const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless
   .sponsorRail--right {
     inset-inline-end: max(12px, calc((100vw - var(--container-max)) / 2 - 172px));
   }
-  .sponsorRail__label {
-    display: block;
-    margin-block-end: 8px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    text-decoration: none;
-  }
-  .sponsorRail__label:hover {
-    color: var(--color-text);
-  }
   .sponsorRail__viewport {
+    /* Takes its natural height when the cards fit, but can shrink (min-block-size:0) so a
+       longer, marquee-scrolling tape stays inside the fixed rail with the CTA still visible
+       below it. */
+    flex: 0 1 auto;
+    min-block-size: 0;
     overflow: hidden;
-    max-block-size: 100%;
     -webkit-mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);
     mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);
+  }
+  /* Right rail only: the "become a sponsor" invitation as the last slot — a dashed, empty-slot
+     card that reads as "your spot here" and links to the /sponsors/ offer page. */
+  .sponsorRail__cta {
+    flex: 0 0 auto;
+    display: block;
+    margin-block-start: 12px;
+    padding: 12px;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .sponsorRail__cta:hover {
+    border-color: var(--color-text);
+    background: var(--color-surface);
+  }
+  .sponsorRail__ctaPlus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 28px;
+    block-size: 28px;
+    margin-block-end: 8px;
+    border-radius: 6px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    line-height: 1;
+    color: var(--color-text);
+  }
+  .sponsorRail__ctaTitle {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .sponsorRail__ctaText {
+    display: block;
+    margin-block-start: 3px;
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    color: var(--color-text-muted);
   }
   .sponsorRail__tape {
     display: flex;

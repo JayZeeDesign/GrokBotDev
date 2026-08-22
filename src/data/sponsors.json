@@ -32,12 +32,21 @@
     "icon": "zillapi.png"
   },
   {
+    "slug": "gateway-fast",
+    "name": "gateway.fast",
+    "url": "https://gateway.fast",
+    "tagline": "The fastest agentic AI models, one gateway.",
+    "tint": "lilac",
+    "icon": null
+  },
+  {
     "slug": "stayingapi",
     "name": "StayingAPI",
     "url": "https://stayingapi.com",
     "tagline": "Agent access to booking sites — availability and price compare.",
     "tint": "blush",
-    "icon": "stayingapi.svg"
+    "icon": "stayingapi.svg",
+    "active": false
   },
   {
     "slug": "recapio",
@@ -45,7 +54,8 @@
     "url": "https://recapio.com",
     "tagline": "Meeting recaps and action items, automatically.",
     "tint": "sky",
-    "icon": "recapio.png"
+    "icon": "recapio.png",
+    "active": false
   },
   {
     "slug": "youtubetotranscript",
@@ -53,14 +63,7 @@
     "url": "https://youtubetotranscript.com",
     "tagline": "Any YouTube video to clean, usable text — instantly.",
     "tint": "sand",
-    "icon": "youtubetotranscript.png"
-  },
-  {
-    "slug": "gateway-fast",
-    "name": "gateway.fast",
-    "url": "https://gateway.fast",
-    "tagline": "The fastest agentic AI models, one gateway.",
-    "tint": "lilac",
-    "icon": null
+    "icon": "youtubetotranscript.png",
+    "active": false
   }
 ]

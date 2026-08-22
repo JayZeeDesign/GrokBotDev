@@ -7,9 +7,15 @@ export interface Sponsor {
   tagline: string;
   tint: 'sage' | 'sand' | 'lilac' | 'sky' | 'blush';
   icon: string | null;
+  /** Operator: `active: false` deactivates a sponsor everywhere (rails + mobile bar +
+   *  the /sponsors/ showcase) without deleting its record, so it can be turned back on
+   *  by flipping the flag. Absent = active. */
+  active?: boolean;
 }
 
-export const SPONSORS = sponsorsData as Sponsor[];
+// One source of truth: everything sponsor-shaped reads SPONSORS, so filtering deactivated
+// entries here removes them from the desktop rails, the mobile bar, and the /sponsors/ page.
+export const SPONSORS = (sponsorsData as Sponsor[]).filter((s) => s.active !== false);
 
 /** Outbound URL with attribution params — same shape the reference sites use. */
 export function sponsorHref(s: Sponsor): string {
