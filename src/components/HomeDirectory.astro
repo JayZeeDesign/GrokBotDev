@@ -81,23 +81,26 @@ const featuredUseCases = useCases.filter(isFeatured);
         </thead>
         <tbody>
           {
-            featuredPlugins.map((doc) => (
+            featuredPlugins.map((doc) => {
+              const p = doc.data as { slug: string; name: string; tagline: string; category: string; sponsor?: boolean };
+              return (
               <tr>
                 <td>
                   <span class="flex items-center gap-3">
-                    <PluginIcon slug={doc.data.slug} name={doc.data.name} size="sm" />
-                    <a href={`/plugins/${doc.data.slug}/`} class="homeTable__name">
-                      {doc.data.name}
+                    <PluginIcon slug={p.slug} name={p.name} size="sm" />
+                    <a href={`/plugins/${p.slug}/`} class="homeTable__name">
+                      {p.name}
                     </a>
-                    {doc.data.sponsor && <span class="homeTable__sponsor">sponsor</span>}
+                    {p.sponsor && <span class="homeTable__sponsor">sponsor</span>}
                   </span>
                 </td>
-                <td class="homeTable__tagline">{doc.data.tagline}</td>
+                <td class="homeTable__tagline">{p.tagline}</td>
                 <td>
-                  <Chip variant="category" label={labelOf(doc.data.category)} href={`/categories/${doc.data.category}/`} />
+                  <Chip variant="category" label={labelOf(p.category)} href={`/categories/${p.category}/`} />
                 </td>
               </tr>
-            ))
+              );
+            })
           }
         </tbody>
       </table>

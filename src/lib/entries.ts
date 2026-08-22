@@ -150,6 +150,24 @@ export function editorialRel(doc: AnyDoc): string | undefined {
  * verified chip, integration chips and scouted chip never rendered at all.
  * Every EntryCard / RelatedList call site goes through here, and no call site casts.
  */
+// FINAL model resolvers — every machine/render surface reads title/summary/categories through
+// these, so a clean entry (headline/summary/categories, no legacy name/tagline/category) works
+// everywhere and legacy entries still resolve. See CONTRIBUTING.md.
+export function titleOf(doc: AnyDoc): string {
+  const d = doc.data as Record<string, unknown>;
+  return (d.headline as string) || (d.name as string) || (d.slug as string);
+}
+export function summaryOf(doc: AnyDoc): string {
+  const d = doc.data as Record<string, unknown>;
+  return (d.summary as string) || (d.tagline as string) || (d.what_it_does as string) || '';
+}
+export function categoriesOf(doc: AnyDoc): string[] {
+  const d = doc.data as Record<string, unknown>;
+  const cats = d.categories as string[] | undefined;
+  if (cats && cats.length) return cats;
+  return d.category ? [d.category as string] : [];
+}
+
 /** Resolve the card "source" line: YouTube channel, or the X handle (author, else first tweet). */
 function resolveCardSource(
   doc: UseCaseDoc

@@ -7,7 +7,7 @@
 // section appears under its §5 snake_case name. The only renames are `works_with`
 // (plugins) and `integrations` (use cases) → the API field `integrations`.
 import type { AnyDoc, UseCaseDoc } from './entries';
-import { integrationSlug, kindOf, primarySourceOf, urlOf } from './entries';
+import { categoriesOf, integrationSlug, kindOf, primarySourceOf, summaryOf, titleOf, urlOf } from './entries';
 import integrationsVocab from '../data/integrations.json';
 
 export const SITE_URL = 'https://grokbot.dev';
@@ -110,14 +110,16 @@ export function toApiItem(doc: AnyDoc): Record<string, unknown> {
   const kind = kindOf(doc);
   const body = (doc.body ?? '').trim();
 
+  const cats = categoriesOf(doc);
   const common = {
     type: kind,
     slug: d.slug,
     url: `${SITE_URL}${urlOf(doc)}`,
-    name: d.name,
-    tagline: d.tagline,
-    category: d.category,
-    subcategory: d.subcategory,
+    name: titleOf(doc),
+    tagline: summaryOf(doc),
+    category: cats[0] ?? d.category ?? null,
+    categories: cats,
+    subcategory: d.subcategory ?? null,
     integrations: integrationObjects(
       ((kind === 'plugin' ? d.works_with : d.integrations) ?? []) as string[]
     ),
@@ -179,7 +181,11 @@ export function toApiItem(doc: AnyDoc): Record<string, unknown> {
       prompt: promptFromBody(body),
       // M2b: where the prompt text came from. Absent frontmatter means author-published.
       prompt_provenance: d.prompt_provenance ?? 'author',
-      what_it_does: d.what_it_does,
+      what_it_does: d.what_it_does ?? d.summary,
+      headline: d.headline ?? null,
+      summary: d.summary ?? null,
+      awesome_score: d.awesome_score ?? null,
+      format: d.format ?? 'use-case',
       how_its_set_up: section(body, "## How it's set up", ['## Prompt']),
       why_its_cool: section(body, "## Why it's cool", ['## Example output']),
       example_output: section(body, '## Example output', []),
@@ -189,7 +195,7 @@ export function toApiItem(doc: AnyDoc): Record<string, unknown> {
       difficulty: d.difficulty,
       setup_minutes: d.setup_minutes,
       cost_note: d.cost_note ?? null,
-      bot_name: d.bot_name ?? String(d.name).split(' · ')[0],
+      bot_name: d.bot_name ?? (d.name ? String(d.name).split(' · ')[0] : undefined),
     };
   }
 

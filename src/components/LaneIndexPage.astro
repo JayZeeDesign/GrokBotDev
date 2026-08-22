@@ -123,29 +123,32 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
             </tr>
           </thead>
           <tbody>
-            {entries.map((entry) => (
+            {entries.map((entry) => {
+              const p = entry.data as { slug: string; name: string; tagline: string; category: string; sponsor?: boolean };
+              return (
               <tr>
                 <td>
                   <span class="flex items-center gap-3">
                     {variant === 'plugin' && (
-                      <PluginIcon slug={entry.data.slug} name={entry.data.name} size="sm" />
+                      <PluginIcon slug={p.slug} name={p.name} size="sm" />
                     )}
-                    <a href={`${baseUrl}${entry.data.slug}/`} class="hubTable__name">
-                      {entry.data.name}
+                    <a href={`${baseUrl}${p.slug}/`} class="hubTable__name">
+                      {p.name}
                     </a>
-                    {entry.data.sponsor && <span class="hubTable__sponsor">sponsor</span>}
+                    {p.sponsor && <span class="hubTable__sponsor">sponsor</span>}
                   </span>
                 </td>
-                <td class="hubTable__desc">{entry.data.tagline}</td>
+                <td class="hubTable__desc">{p.tagline}</td>
                 <td class="hubTable__catcol">
                   <Chip
                     variant="category"
-                    label={categoryLabel(entry.data.category)}
-                    href={`/categories/${entry.data.category}/`}
+                    label={categoryLabel(p.category)}
+                    href={`/categories/${p.category}/`}
                   />
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

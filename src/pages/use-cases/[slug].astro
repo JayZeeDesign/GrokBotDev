@@ -55,7 +55,8 @@ const [pool, collections] = await Promise.all([allUseCases(), allCollections()])
 const related = relatedTo(entry as never, pool as never);
 const inCollections = appearsIn(d.slug, collections);
 
-const category = categories.find((c) => c.slug === d.category);
+const primaryCat = ((d.categories as string[] | undefined)?.[0]) ?? d.category;
+const category = categories.find((c) => c.slug === primaryCat);
 const sub = category?.subcategories.find((s) => s.slug === d.subcategory);
 const url = `/use-cases/${d.slug}/`;
 const rel = editorialRel(entry as never);
@@ -66,7 +67,8 @@ const aScore = d.awesome_score as number | undefined;
 const isGuide = d.format === 'guide';
 const scoreTier =
   aScore == null ? '' : aScore >= 90 ? 'must-try' : aScore >= 78 ? 'awesome' : aScore >= 65 ? 'solid' : aScore >= 50 ? 'worth a look' : '';
-const heroSummary = (d.summary as string | undefined) ?? d.tagline;
+const heroSummary = (d.summary as string | undefined) ?? d.tagline ?? d.what_it_does ?? '';
+const heroTitle = (d.headline as string | undefined) ?? d.name ?? d.slug;
 // §5.3: exactly one fenced block per use-case body, and it is the prompt.
 const prompt = extractPrompt(entry.body ?? '');
 
@@ -85,14 +87,14 @@ const sourceLabel = primary?.kind === 'youtube-video' ? 'as seen on youtube' : '
 // consistency over depth, per the brief.
 // SEO: this is still the internal link that keeps `/plugins/`, `/use-cases/` and
 // `/collections/` reachable now that the header no longer links them (F11).
-const crumbs = [{ label: 'use cases', href: '/use-cases/' }, { label: d.name }];
+const crumbs = [{ label: 'use cases', href: '/use-cases/' }, { label: heroTitle }];
 
 const graph = [
   {
     '@type': 'HowTo',
-    name: d.name,
-    description: d.what_it_does,
-    totalTime: `PT${d.setup_minutes}M`,
+    name: heroTitle,
+    description: heroSummary,
+    ...(d.setup_minutes ? { totalTime: `PT${d.setup_minutes}M` } : {}),
     tool: d.integrations,
     step: [
       { '@type': 'HowToStep', text: 'Open Grok and create a new Bot.' },
@@ -102,16 +104,16 @@ const graph = [
   },
   {
     '@type': 'CreativeWork',
-    name: d.name,
+    name: heroTitle,
     url: `${SITE}${url}`,
-    genre: category?.label ?? d.category,
+    genre: category?.label ?? primaryCat,
     keywords: [
-      d.category,
+      primaryCat,
       d.subcategory,
       ...d.integrations,
       'Grok Bot prompt',
       'ready-to-use Grok Bot prompts',
-    ],
+    ].filter(Boolean),
     creator: {
       '@type': 'Person',
       name: d.author?.handle ?? d.scouted_by?.handle ?? 'grokbot.dev',

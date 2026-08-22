@@ -164,14 +164,14 @@ export function breadcrumbList(items: Array<{ label: string; href?: string }>): 
   };
 }
 
-export function itemList(entries: Array<{ url: string; name: string }>): Json {
+export function itemList(entries: Array<{ url: string; name?: string }>): Json {
   return {
     '@type': 'ItemList',
     itemListElement: entries.map((entry, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       url: `${SITE}${entry.url}`,
-      name: entry.name,
+      name: entry.name ?? '',
     })),
   };
 }

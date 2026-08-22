@@ -2,7 +2,7 @@
 // Items are the included entries (§7.1.1: live + needs-update; never deprecated or demo),
 // newest `added_at` first with slug as the tie-break — the same order as the API.
 import type { AnyDoc, UseCaseDoc } from './entries';
-import { kindOf, primarySourceOf, urlOf } from './entries';
+import { kindOf, primarySourceOf, summaryOf, titleOf, urlOf } from './entries';
 import { apiSort, included, SITE_URL } from './api';
 
 const escape = (value: string) =>
@@ -48,10 +48,10 @@ export function rssFeed(opts: { title: string; description: string; path: string
     .map((doc) => {
       const url = `${SITE_URL}${urlOf(doc)}`;
       return `    <item>
-      <title>${escape(doc.data.name)}</title>
+      <title>${escape(titleOf(doc))}</title>
       <link>${url}</link>
       <guid isPermaLink="true">${url}</guid>
-      <description>${escape(doc.data.tagline)}</description>
+      <description>${escape(summaryOf(doc))}</description>
       <pubDate>${new Date(doc.data.added_at).toUTCString()}</pubDate>${primarySourceElement(doc)}
     </item>`;
     })
