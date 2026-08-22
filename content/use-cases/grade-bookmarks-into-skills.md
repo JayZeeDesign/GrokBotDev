@@ -10,7 +10,7 @@ tagline: "Turn a pile of bookmarks into graded, stealable mechanisms — then in
 category: personal
 subcategory: learning
 bot_name: "Bookmark Grader"
-what_it_does: "A Grok Bot grades your recent bookmarks with one prompt: for each, a one-line thesis, the link, a high/medium/noise grade, and the specific mechanism you can steal — and it discards anything you can't name in a sentence. Ryan graded 140, kept a third, and turned the keepers into 10 spoken-trigger skills."
+what_it_does: "A Grok Bot grades your recent bookmarks with one prompt: for each, a one-line thesis, the link, a high/medium/noise grade, and the mechanism you can steal — discarding anything you can't name in a sentence. Ryan graded 140, kept a third, made 10 spoken skills."
 integrations: []
 schedule: none
 autonomy: readonly
