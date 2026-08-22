@@ -10,45 +10,6 @@ the F17 branch lands. Same arrangement E6 used for F16.
 
 ---
 
-## ⚠ PENDING MIGRATION INTO `BUILD-NOTES.md` (not F17 content)
-
-The section immediately below is **F16 integration housekeeping, not F17 work**. It was written
-for the main notes — §12.8, the file the operator actually reads — and was already appended
-there before the handover. It is parked here only because `BUILD-NOTES.md` became the Project
-Builder's file mid-flight, and leaving a 29-line append in it guaranteed a merge conflict for
-zero benefit.
-
-**Action at merge:** move this section into `BUILD-NOTES.md`, after the M8/F16 material. It is a
-clean append — it does not modify any existing line. Alternatively the Project Builder can paste
-it onto main during the polish round and I will drop it from here.
-
-# M8 · F16 INTEGRATION HOUSEKEEPING (2026-08-21)
-
-Two items handed over from `BUILD-NOTES-F16.md` at the merge. Recorded here because the main
-notes are the file the operator reads (§12.8), and both are things a later executor needs to
-know before touching the hero.
-
-**1. §4.1.1 has ONE documented exception: `src/styles/hero-bots.css`.** That convention says
-`tokens.css` is the only file allowed to contain hex values. Family v2's six avatar colours
-(`--bot-fill` on `.s2-<colour>`) sit in `hero-bots.css` as literal hex, deliberately: **a token
-inverts with the theme and a real Grok Bot avatar does not.** Putting them in `tokens.css`
-would have made the bots change colour in dark mode, which is the opposite of the point. No
-gate is weakened — `check-contrast.mjs` only reads `tokens.css` — and the palette carries its
-own contrast table in `BUILD-NOTES-F16.md` §1 (white facial features clear 3:1 on all six;
-grey is the tight one at 3.05:1). **This exception covers that one file and those six values.
-It is not a licence for hex anywhere else.**
-
-**2. Deferred tidy: the dead `--ink` / `--paper` aliases in `.stage`.** `HeroStage.astro`'s
-alias block still declares `--ink` and `--paper`, and nothing inside `.stage` reads them now
-that family v2 paints from fixed hexes. It is **two dead lines inside a load-bearing block** —
-`--accent`, `--muted`, `--hair`, `--surface`, `--mono` and `--sans` in that same block ARE
-still live (the search cursor, the hint and the chips use them), so this is a two-line trim,
-not a block deletion. Left alone on purpose: F16's integration window's remit was "delete only
-the dead paint", and trimming a live alias block by eye is how you find out at 390 which of the
-six were load-bearing. Worth doing deliberately, worth not doing in a hurry.
-
----
-
 # M9 · F17 — YOUTUBE SOURCE SUPPORT (2026-08-21)
 
 Operator directive. **Machinery only — no YouTube content entries ship with this.** The

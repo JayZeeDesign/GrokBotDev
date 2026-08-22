@@ -251,9 +251,11 @@ const useCases = defineCollection({
       // The card is: score eyebrow · headline · summary · categories[] · source. See
       // documents/grokbot-dev/awesome-use-case-model.md. Added optional during rollout;
       // tightened to required once every entry is backfilled.
-      headline: z.string().min(10).max(100).optional(), // the hook (card title)
-      summary: z.string().min(80).max(320).optional(), // 2–3 lines; seeds from what_it_does
-      categories: z.array(z.enum(categorySlugs)).min(1).max(3).optional(), // multi; the only tagging
+      // REQUIRED since 2026-08-22 (operator): every entry is backfilled, so the final-model
+      // essentials are now hard schema requirements, not just the useCaseEssentials refine.
+      headline: z.string().min(10).max(100), // the hook (card title)
+      summary: z.string().min(80).max(320), // 2–3 lines
+      categories: z.array(z.enum(categorySlugs)).min(1).max(3), // multi; the only tagging
       format: z.enum(['use-case', 'guide']).default('use-case'),
       awesome_score: z.number().int().min(0).max(100).optional(), // quality, never engagement
       score_breakdown: z

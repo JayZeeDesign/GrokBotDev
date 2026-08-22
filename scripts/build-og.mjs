@@ -22,10 +22,12 @@ const MUTED = token('--color-text-muted');
 const ACCENT = token('--color-accent');
 const BORDER = token('--color-border');
 
+// REAL brand fonts (2026-08-22): the @fontsource woff2s converted to TTF (satori cannot read
+// woff2) by fontTools — committed at src/assets/og-fonts/. DejaVu stand-ins retired.
 const fonts = [
-  { name: 'sans', data: readFileSync('src/assets/og-fonts/DejaVuSans.ttf'), weight: 400, style: 'normal' },
-  { name: 'sans', data: readFileSync('src/assets/og-fonts/DejaVuSans-Bold.ttf'), weight: 700, style: 'normal' },
-  { name: 'mono', data: readFileSync('src/assets/og-fonts/DejaVuSansMono.ttf'), weight: 400, style: 'normal' },
+  { name: 'display', data: readFileSync('src/assets/og-fonts/Geist-600.ttf'), weight: 600, style: 'normal' },
+  { name: 'sans', data: readFileSync('src/assets/og-fonts/Inter-400.ttf'), weight: 400, style: 'normal' },
+  { name: 'mono', data: readFileSync('src/assets/og-fonts/GeistMono-400.ttf'), weight: 400, style: 'normal' },
 ];
 
 // satori requires an explicit display on any div with more than one child; default every
@@ -36,37 +38,96 @@ const el = (type, props, ...children) => ({
 });
 const text = (value, style) => el('div', { style: { display: 'flex', ...style } }, value);
 
-function card({ typeLabel, name, verified, category }) {
+// The dot-grid mark (MarkGlyph geometry) as satori-safe positioned divs: two tilted capsule
+// "slash eyes", six ink dots, and the gold accent dot bottom-centre. 36px design → scaled.
+function mark(size = 40) {
+  const s = size / 36;
+  const dot = (cx, cy, color) =>
+    el('div', {
+      style: {
+        position: 'absolute', left: (cx - 3.25) * s, top: (cy - 3.25) * s,
+        width: 6.5 * s, height: 6.5 * s, borderRadius: 999, backgroundColor: color, display: 'flex',
+      },
+    });
+  const eye = (cx) =>
+    el('div', {
+      style: {
+        position: 'absolute', left: (cx - 2.25) * s, top: 3.5 * s,
+        width: 4.5 * s, height: 11 * s, borderRadius: 999, backgroundColor: INK,
+        transform: 'rotate(38deg)', display: 'flex',
+      },
+    });
+  return el(
+    'div',
+    { style: { position: 'relative', width: size, height: size, display: 'flex' } },
+    eye(9), eye(18),
+    dot(27, 9, INK), dot(9, 18, INK), dot(18, 18, INK), dot(27, 18, INK),
+    dot(9, 27, INK), dot(27, 27, INK),
+    dot(18, 27, ACCENT)
+  );
+}
+
+const clamp = (s, n) => {
+  const v = String(s ?? '');
+  return v.length > n ? `${v.slice(0, n - 1).trimEnd()}…` : v;
+};
+
+// Brand-true per-entry card (2026-08-22): mark + wordmark, type label, score badge when
+// graded, the HOOK in Geist 600, the summary in Inter, category chips + verified date.
+function card({ typeLabel, name, summary, verified, categories, score, guide }) {
+  const chips = (categories ?? []).filter(Boolean).slice(0, 3);
   return el(
     'div',
     {
       style: {
         width: 1200, height: 630, display: 'flex', flexDirection: 'column',
-        justifyContent: 'space-between', backgroundColor: BG, padding: 64, fontFamily: 'sans',
+        justifyContent: 'space-between', backgroundColor: BG, padding: 60, fontFamily: 'sans',
+        border: `1px solid ${BORDER}`,
       },
     },
     el(
       'div',
-      { style: { display: 'flex', flexDirection: 'column', gap: 24 } },
+      { style: { display: 'flex', flexDirection: 'column', gap: 26 } },
       el(
         'div',
         { style: { display: 'flex', alignItems: 'center', gap: 16 } },
-        el('div', { style: { width: 36, height: 36, backgroundColor: ACCENT, borderRadius: 4, display: 'flex' } }),
-        text('grokbot.dev', { fontFamily: 'mono', fontSize: 30, color: INK })
+        mark(40),
+        text('grokbot.dev', { fontFamily: 'display', fontSize: 30, fontWeight: 600, color: INK }),
+        el('div', { style: { flex: 1, display: 'flex' } }),
+        guide
+          ? text('GUIDE · REFERENCE', { fontFamily: 'mono', fontSize: 22, color: MUTED })
+          : score != null
+            ? text(`${score} · ${score >= 90 ? 'must-try' : score >= 78 ? 'awesome' : score >= 65 ? 'solid' : 'use case'}`, {
+                fontFamily: 'mono', fontSize: 26, fontWeight: 400, color: ACCENT,
+                border: `2px solid ${ACCENT}`, borderRadius: 999, padding: '6px 20px',
+              })
+            : el('div', { style: { display: 'flex' } })
       ),
-      text(typeLabel, { fontFamily: 'mono', fontSize: 26, letterSpacing: 2.6, color: MUTED }),
-      text(name, { fontSize: 76, fontWeight: 700, color: INK, lineHeight: 1.05, maxWidth: 1000 })
+      text(typeLabel, { fontFamily: 'mono', fontSize: 22, letterSpacing: 3, color: MUTED }),
+      text(clamp(name, 76), {
+        fontFamily: 'display', fontSize: 66, fontWeight: 600, color: INK,
+        lineHeight: 1.06, letterSpacing: -1.5, maxWidth: 1060,
+      }),
+      summary
+        ? text(clamp(summary, 150), { fontSize: 28, color: MUTED, lineHeight: 1.4, maxWidth: 1020 })
+        : el('div', { style: { display: 'flex' } })
     ),
     el(
       'div',
       { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
-      verified
-        ? text(`VERIFIED ${verified}`, {
-            fontFamily: 'mono', fontSize: 24, color: ACCENT,
-            border: `1px solid ${ACCENT}`, borderRadius: 2, padding: '8px 16px',
+      el(
+        'div',
+        { style: { display: 'flex', gap: 12 } },
+        chips.map((c) =>
+          text(c, {
+            fontFamily: 'mono', fontSize: 22, color: MUTED,
+            border: `1px solid ${BORDER}`, borderRadius: 999, padding: '6px 18px',
           })
-        : el('div', { style: { display: 'flex' } }),
-      category ? text(category, { fontFamily: 'mono', fontSize: 24, color: MUTED }) : el('div', { style: { display: 'flex' } })
+        )
+      ),
+      verified
+        ? text(`verified ${verified}`, { fontFamily: 'mono', fontSize: 22, color: MUTED })
+        : el('div', { style: { display: 'flex' } })
     )
   );
 }
@@ -94,8 +155,15 @@ for (const [dir, label] of Object.entries(DIRS)) {
   for (const name of readdirSync(source).filter((f) => f.endsWith('.md'))) {
     const d = frontmatter(join(source, name));
     const verified = d.status === 'live' && d.verified_at ? String(d.verified_at).slice(0, 10) : null;
+    const isGuide = d.format === 'guide';
     write(`dist/og/${dir}/${d.slug}.png`, await png(card({
-      typeLabel: label, name: d.name, verified, category: d.category,
+      typeLabel: isGuide ? 'GUIDE' : label,
+      name: d.headline ?? d.name,
+      summary: d.summary ?? d.tagline ?? d.what_it_does ?? null,
+      verified,
+      categories: (d.categories && d.categories.length ? d.categories : [d.category]),
+      score: isGuide ? null : (d.awesome_score ?? null),
+      guide: isGuide,
     })));
     count += 1;
   }
@@ -114,7 +182,7 @@ write(
         width: 512, height: 512, display: 'flex', alignItems: 'center', justifyContent: 'center',
         backgroundColor: BG, border: `1px solid ${BORDER}`,
       },
-    }, el('div', { style: { width: 220, height: 220, backgroundColor: ACCENT, borderRadius: 8, display: 'flex' } })),
+    }, mark(300)),
     512,
     512
   )
