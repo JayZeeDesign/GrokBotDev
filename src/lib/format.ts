@@ -36,7 +36,10 @@ export function entryUrl(type: EntryType, slug: string): string {
 }
 
 /** Use-case names carry the named-character pattern `R2 · Chief of Staff` (§4.2.10). */
-export function splitNamedCharacter(name: string): { character: string; role: string } | null {
+export function splitNamedCharacter(name: string | undefined | null): { character: string; role: string } | null {
+  // Defensive: a final-model use case has no legacy `name` (headline is the title), so this is
+  // called with undefined for real community submissions. Never crash the render — return null.
+  if (!name) return null;
   const parts = name.split(' · ');
   if (parts.length < 2) return null;
   return { character: parts[0], role: parts.slice(1).join(' · ') };

@@ -33,7 +33,7 @@ import { CP_067_CALLOUT_NEEDS_UPDATE, CP_068_CALLOUT_DEPRECATED, CP_112_CTA_SENT
 import { SITE, breadcrumbList, entryDescription, entryTitle } from '../../lib/seo';
 
 export async function getStaticPaths() {
-  const plugins = await getCollection('plugins');
+  const plugins = (await getCollection('plugins')).filter((e) => e.data.status !== 'proposed' && e.data.status !== 'demo');
   return plugins.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
 }
 

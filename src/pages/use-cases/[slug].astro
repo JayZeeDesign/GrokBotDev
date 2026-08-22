@@ -43,7 +43,13 @@ import {
 import { SITE, breadcrumbList, entryDescription, entryTitle } from '../../lib/seo';
 
 export async function getStaticPaths() {
-  const useCases = await getCollection('use-cases');
+  // Unreviewed submissions (`proposed`) and fictional `demo` entries get NO page — they exist
+  // in a PR but are not published until a reviewer flips them to `live`. `deprecated` keeps its
+  // page (for the notice + redirect). This is why a community PR's build stays green: the new
+  // entry validates but doesn't render until it's approved.
+  const useCases = (await getCollection('use-cases')).filter(
+    (e) => e.data.status !== 'proposed' && e.data.status !== 'demo'
+  );
   return useCases.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
 }
 
@@ -132,8 +138,8 @@ const graph = [
 ---
 
 <BaseLayout
-  title={entryTitle(d.name, 'use-case')}
-  description={entryDescription(d.tagline, 'use-case')}
+  title={entryTitle(heroTitle, 'use-case')}
+  description={entryDescription(heroSummary, 'use-case')}
   robots={isDeprecated ? 'noindex,follow' : undefined}
   ogImage={`${SITE}/og/use-cases/${d.slug}.png`}
   graph={graph}
@@ -190,7 +196,7 @@ const graph = [
             <span>{named.role}</span>
           </>
         ) : (
-          d.name
+          heroTitle
         )}
       </h1>
       <p class="text-lg text-text-muted" data-pagefind-meta="tagline">{heroSummary}</p>
@@ -214,7 +220,7 @@ const graph = [
     </header>
 
     <div class="flex flex-wrap items-center gap-4">
-      <InstallModal id={d.slug} variant="entry" prompt={prompt ?? undefined} entryName={d.name} />
+      <InstallModal id={d.slug} variant="entry" prompt={prompt ?? undefined} entryName={heroTitle} />
     </div>
 
     {/* FINAL model: the hero already shows `summary` (which carries what_it_does), so the

@@ -20,7 +20,7 @@ import { CP_112_CTA_SENTENCE } from '../../lib/copy';
 import { SITE, breadcrumbList, collectionPage, entryDescription, entryTitle, itemList } from '../../lib/seo';
 
 export async function getStaticPaths() {
-  const collections = await getCollection('collections');
+  const collections = (await getCollection('collections')).filter((e) => e.data.status !== 'proposed' && e.data.status !== 'demo');
   return collections.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
 }
 
