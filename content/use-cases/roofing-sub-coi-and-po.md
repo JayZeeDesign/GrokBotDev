@@ -3,7 +3,7 @@ type: use-case
 name: Compliance · Sub COI Chaser
 slug: roofing-sub-coi-and-po
 tagline: Chase sub COIs, write POs, file credit apps
-headline: "Chase sub COIs, write POs, file credit apps"
+headline: "It caught the insurance gap before the job started"
 summary: "Same contractor run: it found a discrepancy in subcontractor insurance certificates and drafted/sent email to their brokers; wrote a work order for a sub from a customer contract plus a materials list; filled out a credit application for a new supplier and emailed the right person."
 categories: [finance-ops]
 format: use-case

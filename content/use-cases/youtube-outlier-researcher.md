@@ -3,7 +3,7 @@ type: use-case
 name: Outlier · YouTube Researcher
 slug: youtube-outlier-researcher
 tagline: Find YouTube outliers worth stealing from
-headline: "Find YouTube outliers worth stealing from"
+headline: "Videos at 3x their channel median, mined for format"
 summary: "One of Peter's five bots is a YouTube outlier researcher — it hunts videos that outperform the channel's baseline so you can learn the format, not copy the topic blindly."
 categories: [marketing]
 format: use-case

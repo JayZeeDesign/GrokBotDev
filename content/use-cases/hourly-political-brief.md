@@ -3,7 +3,7 @@ type: use-case
 name: Brief · Hourly Monitor
 slug: hourly-political-brief
 tagline: Hourly political brief on named work topics
-headline: "Hourly political brief on named work topics"
+headline: "An hourly brief that says nothing when nothing changed"
 summary: "From the same Gmail-connected setup, he created standing agents, including an hourly political update on his work topics and a rule to always check with him on key decisions. No posting. Cite sources. Stay quiet if nothing new."
 categories: [data]
 format: use-case

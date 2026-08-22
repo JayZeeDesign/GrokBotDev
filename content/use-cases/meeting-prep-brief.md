@@ -3,7 +3,7 @@ type: use-case
 name: Brief · Meeting Prepper
 slug: meeting-prep-brief
 tagline: Tomorrow’s meetings as one-pagers
-headline: "Tomorrow’s meetings as one-pagers"
+headline: "Tomorrow’s meetings, one phone-readable page each"
 summary: "Krista’s daily meeting-prep routine pulls Salesforce, Gmail, Slack, Granola, and Gong into a short, skimmable brief she can read on her phone. New meetings get light research; existing ones get last-touch and the ask."
 categories: [work]
 format: use-case

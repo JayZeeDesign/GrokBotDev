@@ -3,7 +3,7 @@ type: use-case
 name: Jesse · Support Autopilot
 slug: jesse-support-autopilot
 tagline: SaaS support sweep on helpdesk + admin MCP
-headline: "SaaS support sweep on helpdesk + admin MCP"
+headline: "Reply by text, and it works the helpdesk for you"
 summary: "Jesse Hanley’s thread is not a one-liner dump: he already runs a support bot against Bento Chat / helpdesk. It sweeps a few times a day, summarises what is assigned or escalated, and he texts back what to do — then it hits the admin MCP. “This is what I’ve done and it’s fantastic.”"
 categories: [support]
 format: use-case

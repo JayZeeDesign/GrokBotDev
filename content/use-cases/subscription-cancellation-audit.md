@@ -3,7 +3,7 @@ type: use-case
 name: Auditor · Subscription Killer
 slug: subscription-cancellation-audit
 tagline: Audit every subscription and recommend what to kill
-headline: "Audit every subscription and recommend what to kill"
+headline: "Every subscription sorted into keep, cancel, or ask me"
 summary: "Same Todd Saunders tweet: after the unsubscribes, the bot audited all subscriptions and recommended cancellations. One tweet, two jobs."
 categories: [finance-ops]
 format: use-case

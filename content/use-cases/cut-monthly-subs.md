@@ -3,7 +3,7 @@ type: use-case
 name: Trimmer · Subscription Cutter
 slug: cut-monthly-subs
 tagline: Cut $50/month of subscriptions
-headline: "Cut $50/month of subscriptions"
+headline: "$50 a month gone, with cancel screenshots to prove it"
 summary: "Royce’s bot helped cut $50 in monthly subscriptions in the first 24 hours — one of the line items that made Grok Bot earn its keep for a non-programmer."
 categories: [finance-ops]
 format: use-case

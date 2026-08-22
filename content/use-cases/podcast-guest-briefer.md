@@ -3,7 +3,7 @@ type: use-case
 name: Briefer · Podcast Guest
 slug: podcast-guest-briefer
 tagline: Podcast guest briefs that are actually good
-headline: "Podcast guest briefs that are actually good"
+headline: "Guest briefs with three threads and a first question"
 summary: "Lenny Rachitsky got early access and listed real jobs that made his life better — including “really good” briefs for upcoming podcast guests. Same tweet as his support auto-replies."
 categories: [marketing]
 format: use-case

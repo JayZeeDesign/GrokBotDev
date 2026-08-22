@@ -3,7 +3,7 @@ type: use-case
 name: Closer · Issue Fixer
 slug: playwright-issue-closer
 tagline: Coding bot that closes a real GitHub issue
-headline: "Coding bot that closes a real GitHub issue"
+headline: "It read the tests, found the bug gone, and closed it"
 summary: "Debbie spun up a coding bot on debs-obrien/playwright-movies-app. It checked issue 29, found the tests already used waitForURL with no hard waits, asked if it should close, then closed it with a note after GitHub was connected — she clicked through to GitHub to confirm."
 categories: [engineering]
 format: use-case

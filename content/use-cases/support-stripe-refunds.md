@@ -3,7 +3,7 @@ type: use-case
 name: Refund · Support Agent
 slug: support-stripe-refunds
 tagline: Agentic refunds from support email + Stripe
-headline: "Agentic refunds from support email + Stripe"
+headline: "In-policy refunds issued straight through Stripe"
 summary: "Gergely Orosz hooked Grok Bot to customer support email and the Stripe API so routine refunds run as an agentic workflow. 764 likes / 366K views."
 categories: [support]
 format: use-case

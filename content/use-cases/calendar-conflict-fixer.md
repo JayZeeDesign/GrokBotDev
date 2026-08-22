@@ -3,7 +3,7 @@ type: use-case
 name: Clash · Calendar Fixer
 slug: calendar-conflict-fixer
 tagline: Fix calendar conflicts before they happen
-headline: "Fix calendar conflicts before they happen"
+headline: "Double-bookings arrive with a fix already drafted"
 summary: "Same Matthew Berman tweet: the bot handled calendar conflict scheduling. A reconstructed Grok Bot use case drawn from a high-engagement X post."
 categories: [work]
 format: use-case

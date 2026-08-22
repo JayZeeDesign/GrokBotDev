@@ -3,7 +3,7 @@ type: use-case
 name: Intake · Work Order Booker
 slug: plumbing-work-order-intake
 tagline: Book plumbing work orders across 6 tools
-headline: "Book plumbing work orders across 6 tools"
+headline: "Ten minutes per work order, booked across five systems"
 summary: "Jon ONeill (HouseHackerJon), a plumbing-company owner, spent about four hours on a Grok Bot free trial after a week of ~80% Claude work."
 categories: [work]
 format: use-case

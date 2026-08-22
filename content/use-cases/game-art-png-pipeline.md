@@ -3,7 +3,7 @@ type: use-case
 name: Forge · Game-Art Pipeline
 slug: game-art-png-pipeline
 tagline: Game-art PNG pipeline from a custom generator
-headline: "Game-art PNG pipeline from a custom generator"
+headline: "Game assets that match the last approved style"
 summary: "A game developer had Grok Bot drive his custom art-gen webpage to generate game art assets and prep them as transparent PNGs in a consistent style. 992 likes / 375.8K views."
 categories: [fun]
 format: use-case

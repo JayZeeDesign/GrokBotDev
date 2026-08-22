@@ -3,7 +3,7 @@ type: use-case
 name: Jesse · CoS Briefer
 slug: jesse-cos-briefing
 tagline: 5am CoS briefing that can actually book the call
-headline: "5am CoS briefing that can actually book the call"
+headline: "It noticed who I was ignoring and booked the call"
 summary: "Jesse’s Chief of Staff reads Gmail, Calendar, Slack/Discord, and sends a 5am summary with fires. Unlike his old script, he can ask it to do something after: it noticed he was ignoring Nate Berkopec, opened SavvyCal, and found a time in both timezones."
 categories: [work]
 format: use-case

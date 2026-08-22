@@ -3,7 +3,7 @@ type: use-case
 name: Sweep · Inbox Cleaner
 slug: inbox-delete-unsub
 tagline: 6k deletions and 40 unsubscribes
-headline: "6k deletions and 40 unsubscribes"
+headline: "6,000 emails gone and 40 lists unsubscribed"
 summary: "Same Royce tweet: the bot cleaned the inbox — 6,000 deletions and 40+ unsubscribes so far — as part of earning its keep in under 24 hours."
 categories: [work]
 format: use-case

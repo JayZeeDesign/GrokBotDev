@@ -3,7 +3,7 @@ type: use-case
 name: Loadout · Back-to-School
 slug: back-to-school-mental-load
 tagline: Back-to-school household mental load
-headline: "Back-to-school household mental load"
+headline: "The school inbox, split into a checklist per kid"
 summary: "Stella used Grok Bot on her back-to-school emails and to-dos for multiple kids, plus other household jobs it handled independently that week. 787 likes / 1.9M views."
 categories: [personal]
 format: use-case

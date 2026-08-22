@@ -3,7 +3,7 @@ type: use-case
 name: Proposal · Roofing Estimator
 slug: roofing-lead-to-proposal
 tagline: Measure the roof, stage the proposal and change orders
-headline: "Measure the roof, stage the proposal and change orders"
+headline: "Roof measured, proposal staged, change orders signed"
 summary: "Same two-day roofing run: it pulled roof measurements for a new inbound lead, built a full proposal/estimate with the contract staged pending his approval, then filled out, drafted, and emailed two change orders via e-signature."
 categories: [sales]
 format: use-case

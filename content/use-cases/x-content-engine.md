@@ -3,7 +3,7 @@ type: use-case
 name: Engine · X Content Pipeline
 slug: x-content-engine
 tagline: Fully automate the X content pipeline
-headline: "Fully automate the X content pipeline"
+headline: "The entire X loop, from research to posting time"
 summary: "Scotty documented how he automated X end to end with Grok Bot: research, design, copy, analytics, and timing. 1.4K likes / 4.5M views."
 categories: [marketing]
 format: use-case

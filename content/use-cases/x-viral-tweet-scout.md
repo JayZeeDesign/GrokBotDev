@@ -3,7 +3,7 @@ type: use-case
 name: Scout · Viral Tweet Finder
 slug: x-viral-tweet-scout
 tagline: Scout viral tweets in my niche
-headline: "Scout viral tweets in my niche"
+headline: "Catch the angle traveling before you write"
 summary: "Another of Peter's bots watches X for tweets that are breaking out, so he can see which angles travel before he writes."
 categories: [marketing]
 format: use-case

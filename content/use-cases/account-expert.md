@@ -3,7 +3,7 @@ type: use-case
 name: Ace · Account Expert
 slug: account-expert
 tagline: One bot per strategic account
-headline: "One bot per strategic account"
+headline: "Ask where the deal stalled, get dates and links"
 summary: "Krista Letz’s SpaceXAI GTM write-up describes a Customer Expert: one agent per strategic account that watches Slack, Gmail, Gong, and Granola, answers from running context, and flags feature requests plus support tickets. Same article as her weekly GTM operator."
 categories: [sales]
 format: use-case

@@ -3,7 +3,7 @@ type: use-case
 name: Concierge · Trip Hunter
 slug: trip-concierge
 tagline: Personal concierge that hunts cheaper trips
-headline: "Personal concierge that hunts cheaper trips"
+headline: "The booking email lands, the fare hunt begins"
 summary: "The fifth bot in Peter’s tutorial is a personal concierge that saves money on trips. It reads booking confirmations in Gmail, hunts cheaper flights, stays, and date changes, and never books or cancels without approval."
 categories: [personal]
 format: use-case

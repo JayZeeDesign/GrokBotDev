@@ -3,7 +3,7 @@ type: use-case
 name: Dispatch · Freight Operator
 slug: freight-dispatch-tms
 tagline: Track loads, text drivers, file PODs
-headline: "Track loads, text drivers, file PODs"
+headline: "A dispatch desk texting 100+ drivers in a few hours"
 summary: "A supply-chain CEO with limited product knowledge stood up a dispatch bot in a few hours: it tracked hundreds of loads, texted 100+ drivers, booked loads, requested proofs of delivery, and uploaded them to the TMS. He is on the $300/month plan."
 categories: [work]
 format: use-case

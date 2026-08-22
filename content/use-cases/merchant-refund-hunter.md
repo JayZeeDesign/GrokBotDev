@@ -3,7 +3,7 @@ type: use-case
 name: Hunter · Refund Chaser
 slug: merchant-refund-hunter
 tagline: Hunt merchants that never refunded returns
-headline: "Hunt merchants that never refunded returns"
+headline: "Five merchants that quietly never sent the refund"
 summary: "Darian told Grok Bot to pay its own fee: it scanned email for lost money and emailed five merchants that never refunded his returns — already net-positive vs the subscription. 136 likes / 110.5K views."
 categories: [personal]
 format: use-case

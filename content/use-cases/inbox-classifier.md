@@ -3,7 +3,7 @@ type: use-case
 name: Classify · Inbox Sorter
 slug: inbox-classifier
 tagline: Labels every email and scores sponsor leads, on a schedule.
-headline: "Labels every email and scores sponsor leads, on a schedule."
+headline: "Every sponsor email scored before you open it"
 summary: "A standing classifier that labels mail so it is sortable later and scores every inbound sponsorship email — spammy ones auto-archive, the rest become a lead-scoring queue. Classify and sync are two separate steps; your own decisions are never overwritten."
 categories: [work]
 format: use-case

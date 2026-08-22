@@ -3,7 +3,7 @@ type: use-case
 name: Lenny · Reply Drafter
 slug: lenny-support-replies
 tagline: Auto-draft support replies that save hours
-headline: "Auto-draft support replies that save hours"
+headline: "Support replies already waiting when you sit down"
 summary: "Lenny’s same early-access note: auto-replying to support emails, which he said saves him hours. Drafts in his voice; he stays on the send button."
 categories: [support]
 format: use-case

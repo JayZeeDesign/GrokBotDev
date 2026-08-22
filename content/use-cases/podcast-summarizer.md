@@ -3,7 +3,7 @@ type: use-case
 name: Digest · Podcast Summarizer
 slug: podcast-summarizer
 tagline: A podcast summarizer in 15 seconds
-headline: "A podcast summarizer in 15 seconds"
+headline: "Built in 15 seconds, better than the paid tool"
 summary: "Gavin Baker built a podcast summarizer in about 15 seconds inside Grok Bot that beat the tool he was already paying for. Said his personal AI usage jumped ~100x. 5.7K likes / 5.2M views."
 categories: [personal]
 format: use-case

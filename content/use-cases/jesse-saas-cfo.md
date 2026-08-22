@@ -3,7 +3,7 @@ type: use-case
 name: Jesse · SaaS CFO
 slug: jesse-saas-cfo
 tagline: "SaaS CFO: weekly spend, COGS, monthly report"
-headline: "SaaS CFO: weekly spend, COGS, monthly report"
+headline: "A CFO report that leaves runway blank if it can’t tell"
 summary: "Same Jesse thread: a CFO bot on Stripe, Xero/QuickBooks, and Gmail. Weekly spend scan for things he missed, a COGS audit, a monthly CFO report. He told people to get concrete, not theatrical — connect the three systems and look."
 categories: [finance-ops]
 format: use-case

@@ -3,7 +3,7 @@ type: use-case
 name: Desk · Deal Advancer
 slug: deal-desk
 tagline: Deal desk that advances stalled work every day
-headline: "Deal desk that advances stalled work every day"
+headline: "Stalled deals get a next move drafted every day"
 summary: "Same Eric Osiu post: a deal-desk bot whose job is to move the ball on stalled, lost, and lookalike deals — every day, not a weekly pipeline poem."
 categories: [sales]
 format: use-case

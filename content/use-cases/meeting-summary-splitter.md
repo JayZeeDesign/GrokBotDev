@@ -3,7 +3,7 @@ type: use-case
 name: Recap · Meeting Splitter
 slug: meeting-summary-splitter
 tagline: Turns every recorded meeting into a summary that splits the promises.
-headline: "Turns every recorded meeting into a summary that splits the promises."
+headline: "Every meeting split into your promises and theirs"
 summary: "Polls your notetaker for newly recorded meetings, ingests the transcript, and writes a summary plus action items — specifically separating what you committed to from what the other party committed to you, delivered into Grok Bot, Slack, or Telegram."
 categories: [work]
 format: use-case

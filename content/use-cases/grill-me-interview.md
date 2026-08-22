@@ -3,7 +3,7 @@ type: use-case
 name: Grill · Business Interviewer
 slug: grill-me-interview
 tagline: "Grill-me: interview the business out of my head"
-headline: "Grill-me: interview the business out of my head"
+headline: "Get interrogated until your plan is actually specific"
 summary: "Nate Herk’s week-of-lessons article starts with a job he actually runs: a Grill Me skill that relentlessly interviews him about the business, goals, and plans until the bots share context. He uses it before quarterly planning or a new project — not a four-bot staffing listicle."
 categories: [work]
 format: use-case

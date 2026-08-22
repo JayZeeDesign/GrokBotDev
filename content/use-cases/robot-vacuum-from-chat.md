@@ -3,7 +3,7 @@ type: use-case
 name: Roomba · Vacuum Controller
 slug: robot-vacuum-from-chat
 tagline: Text your robot vacuum from Grok Bot
-headline: "Text your robot vacuum from Grok Bot"
+headline: "One bot built the bridge to my robot vacuum"
 summary: "Yun-Ta Tsai had his 'Chief Engineer' bot build a feature so he can text his Matic robot vacuum from Grok Bot. Video/thread. 2.7K likes / 1.8M views."
 categories: [personal]
 format: use-case

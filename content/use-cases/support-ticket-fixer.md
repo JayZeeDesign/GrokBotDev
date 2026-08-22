@@ -3,7 +3,7 @@ type: use-case
 name: Fixer · Ticket RCA
 slug: support-ticket-fixer
 tagline: Support ticket in → RCA, PR, draft reply
-headline: "Support ticket in → RCA, PR, draft reply"
+headline: "One ticket, a root-caused PR, and a reply by morning"
 summary: "Wilson (euboid) built the loop after asking whether Grok Bot could debug tickets, open a PR, and draft a reply. Incoming ticket → agent reads Fern docs, codebase, Axiom logs → bug gets RCA + PR + Linear, feature request hits the board, customer reply is drafted in his voice."
 categories: [support]
 format: use-case

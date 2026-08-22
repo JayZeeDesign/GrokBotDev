@@ -3,7 +3,7 @@ type: use-case
 name: Credit · Flight Hunter
 slug: southwest-flight-credit
 tagline: Hunt a misplaced airline credit
-headline: "Hunt a misplaced airline credit"
+headline: "A forgotten $150 Southwest credit, found in Gmail"
 summary: "Same 24-hour run: Royce’s bot found a $150 Southwest flight credit he thought he had misplaced. Receipt, not a generic “travel agent” prompt."
 categories: [personal]
 format: use-case

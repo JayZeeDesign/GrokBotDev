@@ -3,7 +3,7 @@ type: use-case
 name: Firstmate · Front Door
 slug: firstmate-front-door
 tagline: "Firstmate: one front door that runs the rest"
-headline: "Firstmate: one front door that runs the rest"
+headline: "Dump a messy ask, get plain-language results back"
 summary: "Kun Chen’s Firstmate setup is a single Grok Bot you talk to for everything. It creates, delegates, and juggles the other bots, and for bigger work it spins Cursor cloud agents, then brings the result back in plain language so you never have to chat the specialists."
 categories: [work]
 format: use-case

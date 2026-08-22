@@ -3,7 +3,7 @@ type: use-case
 name: Builder · Site and Domain
 slug: phone-site-and-domain
 tagline: Build a site and buy the domain from a phone
-headline: "Build a site and buy the domain from a phone"
+headline: "Two prompts from a phone: site, domain, redirects"
 summary: "Wayne Sutton installed Convex and Cloudflare plugins, built a demo site (front and backend), bought the domain, and set up Cloudflare redirect rules — all in two prompts from his phone (tryground.dev). 377 likes / 566K views."
 categories: [engineering]
 format: use-case

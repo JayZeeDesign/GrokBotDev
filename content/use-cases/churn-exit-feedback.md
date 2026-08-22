@@ -3,7 +3,7 @@ type: use-case
 name: Exit · Churn Analyst
 slug: churn-exit-feedback
 tagline: Cluster churn reasons into a product plan
-headline: "Cluster churn reasons into a product plan"
+headline: "Five reasons they left, five things to ship this week"
 summary: "After the win-back emails, Liam's bot analysed overnight why people left and turned that into a 5-step plan. Same tweet as the win-back campaign — this is the research half of the job."
 categories: [data]
 format: use-case

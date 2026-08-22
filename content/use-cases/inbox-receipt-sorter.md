@@ -3,7 +3,7 @@ type: use-case
 name: Sorter · Receipt Filer
 slug: inbox-receipt-sorter
 tagline: Inbox sorter that knows where the receipts live
-headline: "Inbox sorter that knows where the receipts live"
+headline: "Find the spend first, let another bot go kill it"
 summary: "tetsuoai set up two bots so Grok Bot would pay for itself. The first has Gmail and keeps the inbox sorted so it knows where receipts and billing mail live — the feed for the subscription killer sitting next to it."
 categories: [finance-ops]
 format: use-case

@@ -3,7 +3,7 @@ type: use-case
 name: Permit · Roofing Booker
 slug: roofing-permit-and-inspection
 tagline: Pull the roofing permit and book the inspection
-headline: "Pull the roofing permit and book the inspection"
+headline: "Through the city permit form, captcha and all"
 summary: "A roofing contractor spent two days with Grok Bot on live jobs. Among the runs: it filled out and pulled an online roofing permit, then filled out and booked a roof inspection via an online form that had a captcha. Same thread as the proposal and sub/COI work."
 categories: [work]
 format: use-case
