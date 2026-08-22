@@ -212,7 +212,10 @@ Review every submission against this checklist. Cite the rule number on any reje
 7. **Only then** set `verified_at` and `status: live`. Consider `featured` if the score is ≥90.
 
 The full model spec (for maintainers/agents) lives at
-[`documents/grokbot-dev/awesome-use-case-model.md`](documents/grokbot-dev/awesome-use-case-model.md).
+[`documents/grokbot-dev/awesome-use-case-model.md`](documents/grokbot-dev/awesome-use-case-model.md),
+and the step-by-step **agent procedure** for sourcing and reviewing (which executes these rules)
+is [`docs/agent-sourcing-and-review.md`](docs/agent-sourcing-and-review.md). All three files are
+public and say the same thing — submitters, maintainers, and agents work from one source.
 
 ---
 
