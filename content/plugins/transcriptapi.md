@@ -12,6 +12,7 @@ install_steps:
 prompt: "You can transcribe audio and video. Whenever I share a link to a recording, podcast, or video, call TranscriptAPI (https://transcriptapi.com) with my API key, get back the transcript with timestamps, and return clean, readable text. If I ask, pull just the segment around a timestamp I name."
 works_with: []
 project_url: "https://transcriptapi.com"
+x_handle: "TranscriptAPI"
 founder:
   x_handle: "Scheemunai"
 author:
