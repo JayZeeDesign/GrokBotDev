@@ -312,31 +312,12 @@ const graph = [
     display: none;
   }
 
-  /* Body section headings ("How it's set up" / "Why it's cool") — same treatment as
-     SectionHeading's sub variant, so body-driven and template-driven sections match. */
-  .prose-body h2 {
-    font-family: var(--font-display);
-    font-size: var(--text-xl);
-    letter-spacing: -0.02em;
-    color: var(--color-text);
-    margin-block-start: 0.75rem;
-  }
-
-  /* The "## Prompt" heading's content is hoisted into PromptBlock below, which carries its
-     own labelled header — so the body heading would sit orphaned above nothing. Hide it. */
+  /* .prose-body h2 + list styling moved to global.css (2026-08-22) so plugin detail pages
+     get the same treatment. Page-specific rule kept here: the "## Prompt" heading's content
+     is hoisted into PromptBlock below, which carries its own labelled header — so the body
+     heading would sit orphaned above nothing. Hide it. */
   .prose-body--prompt-hoisted h2:has(+ pre) {
     display: none;
-  }
-
-  /* The setup steps are an ordered list; the global reset strips markers, which turned
-     "1. 2. 3." into an unnumbered wall. Restore proper list rendering inside the body. */
-  .prose-body ol,
-  .prose-body ul {
-    list-style: revert;
-    padding-inline-start: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
   }
 
   /* F13 — one column below lg (the documented stacked order, §4.3.5 region [8]), two from
