@@ -54,6 +54,10 @@ for a human to read and paste; it is not a command addressed to the Bot that fet
 
 ## Contribute
 
+**Full rules: [CONTRIBUTING.md](CONTRIBUTING.md)** — the single rulebook for submitters and for
+our reviewing agents: every field, the quality bar, and the Awesome Score. Also on
+[grokbot.dev/submit](https://grokbot.dev/submit/).
+
 **The one rule:**
 
 > A listing that exists to funnel traffic to your product gets closed. Sponsor slots will exist for that — this isn't one.

@@ -53,6 +53,20 @@ const graph = [webPage('/submit/', META.submit.title, META.submit.description), 
       <Breadcrumbs items={crumbs} />
       <h1 class="display-track font-display text-3xl text-text md:text-4xl">submit</h1>
       <p class="max-w-prose text-base text-text-muted">what are you sharing?</p>
+      {/* The rulebook — the same file submitters and our reviewing agents read. */}
+      <a
+        href={`${REPO}/blob/main/CONTRIBUTING.md`}
+        target="_blank"
+        rel="noopener"
+        class="flex max-w-prose items-center gap-3 rounded-sm border border-border bg-surface px-4 py-3 text-sm text-text-muted transition-colors hover:border-border-strong"
+      >
+        <MarkGlyph size={12} class="text-accent shrink-0" />
+        <span>
+          <b class="text-text">Read the submission rulebook first.</b> Every field explained, the
+          quality bar, and the Awesome Score — the exact rules our reviewers use.
+        </span>
+        <span class="ml-auto font-mono text-accent-text">→</span>
+      </a>
     </header>
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">

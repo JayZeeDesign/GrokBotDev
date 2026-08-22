@@ -45,8 +45,13 @@ const category = categories.find((c) => c.slug === catSlug)!;
 const sub = subSlug ? category.subcategories.find((s) => s.slug === subSlug)! : null;
 
 const pool = await hubEligible();
+// FINAL model: an entry belongs to every slug in `categories` (multi); fall back to the legacy
+// single `category`. Subcategory still uses the legacy single field when present.
 const entries = sortForIndex(
-  pool.filter((e) => e.data.category === catSlug && (!subSlug || e.data.subcategory === subSlug))
+  pool.filter((e) => {
+    const cats = (e.data.categories as string[] | undefined) ?? (e.data.category ? [e.data.category] : []);
+    return cats.includes(catSlug) && (!subSlug || e.data.subcategory === subSlug);
+  })
 );
 
 const url = sub ? `/categories/${catSlug}/${sub.slug}/` : `/categories/${catSlug}/`;

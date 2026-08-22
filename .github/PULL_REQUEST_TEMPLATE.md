@@ -1,9 +1,13 @@
+> 📕 **Read [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) first** — it's the rulebook (every
+> field, the quality bar, the Awesome Score). Reviewers cite it by rule number (G1–G8, UC-n, PL-n).
+
 ## What this adds
 <!-- One line: entry name + type (plugin / use-case / collection). -->
 
 ## Checklist
 - [ ] This PR adds exactly ONE new file under `content/` (plus assets for this entry, if any).
-- [ ] `npm run validate` passes locally (schema, slug, vocabularies — see /contribute/).
+- [ ] It follows [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) — required fields + the golden rules (G1–G8).
+- [ ] `npm run validate` passes locally (schema, slug, vocabularies).
 - [ ] `slug` is kebab-case and exactly matches the filename.
 - [ ] I ran / used this myself end to end — it works today.
 - [ ] Every URL in the frontmatter resolves to real, relevant content.

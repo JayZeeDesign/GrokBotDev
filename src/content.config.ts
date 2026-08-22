@@ -114,7 +114,12 @@ function primaryIsCredited(
 }
 
 // cross-field checks
-function validCategoryPair(data: { category: string; subcategory: string }, ctx: z.RefinementCtx) {
+function validCategoryPair(
+  data: { category?: string; subcategory?: string },
+  ctx: z.RefinementCtx
+) {
+  // FINAL model: legacy category/subcategory are optional. Only validate the pair when present.
+  if (!data.category || !data.subcategory) return;
   const cat = categories.find((c) => c.slug === data.category);
   if (!cat || !cat.subcategories.some((s) => s.slug === data.subcategory)) {
     ctx.addIssue({
@@ -122,6 +127,41 @@ function validCategoryPair(data: { category: string; subcategory: string }, ctx:
       message: `subcategory "${data.subcategory}" is not valid inside category "${data.category}" (see src/data/categories.json)`,
     });
   }
+}
+
+// FINAL Awesome Use Case essentials — enforce what the card + integrity need, independent of
+// the legacy field names. See CONTRIBUTING.md (the public rulebook) and
+// documents/grokbot-dev/awesome-use-case-model.md.
+function useCaseEssentials(
+  data: {
+    headline?: string;
+    name?: string;
+    summary?: string;
+    what_it_does?: string;
+    tagline?: string;
+    categories?: string[];
+    category?: string;
+    source_tweets?: unknown[];
+    primary_source?: unknown;
+    author?: unknown;
+    scouted_by?: unknown;
+  },
+  ctx: z.RefinementCtx
+) {
+  const fail = (message: string) => ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+  if (!data.headline && !data.name) fail('needs a `headline` (the hook) — see CONTRIBUTING.md');
+  if (!data.summary && !data.what_it_does && !data.tagline) fail('needs a `summary` — see CONTRIBUTING.md');
+  if (!(data.categories && data.categories.length) && !data.category)
+    fail('needs at least one entry in `categories` — see CONTRIBUTING.md');
+  // Must trace to a real source or creator: an embeddable post/video, or an `author` credit
+  // (curator reconstructions of a named person's published build are credited via `author`).
+  if (
+    !(data.source_tweets && data.source_tweets.length) &&
+    !data.primary_source &&
+    !data.author &&
+    !data.scouted_by
+  )
+    fail('needs a real source or author credit — see CONTRIBUTING.md');
 }
 
 function datesSane(
@@ -194,15 +234,19 @@ const useCases = defineCollection({
     .object({
       type: z.literal('use-case').default('use-case'),
       // Named-character style is REQUIRED: "<Bot name> · <Role>", separator " · " (U+00B7)
+      // LEGACY (optional since the FINAL model, 2026-08-21): the card no longer uses name /
+      // tagline / single category. Kept optional so existing entries validate and machine
+      // surfaces can still read them; new submissions use headline / summary / categories.
       name: z
         .string()
         .min(5)
         .max(60)
-        .regex(/^[^·]+ · .+$/u, 'Use "<Bot name> · <Role>", e.g. "R2 · Chief of Staff"'),
+        .regex(/^[^·]+ · .+$/u, 'Use "<Bot name> · <Role>", e.g. "R2 · Chief of Staff"')
+        .optional(),
       slug,
-      tagline,
-      category: z.enum(categorySlugs),
-      subcategory: z.string(),
+      tagline: tagline.optional(),
+      category: z.enum(categorySlugs).optional(),
+      subcategory: z.string().optional(),
       // ── FINAL "Awesome Use Case" model (approved 2026-08-21) ─────────────────────────────
       // The card is: score eyebrow · headline · summary · categories[] · source. See
       // documents/grokbot-dev/awesome-use-case-model.md. Added optional during rollout;
@@ -224,12 +268,12 @@ const useCases = defineCollection({
         .strict()
         .optional(),
       bot_name: z.string().min(1).max(30).optional(), // default: substring of name before " · "
-      what_it_does: z.string().min(80).max(300), // plain-text summary; HowTo description (§6.4)
+      what_it_does: z.string().min(80).max(300).optional(), // legacy; superseded by `summary`
       integrations: z.array(integrationName).default([]),
-      schedule: z.enum(['none', 'adhoc', 'hourly', 'daily', 'weekly', 'biweekly', 'monthly']),
-      autonomy: z.enum(['readonly', 'proposes', 'acts-with-approval', 'autonomous']),
-      difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
-      setup_minutes: z.number().int().min(1).max(240),
+      schedule: z.enum(['none', 'adhoc', 'hourly', 'daily', 'weekly', 'biweekly', 'monthly']).optional(),
+      autonomy: z.enum(['readonly', 'proposes', 'acts-with-approval', 'autonomous']).optional(),
+      difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+      setup_minutes: z.number().int().min(1).max(240).optional(),
       cost_note: z.string().max(120).optional(),
       source_tweets: z
         .array(
@@ -251,7 +295,7 @@ const useCases = defineCollection({
       primary_source: primarySource.optional(),
       author: author.optional(),
       scouted_by: scoutedBy.optional(),
-      replicability: z.string().min(40).max(300), // rendered as Callout info (§4.3.5 region 7)
+      replicability: z.string().min(40).max(300).optional(), // rendered as Callout info (§4.3.5 region 7)
       // M2b: where the prompt text came from. `author` = the creator published this text
       // (a repo file, a gist, or the post itself). `curator` = grokbot.dev reconstructed it
       // from a documented setup, and the page says so above the prompt. Absent means
@@ -267,7 +311,8 @@ const useCases = defineCollection({
     .superRefine(validCategoryPair)
     .superRefine(datesSane)
     .superRefine(verifiedWhenLive)
-    .superRefine(primaryIsCredited),
+    .superRefine(primaryIsCredited)
+    .superRefine(useCaseEssentials),
 });
 
 // ---------- COLLECTION ----------
