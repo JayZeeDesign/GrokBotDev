@@ -155,7 +155,8 @@ export const CP_125_MONO_TOKEN = 'www.youtube-nocookie.com';
  * (CP-107), exactly as B3 specified. What changed is who the modal talks to: a human choosing
  * a cadence, not a machine reading a spec.
  */
-export const CP_121_INSTALL_SECTION2 = 'Keep getting new Awesome Use Cases and Plugins';
+export const CP_121_INSTALL_SECTION2 =
+  'Keep getting new Awesome Use Cases and Plugins. Your Grok Bot will proactively recommend how to improve your Grok Bots — personalized to what you need, and to the coolest setups others are posting about.';
 export const CP_122_INSTALL_STEP_1 = 'pick your settings';
 export const CP_123_INSTALL_STEP_2 = 'copy the prompt and paste it into your Grok Bot';
 

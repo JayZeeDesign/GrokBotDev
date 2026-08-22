@@ -163,12 +163,9 @@ const defaultTrigger =
       }
 
       <section class="flex flex-col gap-4">
-        {/* F10(2) — operator-authored, VERBATIM. It is sentence-cased with capitalised
-            product nouns, so `lowercase` is dropped (it would silently rewrite the string)
-            and it ships in the DISPLAY face: at heading weight the capitalised nouns read as
-            a title, whereas mono reads like a code comment. Flagged as the judgment call the
-            brief invited. */}
-        <h3 class="display-track font-display text-lg text-text">{CP_121_INSTALL_SECTION2}</h3>
+        {/* Operator: this is the value-prop line, not a title — extended copy, rendered as
+            body text (smaller than the old display h3). It sets up the steps below. */}
+        <p class="max-w-prose text-sm leading-relaxed text-text-muted">{CP_121_INSTALL_SECTION2}</p>
 
         {/* F10(3) — two numbered steps, one line each, a step up from the old caption:
             mono index in accent + text at --text-base. Prominent, not shouty. */}
