@@ -137,11 +137,42 @@ const graph = [
         </div>
       </header>
 
-      <aside class="hidden w-70 shrink-0 flex-col gap-2 rounded-sm border border-border bg-surface p-4 font-mono text-sm lg:flex">
-        <span class="text-text-muted">status</span>
-        <span class="text-text">{d.status}</span>
-        {d.verified_at && <span class="text-text-muted">verified {isoToDate(d.verified_at)}</span>}
-        {d.pricing_note && <span class="text-text-muted">{d.pricing_note}</span>}
+      {/* Operator (2026-08-22): the side card now advertises the PRODUCT — website, its X
+          handle, and the founder's X handle (personal-brand incentive) — instead of the old
+          status/verified/pricing rows (irrelevant here; verified already shows as a chip). */}
+      <aside class="hidden w-70 shrink-0 flex-col gap-3 rounded-sm border border-border bg-surface p-4 font-mono text-sm lg:flex">
+        <span class="text-xs uppercase tracking-wider text-text-muted">links</span>
+        <a
+          href={d.project_url}
+          target="_blank"
+          rel={d.verified_at && d.status === 'live' ? 'noopener' : 'nofollow noopener'}
+          class="text-text hover:text-accent-text hover:underline"
+        >
+          {new URL(d.project_url).host.replace(/^www\./, '')} ↗
+        </a>
+        {d.x_handle && (
+          <a
+            href={`https://x.com/${d.x_handle}`}
+            target="_blank"
+            rel="noopener"
+            class="text-text hover:text-accent-text hover:underline"
+          >
+            @{d.x_handle} <span class="text-text-muted">· 𝕏</span>
+          </a>
+        )}
+        {d.founder && (
+          <div class="flex flex-col gap-0.5 border-t border-dashed border-border pt-3">
+            <span class="text-xs text-text-muted">founder</span>
+            <a
+              href={`https://x.com/${d.founder.x_handle}`}
+              target="_blank"
+              rel="noopener"
+              class="text-text hover:text-accent-text hover:underline"
+            >
+              {d.founder.name ? `${d.founder.name} · ` : ''}@{d.founder.x_handle}
+            </a>
+          </div>
+        )}
       </aside>
     </div>
 

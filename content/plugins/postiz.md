@@ -12,6 +12,10 @@ install_steps:
 prompt: "You are setting up a Postiz integration for me inside Grok Bot. First, read Postiz's documentation at https://docs.postiz.com/mcp/introduction so you understand how its MCP server works — authentication with a public API key from Settings → Developers → Public API, and the tools it exposes: listing connected accounts, fetching a platform's posting rules, scheduling or publishing posts, and generating images and videos. Then connect to my Postiz MCP server so that whenever I ask you to schedule, draft, or publish across my social accounts, you use Postiz to do it — pick the right accounts, respect each platform's rules, and post at the time I ask. Rules: follow the documentation exactly and never invent a tool, parameter, or platform Postiz does not list; if I ask for something Postiz cannot do, tell me instead of guessing. Always show me the exact post text, accounts, and time before anything is published, and confirm the connection first by listing my connected accounts."
 works_with: ["X"]
 project_url: "https://postiz.com"
+x_handle: "getpostiz"
+founder:
+  name: "Nevo David"
+  x_handle: "nevodavid"
 author:
   handle: "postiz"
   url: "https://postiz.com"

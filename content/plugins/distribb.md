@@ -12,6 +12,7 @@ install_steps:
 prompt: "You are setting up a Distribb integration for me inside Grok Bot. First, read Distribb's API documentation at https://distribb.io/api-docs (and its Agentic Mode guide at https://distribb.io/agentic) so you understand its Bearer-token auth and its tools — listing my projects, finding buyer-intent keywords with real volume and difficulty data, creating articles, and publishing them through Distribb's backlink network. Then use my Distribb API key so that when I ask for keywords you return Distribb's real data (never invented volumes), when I ask for an article you draft it and create it in the right project, and when I approve one you publish it. Rules: follow the docs exactly, never fabricate a keyword metric or endpoint, and always show me the article and target keyword before publishing. Confirm the connection first by listing my projects."
 works_with: []
 project_url: "https://distribb.io"
+x_handle: "distribb_io"
 author:
   handle: "distribb"
   url: "https://distribb.io"

@@ -177,6 +177,8 @@ docs (linked) and wire it up via the tool's API/MCP.
 | `prompt` | rec | **PL-1** ≥120 chars. The copy-paste prompt. It must tell the bot to read the docs (linked) and integrate via the API/MCP, and **never invent an endpoint/field**; gate anything that writes/sends/spends. |
 | `works_with` | opt | integrations from the controlled vocab (§6) only. |
 | `project_url` | ✓ | https. `repo_url`, `source_url`, `pricing_note`, `setup_minutes` optional. |
+| `x_handle` | rec | **PL-2** The product's X handle, no leading `@`. Shown in the detail side card. |
+| `founder` | rec | **PL-3** `{ name?, x_handle }` — the founder's X handle (no `@`). Advertised on the detail page; a real reason for founders to submit. Must be the actual founder/maker, verified from the product site or their own posts. |
 | `author` | ✓ | `{ handle, url, platform }`. `scouted_by` if it's someone else's. |
 | `added_at`, `updated_at`, `status` | ✓ | as above; reviewer sets `verified_at` / `featured` / `sponsor`. |
 

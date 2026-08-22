@@ -209,6 +209,17 @@ const plugins = defineCollection({
       works_with: z.array(integrationName).default([]), // controlled vocab (§5.5); API field `integrations` (§7)
       project_url: httpsUrl, // rendered DOFOLLOW when verified (§6.10); dedupe key (§5.6)
       repo_url: httpsUrl.optional(), // rendered DOFOLLOW when verified (§6.10)
+      // Standardized social fields (operator, 2026-08-22): the PRODUCT's X handle and the
+      // FOUNDER's X handle — advertised in the detail side card to give listed tools and the
+      // people behind them real visibility (personal-brand incentive for founders).
+      x_handle: z.string().min(1).max(15).optional(), // product X handle, no leading @
+      founder: z
+        .object({
+          name: z.string().min(1).max(60).optional(),
+          x_handle: z.string().min(1).max(15), // no leading @
+        })
+        .strict()
+        .optional(),
       author, // required for plugins
       scouted_by: scoutedBy.optional(),
       source_url: httpsUrl.optional(), // provenance (usually an X post); rendered as a link

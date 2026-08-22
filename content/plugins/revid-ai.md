@@ -12,6 +12,10 @@ install_steps:
 prompt: "You are setting up a Revid.ai integration for me inside Grok Bot. First, read Revid.ai's documentation at https://www.revid.ai/docs (and its MCP guide at https://www.revid.ai/mcp) so you understand its hosted MCP server (endpoint https://www.revid.ai/api/mcp, Bearer API-key or OAuth auth) and the tools it exposes — rendering a video from a script, prompt, link or file, checking project status, generating media, cloning a voice, calculating the credit cost, exporting, and scheduling or publishing. Then connect to my Revid.ai account so that when I describe a video I want, you render it through Revid.ai with the right script, voice-over, captions and music, tell me the credit cost first, and once I approve, publish or schedule it. Rules: follow the documentation exactly, never invent a tool, workflow, or parameter Revid.ai does not list, and always show me the credit cost and the finished video before anything renders or publishes. Confirm the connection first by listing my projects."
 works_with: []
 project_url: "https://www.revid.ai"
+x_handle: "revid_ai"
+founder:
+  name: "Tibo"
+  x_handle: "tibo_maker"
 author:
   handle: "revid-ai"
   url: "https://www.revid.ai"

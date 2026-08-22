@@ -12,6 +12,9 @@ install_steps:
 prompt: "You are setting up a SuperX integration for me inside Grok Bot. First, read SuperX's developer documentation at https://superx.so/developers so you understand its REST API (base URL https://api.superx.so/v1, Bearer API-key auth) — how to read my published posts and their metrics, pull account analytics, list my most engaging followers, create or delete drafts and scheduled posts, and query its library of viral post ideas. Then use my SuperX API key so that when I ask how my X account is doing you pull the real analytics; when I ask for post ideas you reference the library instead of making things up; and when I ask you to schedule a tweet or thread you create it as a draft or scheduled post. Rules: follow the docs exactly, never invent a metric or endpoint, and base every claim about my account on data the API actually returned. Confirm the connection first by reading my recent posts, and show me any tweet before it is scheduled."
 works_with: ["X"]
 project_url: "https://superx.so"
+x_handle: "superx_so"
+founder:
+  x_handle: "robj3d3"
 author:
   handle: "superx"
   url: "https://superx.so"

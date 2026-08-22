@@ -12,6 +12,10 @@ install_steps:
 prompt: "You are setting up an AdKit integration for me inside Grok Bot. First, read AdKit's documentation at https://adkit.so so you understand its remote MCP server and how it runs ads on Meta, Google and TikTok — creating campaigns, ad sets, budgets, targeting and creatives, and browsing ad libraries — and note its safety model: every change is created as a draft first. Then connect to my AdKit MCP server so that when I ask you to build or adjust a campaign you draft it in plain English through AdKit, and when I want inspiration you pull real ads from the libraries. Rules: follow the documentation exactly and never invent a targeting option, budget field, or metric. Everything stays a draft — never publish, launch, or change spend on a live campaign without showing me the full draft and getting my explicit go-ahead. Confirm access first with a read-only call such as listing my ad accounts."
 works_with: []
 project_url: "https://adkit.so"
+x_handle: "TryAdkit"
+founder:
+  name: "Nico Jeannen"
+  x_handle: "nico_jeannen"
 author:
   handle: "adkit"
   url: "https://adkit.so"

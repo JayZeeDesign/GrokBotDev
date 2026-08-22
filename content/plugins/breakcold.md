@@ -12,6 +12,10 @@ install_steps:
 prompt: "You are setting up a Breakcold integration for me inside Grok Bot. First, read Breakcold's MCP documentation at https://www.breakcold.com/crm-mcp (and the setup guides at https://github.com/breakcold/mcp) so you understand its hosted MCP server and the tools it exposes — reading and writing people, companies, deals, tasks, notes and custom fields, moving deals across the pipeline/Kanban, and reading conversations across email, LinkedIn, WhatsApp and Telegram. Then connect to my Breakcold MCP server so that when I ask about a contact or deal you answer from the CRM, when I ask you to log or update something you write it back, and when I ask what to do next you read the recent conversations and propose the next step. Rules: follow the documentation exactly, never invent a record, field, or contact, and never send an outbound message or change a deal stage without showing me first and getting my go-ahead. Confirm the connection by reading one of my pipelines before writing anything."
 works_with: ["WhatsApp", "Telegram"]
 project_url: "https://www.breakcold.com"
+x_handle: "breakcold_crm"
+founder:
+  name: "Arnaud Belinga"
+  x_handle: "ArnaudBelingaCX"
 author:
   handle: "breakcold"
   url: "https://www.breakcold.com"

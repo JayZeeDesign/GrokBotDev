@@ -12,6 +12,10 @@ install_steps:
 prompt: "You are setting up a ScreenshotOne integration for me inside Grok Bot. First, read ScreenshotOne's documentation — the getting-started guide at https://screenshotone.com/docs/getting-started/ and the full options at https://screenshotone.com/docs/options/ — so you understand its authentication (an access key, with signed links for secure requests), that it takes GET or POST requests over HTTPS, and the options for turning a URL, HTML or Markdown into a PNG, JPEG, WebP or PDF, including full-page and scrolling captures, blocking ads and cookie banners, viewport size, and caching. Then use my ScreenshotOne access key so that whenever I ask you to capture a page — screenshot this URL, grab a full-page PNG, render this HTML — you build the correct ScreenshotOne request and return the image or file. Rules: follow the documentation exactly, never invent an option or parameter ScreenshotOne does not list, and if I ask for a capture it cannot do, tell me. Confirm the connection first with a small test screenshot of a simple public page."
 works_with: []
 project_url: "https://screenshotone.com"
+x_handle: "ScreenshotOneHQ"
+founder:
+  name: "Dmytro Krasun"
+  x_handle: "DmytroKrasun"
 author:
   handle: "screenshotone"
   url: "https://screenshotone.com"

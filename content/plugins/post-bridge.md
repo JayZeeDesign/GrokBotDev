@@ -12,6 +12,10 @@ install_steps:
 prompt: "You are setting up a Post Bridge integration for me inside Grok Bot. First, read Post Bridge's API reference at https://api.post-bridge.com/reference (and its MCP guide at https://www.post-bridge.com/mcp) so you understand its authentication and the endpoints for uploading media, creating posts, scheduling, and reading analytics, plus which of the 10+ platforms each supports. Then use my Post Bridge API key so that whenever I ask you to cross-post or schedule to my social accounts — Instagram, TikTok, YouTube, X, LinkedIn and the rest — you upload any media and create the post through Post Bridge at the time I specify. Rules: follow the docs exactly, never invent an endpoint or field, and if a platform does not support what I asked, say so. Show me the caption, target platforms, and schedule before publishing, and confirm access first with a read-only call such as listing my connected accounts."
 works_with: ["X"]
 project_url: "https://www.post-bridge.com"
+x_handle: "postbridge_"
+founder:
+  name: "Jack Friks"
+  x_handle: "jackfriks"
 author:
   handle: "post-bridge"
   url: "https://www.post-bridge.com"
