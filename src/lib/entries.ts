@@ -171,6 +171,29 @@ export function categoriesOf(doc: AnyDoc): string[] {
 /** Operator (2026-08-22): plugin listings put SPONSORS first, then the rest alphabetically.
  * Server order is deterministic (sponsors alphabetical too, for no-JS/SEO); a small client
  * shuffle randomizes the sponsor block per page load. */
+/**
+ * Order use cases by Awesome Score, highest first (operator: the /use-cases/ default sort).
+ * Guides / unscored entries have no score → they sort to the end (score treated as -1);
+ * needs-update entries stay last (integrity). Ties break featured → newest → slug.
+ */
+export function sortByScore(docs: AnyDoc[]): AnyDoc[] {
+  const score = (d: AnyDoc) =>
+    typeof (d.data as { awesome_score?: number }).awesome_score === 'number'
+      ? (d.data as { awesome_score: number }).awesome_score
+      : -1;
+  return [...docs].sort((a, b) => {
+    const stale =
+      Number(a.data.status === 'needs-update') - Number(b.data.status === 'needs-update');
+    if (stale !== 0) return stale;
+    const byScore = score(b) - score(a);
+    if (byScore !== 0) return byScore;
+    const feat = Number(Boolean(b.data.featured)) - Number(Boolean(a.data.featured));
+    if (feat !== 0) return feat;
+    if (a.data.updated_at !== b.data.updated_at) return a.data.updated_at < b.data.updated_at ? 1 : -1;
+    return bySlug(a, b);
+  });
+}
+
 export function sortSponsorsFirst(docs: AnyDoc[]): AnyDoc[] {
   return [...docs].sort((a, b) => {
     const sa = (a.data as { sponsor?: boolean }).sponsor ? 0 : 1;

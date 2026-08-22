@@ -7,17 +7,17 @@
 import type { GetStaticPaths, Page } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import LaneIndexPage from '../../components/LaneIndexPage.astro';
-import { allUseCases, sortForIndex, urlOf } from '../../lib/entries';
+import { allUseCases, sortByScore, urlOf } from '../../lib/entries';
 import type { AnyDoc } from '../../lib/entries';
 import { META, breadcrumbList, collectionPage, itemList, paginate } from '../../lib/seo';
 
 export const getStaticPaths = (async ({ paginate: paginateFn }) => {
-  const useCases = sortForIndex(await allUseCases());
+  const useCases = sortByScore(await allUseCases());
   return paginateFn(useCases, { pageSize: 24 });
 }) satisfies GetStaticPaths;
 
 const { page } = Astro.props as { page: Page<AnyDoc> };
-const pool = sortForIndex(await allUseCases());
+const pool = sortByScore(await allUseCases());
 
 const meta = paginate(META.useCases, page.currentPage, page.lastPage);
 const url = page.currentPage === 1 ? '/use-cases/' : `/use-cases/${page.currentPage}/`;
