@@ -19,19 +19,103 @@ import ContributeSteps from '../../components/ContributeSteps.astro';
 import { META, breadcrumbList, webPage } from '../../lib/seo';
 
 const REPO = 'https://github.com/ZeroPointRepo/GrokBotDev';
+
+// B3 — the "add a file" links PREFILL the GitHub editor with the annotated template (via
+// ?filename=&value=), so a no-clone contributor lands on a file that already validates once
+// they replace the placeholders. Templates mirror CONTRIBUTING.md exactly (status: proposed).
+const USE_CASE_TEMPLATE = `---
+type: use-case
+slug: my-use-case
+headline: "The exciting one-line hook (10-100 chars)"
+summary: "Two to three lines on what the agent does and the specific twist that makes it worth copying — concrete nouns, no fluff. 80-320 chars."
+categories: [marketing]
+format: use-case
+source_tweets:
+  - url: https://x.com/handle/status/1234567890
+    author_handle: handle
+    excerpt: "A short, real quote from the post — not the whole thing."
+    posted_at: "2026-01-01T12:00:00Z"
+author:
+  handle: handle
+  url: https://x.com/handle
+  platform: x
+prompt_provenance: author
+replicability: "How to adapt this to your own stack, in a sentence or two."
+added_at: "2026-01-01T12:00:00Z"
+updated_at: "2026-01-01T12:00:00Z"
+status: proposed
+---
+
+## How it's set up
+
+1. Concrete, numbered steps — at least 300 characters total — so a reader can reproduce it.
+
+## Prompt
+
+\`\`\`text
+The real, complete prompt goes here (>=200 chars). If it's the author's, paste it verbatim and
+keep prompt_provenance: author. Describe the role, sources, constraints, deliverable, and where
+the bot must stop for approval before it sends, posts, pays, or connects an account.
+\`\`\`
+
+## Why it's cool
+
+One paragraph — at least 150 characters — on why this matters: the angle, the twist, what makes it worth copying.
+`;
+
+const PLUGIN_TEMPLATE = `---
+type: plugin
+slug: my-plugin
+name: "My Plugin"
+tagline: "What it gives your Grok Bot, in one line (<=90 chars)."
+category: work
+subcategory: tasks
+install_steps:
+  - "Create an account and get your API key from the dashboard."
+  - "Paste the prompt below into your Grok Bot and give it your key."
+prompt: "Read the docs at https://example.com and integrate via the API/MCP. Never invent an endpoint or field; gate anything that writes, sends, or spends; confirm the connection first."
+works_with: []
+project_url: https://example.com
+x_handle: exampleproduct
+founder:
+  name: Founder Name
+  x_handle: founderhandle
+author:
+  handle: yourhandle
+  url: https://x.com/yourhandle
+  platform: x
+pricing_note: "Free tier; paid plans available."
+setup_minutes: 10
+added_at: "2026-01-01T12:00:00Z"
+updated_at: "2026-01-01T12:00:00Z"
+status: proposed
+---
+
+## What it does
+
+A couple of sentences on what the tool actually gives an agent.
+
+## Use it in Grok Bot
+
+How to wire it up and what to expect. This section plus "What it does" must total at least 400 characters.
+`;
+
+const prefill = (dir: string, filename: string, tpl: string) =>
+  `${REPO}/new/main/content/${dir}?filename=${filename}&value=${encodeURIComponent(tpl)}`;
+
 const tiles = [
   {
     title: 'a plugin',
     body: 'you built something Grok Bots can use. you get your own page and a dofollow link.',
     cta: 'submit a plugin',
-    href: `${REPO}/new/main/content/plugins`,
+    href: prefill('plugins', 'my-plugin.md', PLUGIN_TEMPLATE),
     variant: 'solid' as const,
   },
   {
     title: 'a use case',
     body: 'you made your Grok Bot do something great. you get a page, and the credit stays yours.',
     cta: 'submit a use case',
-    href: `${REPO}/new/main/content/use-cases`,
+    href: prefill('use-cases', 'my-use-case.md', USE_CASE_TEMPLATE),
     variant: 'outline' as const,
   },
   {
@@ -93,7 +177,7 @@ const graph = [webPage('/submit/', META.submit.title, META.submit.description), 
       <SectionHeading title="no github account? — a plugin" variant="sub" level={2} />
       <ContributeSteps
         steps={[
-          { title: 'copy the frontmatter template', body: 'every field is documented in the repo README.', code: 'content/plugins/<your-slug>.md' },
+          { title: 'copy the frontmatter template', body: 'every field is documented in CONTRIBUTING.md — or use the prefilled “add a file” buttons above.', code: 'content/plugins/<your-slug>.md' },
           { title: 'open an issue instead', body: 'No GitHub account? Open an issue with the link and we’ll take it from there.' },
         ]}
       />

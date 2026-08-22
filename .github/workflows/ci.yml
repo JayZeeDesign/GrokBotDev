@@ -22,6 +22,10 @@ jobs:
       - run: npm ci
       - name: validate content (§5.6 / §8.5)
         run: node scripts/validate.mjs
+      - name: the CONTRIBUTING template must PASS validation (drift guard)
+        # A copy of the rulebook's submission template. If the rulebook and the validator ever
+        # drift apart again, this fails here — before a real contributor hits it.
+        run: node scripts/validate.mjs --root scripts/fixtures-valid
       - name: negative fixtures must still fail (§11 M2.5)
         run: |
           if node scripts/validate.mjs --root scripts/fixtures; then

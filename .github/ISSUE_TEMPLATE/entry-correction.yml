@@ -1,0 +1,13 @@
+name: Entry correction / takedown
+description: Report a wrong, broken, or misattributed entry (or request removal of your own work).
+title: "[correction] "
+labels: ["correction"]
+body:
+  - type: input
+    id: entry
+    attributes: { label: Which entry?, placeholder: "URL or slug, e.g. /use-cases/marketing-os/" }
+    validations: { required: true }
+  - type: textarea
+    id: problem
+    attributes: { label: What's wrong?, description: "Broken link, wrong attribution, outdated, or a takedown request." }
+    validations: { required: true }

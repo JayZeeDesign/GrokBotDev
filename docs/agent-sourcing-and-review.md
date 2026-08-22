@@ -6,7 +6,7 @@ and are the single source of truth — read them first, cite them by number:
 
 - **[CONTRIBUTING.md](../CONTRIBUTING.md)** — the rulebook: golden rules **G1–G8**, field
   reference **UC-1..8 / PL-n**, the Awesome Score rubric, quality gates, reviewer checklist (§7).
-- **[documents/grokbot-dev/awesome-use-case-model.md]** — the model spec (maintainer copy).
+- **[docs/awesome-use-case-model.md](awesome-use-case-model.md)** — the model spec (maintainer copy).
 
 Two jobs: **A. Source** (find + create entries) and **B. Review** (judge submitted PRs). Both
 end at the same bar: every rule in CONTRIBUTING.md, and the Awesome Score gate.
@@ -70,7 +70,7 @@ Never publish an entry that fails a golden constraint, regardless of score.
 - Run `npm run validate` (schema, slug, vocab). Fix any error before opening the PR.
 
 ### A7. Open the PR
-Fill the PR template. Do **not** set `verified_at` / `status: live` — that's the review step.
+Fill the PR template. Write `status: proposed` and leave `verified_at` empty — the review step sets those.
 
 ---
 

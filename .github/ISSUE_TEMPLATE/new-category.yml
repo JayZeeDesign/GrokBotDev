@@ -1,0 +1,13 @@
+name: New category / subcategory
+description: Propose a new category or subcategory (maintainer change).
+title: "[category] "
+labels: ["taxonomy", "needs-maintainer"]
+body:
+  - type: input
+    id: cat
+    attributes: { label: Category / subcategory, placeholder: "e.g. work / research" }
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes: { label: Why is the current taxonomy insufficient?, description: "What entries would use it? Why don't existing categories fit?" }
+    validations: { required: true }

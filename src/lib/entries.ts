@@ -27,9 +27,14 @@ export function urlOf(doc: AnyDoc): string {
   return `/${LANE[kindOf(doc)]}/${doc.data.slug}/`;
 }
 
-/** Anything that may appear in a list surface: never `deprecated`, never `demo` (B4). */
+/** Anything that may appear in a list surface: never `deprecated`, `demo`, or `proposed`
+ * (a `proposed` entry is an unreviewed submission — invisible until a reviewer flips it live). */
 export function isListable(doc: AnyDoc): boolean {
-  return doc.data.status !== 'deprecated' && doc.data.status !== 'demo';
+  return (
+    doc.data.status !== 'deprecated' &&
+    doc.data.status !== 'demo' &&
+    doc.data.status !== 'proposed'
+  );
 }
 
 const bySlug = (a: AnyDoc, b: AnyDoc) => a.data.slug.localeCompare(b.data.slug);

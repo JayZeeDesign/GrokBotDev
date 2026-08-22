@@ -70,8 +70,10 @@ That is the only editorial rejection rule, and it reads the same on
 1. **Fork** `ZeroPointRepo/GrokBotDev`.
 2. **Add one file.** Exactly one new markdown file under `content/plugins/`,
    `content/use-cases/` or `content/collections/`. The filename is the slug: kebab-case, and
-   the `slug` field must match it. Copy the annotated example for your type from
-   [`/contribute/`](https://grokbot.dev/contribute/).
+   the `slug` field must match it. Copy the template for your type from
+   [CONTRIBUTING.md](CONTRIBUTING.md) (§3.4 use case / §5 plugin), or just use the prefilled
+   **"add a file"** buttons on [grokbot.dev/submit](https://grokbot.dev/submit/) — they open a
+   GitHub editor already filled with the template.
 3. **Run `npm run validate`.** It checks the schema, the slug, the category tree and the
    integration vocabulary locally, so CI tells you nothing new.
 4. **Open the pull request** and fill in the template.
@@ -122,7 +124,7 @@ so the same video cannot be submitted twice under two different link shapes.
 Node 22 (see `.nvmrc`).
 
 ```bash
-npm install
+npm ci
 npm run dev        # local dev server
 npm run validate   # schema, slugs, vocabularies, duplicate URLs — run this before you push
 npm run build      # the full gate chain; must exit 0

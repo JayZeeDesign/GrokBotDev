@@ -41,7 +41,12 @@ const scoutedBy = z
 
 // Addendum B4: `demo` joins the enum. A demo entry is an explicitly-labelled example —
 // it never carries verified_at and is excluded from the API, feeds, wall and sitemap.
-const status = z.enum(['live', 'needs-update', 'deprecated', 'demo']).default('live');
+// `proposed` (2026-08-22) is the state a SUBMITTER writes: it validates without verified_at, and
+// stays invisible (isListable/included exclude it) until a reviewer flips it to `live` and sets
+// verified_at. This resolves the old catch-22 where the rulebook said "leave status: live" but
+// the validator then demanded a reviewer-only verified_at. Default is `proposed` (fail-safe:
+// an entry never publishes until a human verifies it).
+const status = z.enum(['proposed', 'live', 'needs-update', 'deprecated', 'demo']).default('proposed');
 
 // ---------- PRIMARY SOURCE (F17) ----------
 // The ONE thing an entry was found in. A discriminated union rather than a `kind` field
@@ -185,11 +190,18 @@ function verifiedWhenLive(data: { status: string; verified_at?: string }, ctx: z
     });
     return;
   }
-  if (data.status !== 'deprecated' && data.status !== 'demo' && !data.verified_at)
+  // verified_at is required only for the PUBLISHED states. `proposed` (submitter) and
+  // `deprecated` are exempt; `demo` is handled above.
+  if (
+    data.status !== 'deprecated' &&
+    data.status !== 'demo' &&
+    data.status !== 'proposed' &&
+    !data.verified_at
+  )
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message:
-        'verified_at is required unless status is "deprecated" (§5.6 rule 8; verified model in CONTEXT)',
+        'verified_at is required for a live entry — a reviewer sets it (submitters use status: proposed) (§10.1)',
     });
 }
 

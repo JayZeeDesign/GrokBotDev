@@ -174,18 +174,27 @@ for (const entry of entries) {
     fail(file, '§5.2', `type "${d.type}" does not match its directory (${CONTENT_DIRS[type]})`);
   }
 
-  for (const field of ['name', 'tagline', 'category', 'subcategory', 'added_at', 'updated_at']) {
+  // Every entry needs timestamps. Plugins also need the human fields as primary; use cases
+  // carry those as an OPTIONAL machine mirror (reviewer-supplied) and use the final model
+  // (headline/summary/categories) instead — enforced in the use-case block below.
+  const requiredCommon =
+    type === 'plugin'
+      ? ['name', 'tagline', 'category', 'subcategory', 'added_at', 'updated_at']
+      : ['added_at', 'updated_at'];
+  for (const field of requiredCommon) {
     if (!d[field]) fail(file, '§5.2', `missing required field \`${field}\``);
   }
   if (typeof d.tagline === 'string' && (d.tagline.length < 10 || d.tagline.length > 90)) {
     fail(file, '§5.2', `tagline must be 10–90 chars (is ${d.tagline.length})`);
   }
 
-  // §5.6 rule 4 — category/subcategory pair validity
-  const category = categories.find((c) => c.slug === d.category);
-  if (!category) {
+  // §5.6 rule 4 — category/subcategory pair validity. Only when `category` is present: use
+  // cases carry the legacy category/subcategory optionally (they use `categories` — checked in
+  // the use-case block); plugins always have it (required above).
+  const category = d.category ? categories.find((c) => c.slug === d.category) : null;
+  if (d.category && !category) {
     fail(file, '§5.6 #4', `unknown category "${d.category}" — see src/data/categories.json`);
-  } else if (!category.subcategories.some((s) => s.slug === d.subcategory)) {
+  } else if (d.category && category && !category.subcategories.some((s) => s.slug === d.subcategory)) {
     const options = category.subcategories.map((s) => s.slug).join(', ');
     fail(
       file,
@@ -208,8 +217,8 @@ for (const entry of entries) {
   }
 
   // §5.6 rule 8 + Addendum B4 — status semantics
-  const status = d.status ?? 'live';
-  if (!['live', 'needs-update', 'deprecated', 'demo'].includes(status)) {
+  const status = d.status ?? 'proposed';
+  if (!['proposed', 'live', 'needs-update', 'deprecated', 'demo'].includes(status)) {
     fail(file, '§5.6 #8', `unknown status "${status}"`);
   }
   if (status === 'demo' && d.verified_at) {
@@ -219,8 +228,10 @@ for (const entry of entries) {
       'demo entries must not carry verified_at — nothing fictional ever carries a verification claim'
     );
   }
-  if (!['deprecated', 'demo'].includes(status) && !d.verified_at) {
-    fail(file, '§10.1', `verified_at is required for status "${status}" (verified model, CONTEXT)`);
+  // A SUBMITTER writes status: proposed and leaves verified_at empty; a reviewer sets both
+  // verified_at and status: live. So verified_at is required only for the published states.
+  if (!['deprecated', 'demo', 'proposed'].includes(status) && !d.verified_at) {
+    fail(file, '§10.1', `verified_at is required for status "${status}" — a reviewer sets it; submitters use status: proposed (§10.1)`);
   }
 
   // §5.5 — controlled integration vocabulary
@@ -276,28 +287,39 @@ for (const entry of entries) {
   }
 
   if (type === 'use-case') {
+    // ── FINAL MODEL (2026-08-21): the fields a submitter actually writes, mirroring
+    // content.config.ts and CONTRIBUTING.md §3. headline / summary / categories are required.
+    if (typeof d.headline !== 'string' || d.headline.length < 10 || d.headline.length > 100) {
+      fail(file, 'UC-1', 'headline is required, 10–100 chars (the hook)');
+    }
+    if (typeof d.summary !== 'string' || d.summary.length < 80 || d.summary.length > 320) {
+      fail(file, 'UC-2', 'summary is required, 80–320 chars');
+    }
+    if (!Array.isArray(d.categories) || d.categories.length < 1 || d.categories.length > 3) {
+      fail(file, 'UC-3', 'categories is required — 1–3 slugs from the taxonomy');
+    } else {
+      for (const c of d.categories) {
+        if (!categories.some((cat) => cat.slug === c)) {
+          fail(file, 'UC-3', `unknown category "${c}" in categories — see src/data/categories.json`);
+        }
+      }
+    }
+    if (d.format && !['use-case', 'guide'].includes(d.format)) {
+      fail(file, 'UC-4', `format must be "use-case" or "guide" (got "${d.format}")`);
+    }
+    // ── OPTIONAL machine mirror + legacy fields: validated only when present (a reviewer may
+    // add name/tagline/category; schedule/autonomy/difficulty are no longer required).
     if (typeof d.name === 'string' && !NAMED_CHARACTER_RE.test(d.name)) {
       fail(file, '§5.2', `name must use "<Bot name> · <Role>" (got "${d.name}")`);
     }
-    if (
-      typeof d.what_it_does !== 'string' ||
-      d.what_it_does.length < 80 ||
-      d.what_it_does.length > 300
-    ) {
-      fail(file, '§5.2', 'what_it_does must be 80–300 chars');
+    if (d.what_it_does !== undefined && (typeof d.what_it_does !== 'string' || d.what_it_does.length < 80 || d.what_it_does.length > 300)) {
+      fail(file, '§5.2', 'what_it_does, when present, must be 80–300 chars');
     }
-    if (
-      typeof d.replicability !== 'string' ||
-      d.replicability.length < 40 ||
-      d.replicability.length > 300
-    ) {
-      fail(file, '§5.2', 'replicability must be 40–300 chars');
+    if (d.replicability !== undefined && (typeof d.replicability !== 'string' || d.replicability.length < 40 || d.replicability.length > 300)) {
+      fail(file, 'UC-8', 'replicability, when present, must be 40–300 chars');
     }
     if (d.prompt_provenance && !['author', 'curator'].includes(d.prompt_provenance)) {
       fail(file, '§5.2', `prompt_provenance must be "author" or "curator" (got "${d.prompt_provenance}")`);
-    }
-    for (const field of ['schedule', 'autonomy', 'difficulty', 'setup_minutes']) {
-      if (d[field] === undefined) fail(file, '§5.2', `use cases require \`${field}\``);
     }
     // ── F17 · primary source ───────────────────────────────────────────────────────────
     // The schema is the authority on SHAPE; these checks are the ones Zod structurally

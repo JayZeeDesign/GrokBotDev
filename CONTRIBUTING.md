@@ -17,7 +17,7 @@ Submit page say the same thing.
    field.
 2. It must come from a **real source** and be **real / working** — no fabrication, no ads.
 3. Run `npm run validate` (schema, slug, vocab). Open a PR and fill in the template.
-4. A reviewer verifies it, scores it, and sets `verified_at` + `status`. **You never set those.**
+4. A reviewer verifies it, scores it, flips `status: proposed → live`, and sets `verified_at`. **You never set those.**
 
 Fastest path with no local setup: use the "add a file" links on
 [grokbot.dev/submit](https://grokbot.dev/submit/) — they open a new file in the right folder
@@ -74,8 +74,8 @@ hook · summary · categories · source.** Design your entry around those.
 |---|---|---|
 | `type: use-case` | ✓ | literal. |
 | `slug` | ✓ | kebab-case; **must equal the filename**. |
-| `headline` | ✓ | **UC-1** The hook: ≤60 chars, sentence case, no trailing period. Lead with the outcome or the surprising claim, concrete. No generic role labels ("Sales bot"). Use the source's own vivid framing when it's strong; never a claim the source doesn't make. Unique across the directory. **No slop:** supercharge, unleash, seamless, effortless, game-changer, revolutionary, 10x (unless literally in the source). |
-| `summary` | ✓ | **UC-2** 2–3 lines, 140–240 chars. What the agent actually does + the specific twist. Concrete nouns (name the tools, roles, cadence, artifact). Any number must come from the source. |
+| `headline` | ✓ | **UC-1** The hook: 10–100 chars, sentence case, no trailing period. Lead with the outcome or the surprising claim, concrete. No generic role labels ("Sales bot"). Use the source's own vivid framing when it's strong; never a claim the source doesn't make. Unique across the directory. **No slop:** supercharge, unleash, seamless, effortless, game-changer, revolutionary, 10x (unless literally in the source). |
+| `summary` | ✓ | **UC-2** 2–3 lines, 80–320 chars. What the agent actually does + the specific twist. Concrete nouns (name the tools, roles, cadence, artifact). Any number must come from the source. |
 | `categories` | ✓ | **UC-3** 1–3 slugs from the taxonomy (§6). Every domain it genuinely spans, most-central first. No padding. |
 | `format` | ✓ | **UC-4** `use-case` (an actionable setup, scored) or `guide` (a reference/explainer — badged, not scored). Default `use-case`. |
 | a **source** | ✓ | **UC-5** Exactly one origin. X → `source_tweets:` with `url`, `author_handle` (no `@`), `excerpt` (a short real quote, 20–280 chars, **never the whole post**). YouTube → `primary_source: { kind: youtube-video, url, title, channel }` (title + channel required — they're the fallback if the player never loads; `timestamp` optional, `mm:ss`). |
@@ -83,7 +83,7 @@ hook · summary · categories · source.** Design your entry around those.
 | `prompt_provenance` | ✓* | **UC-7** `author` or `curator` (see G3). |
 | `replicability` | rec | **UC-8** 40–300 chars: how to adapt it to your own stack; if curator, say the prompt is a reconstruction. |
 | `added_at`, `updated_at` | ✓ | ISO 8601 UTC (`…Z`). |
-| `status` | ✓ | leave `live` (it won't show until a reviewer sets `verified_at`). |
+| `status` | ✓ | write **`proposed`**. It validates without `verified_at` and stays invisible until a reviewer flips it to `live` and sets `verified_at`. |
 
 ### 3.2 The body (Markdown, in this order)
 
@@ -122,7 +122,7 @@ prompt_provenance: author
 replicability: "How to adapt this to your own stack in a sentence or two."
 added_at: "2026-08-21T12:00:00Z"
 updated_at: "2026-08-21T12:00:00Z"
-status: live
+status: proposed
 ---
 
 ## How it's set up
@@ -180,7 +180,7 @@ docs (linked) and wire it up via the tool's API/MCP.
 | `x_handle` | rec | **PL-2** The product's X handle, no leading `@`. Shown in the detail side card. |
 | `founder` | rec | **PL-3** `{ name?, x_handle }` — the founder's X handle (no `@`). Advertised on the detail page; a real reason for founders to submit. Must be the actual founder/maker, verified from the product site or their own posts. |
 | `author` | ✓ | `{ handle, url, platform }`. `scouted_by` if it's someone else's. |
-| `added_at`, `updated_at`, `status` | ✓ | as above; reviewer sets `verified_at` / `featured` / `sponsor`. |
+| `added_at`, `updated_at`, `status` | ✓ | write `status: proposed`; a reviewer sets `verified_at` / `status: live` / `featured` / `sponsor`. |
 
 Body: `## What it does` then `## Use it in Grok Bot` (≥400 chars total).
 
@@ -211,10 +211,10 @@ Review every submission against this checklist. Cite the rule number on any reje
    (≥65 publish · 50–64 escalate · <50 decline).
 6. **Normalize** the machine mirror (`name` ← headline, `tagline` ← summary, `category` ←
    categories[0], a valid `subcategory`) if the submitter omitted them.
-7. **Only then** set `verified_at` and `status: live`. Consider `featured` if the score is ≥90.
+7. **Only then** flip `status: proposed → live` and set `verified_at`. Consider `featured` if the score is ≥90.
 
 The full model spec (for maintainers/agents) lives at
-[`documents/grokbot-dev/awesome-use-case-model.md`](documents/grokbot-dev/awesome-use-case-model.md),
+[`docs/awesome-use-case-model.md`](docs/awesome-use-case-model.md),
 and the step-by-step **agent procedure** for sourcing and reviewing (which executes these rules)
 is [`docs/agent-sourcing-and-review.md`](docs/agent-sourcing-and-review.md). All three files are
 public and say the same thing — submitters, maintainers, and agents work from one source.

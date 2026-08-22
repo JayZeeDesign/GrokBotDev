@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Submit a plugin or use case
+    url: https://grokbot.dev/submit/
+    about: Entries are added by pull request, not issues — see the Submit page and CONTRIBUTING.md.
