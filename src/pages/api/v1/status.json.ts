@@ -14,14 +14,19 @@ import {
   STABILITY,
 } from '../../../lib/apiMeta';
 
-export const GET: APIRoute = async () =>
-  jsonResponse({
-    generated_at: new Date().toISOString(),
+export const GET: APIRoute = async () => {
+  // Drop notices whose expires_at is already in the past (evaluated at build). Bots also skip
+  // expired ones at fetch time, so a promo ends cleanly even between rebuilds.
+  const now = new Date().toISOString();
+  const notices = NOTICES.filter((n) => !n.expires_at || n.expires_at > now);
+  return jsonResponse({
+    generated_at: now,
     api_version: API_VERSION,
     schema_revision: SCHEMA_REVISION,
     stability: STABILITY,
     capabilities: CAPABILITIES,
-    notices: NOTICES,
+    notices,
     deprecations: DEPRECATIONS,
     changelog: CHANGELOG,
   });
+};
