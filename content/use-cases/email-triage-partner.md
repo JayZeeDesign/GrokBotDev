@@ -7,7 +7,14 @@ headline: "An inbox that triages itself every morning"
 summary: "A dedicated bot that runs a daily three-stage inbox triage: it archives what you never need to see, summarizes low-attention mail, and does full-context triage on the rest — reading prior history, cross-checking HubSpot and Drive, and drafting replies in your voice."
 categories: [work, support]
 format: use-case
-awesome_score: 77
+awesome_score: 80
+score_breakdown:
+  reproducibility: 23
+  ambition: 13
+  concreteness: 18
+  novelty: 8
+  evidence: 9
+  craft: 9
 category: work
 subcategory: email
 bot_name: Triage

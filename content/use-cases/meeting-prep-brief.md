@@ -7,7 +7,14 @@ headline: "Tomorrow’s meetings, one phone-readable page each"
 summary: "Krista’s daily meeting-prep routine pulls Salesforce, Gmail, Slack, Granola, and Gong into a short, skimmable brief she can read on her phone. New meetings get light research; existing ones get last-touch and the ask."
 categories: [work]
 format: use-case
-awesome_score: 69
+awesome_score: 65
+score_breakdown:
+  reproducibility: 15
+  ambition: 12
+  concreteness: 19
+  novelty: 8
+  evidence: 3
+  craft: 8
 category: work
 subcategory: meetings
 bot_name: Brief

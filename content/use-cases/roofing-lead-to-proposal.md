@@ -7,7 +7,14 @@ headline: "Roof measured, proposal staged, change orders signed"
 summary: "Same two-day roofing run: it pulled roof measurements for a new inbound lead, built a full proposal/estimate with the contract staged pending his approval, then filled out, drafted, and emailed two change orders via e-signature."
 categories: [sales]
 format: use-case
-awesome_score: 64
+awesome_score: 67
+score_breakdown:
+  reproducibility: 14
+  ambition: 14
+  concreteness: 18
+  novelty: 11
+  evidence: 3
+  craft: 7
 category: sales
 subcategory: pipeline
 bot_name: Proposal

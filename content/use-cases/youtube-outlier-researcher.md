@@ -7,7 +7,14 @@ headline: "Videos at 3x their channel median, mined for format"
 summary: "One of Peter's five bots is a YouTube outlier researcher — it hunts videos that outperform the channel's baseline so you can learn the format, not copy the topic blindly."
 categories: [marketing]
 format: use-case
-awesome_score: 61
+awesome_score: 56
+score_breakdown:
+  reproducibility: 14
+  ambition: 7
+  concreteness: 17
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: marketing
 subcategory: content
 bot_name: Outlier

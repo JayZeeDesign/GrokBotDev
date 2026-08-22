@@ -7,7 +7,14 @@ headline: "Get interrogated until your plan is actually specific"
 summary: "Nate Herk’s week-of-lessons article starts with a job he actually runs: a Grill Me skill that relentlessly interviews him about the business, goals, and plans until the bots share context. He uses it before quarterly planning or a new project — not a four-bot staffing listicle."
 categories: [work]
 format: use-case
-awesome_score: 74
+awesome_score: 65
+score_breakdown:
+  reproducibility: 15
+  ambition: 10
+  concreteness: 16
+  novelty: 12
+  evidence: 4
+  craft: 8
 category: work
 subcategory: research
 bot_name: Grill

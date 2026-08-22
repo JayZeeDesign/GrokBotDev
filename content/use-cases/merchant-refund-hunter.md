@@ -7,7 +7,14 @@ headline: "Five merchants that quietly never sent the refund"
 summary: "Darian told Grok Bot to pay its own fee: it scanned email for lost money and emailed five merchants that never refunded his returns — already net-positive vs the subscription. 136 likes / 110.5K views."
 categories: [personal]
 format: use-case
-awesome_score: 64
+awesome_score: 60
+score_breakdown:
+  reproducibility: 15
+  ambition: 8
+  concreteness: 17
+  novelty: 10
+  evidence: 3
+  craft: 7
 category: personal
 subcategory: money
 bot_name: Hunter

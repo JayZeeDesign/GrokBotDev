@@ -7,7 +7,14 @@ headline: "One post, four surfaces, canonical never dropped"
 summary: "After the first-look video, Debbie set up a content pipeline: write with her add-content skill, publish on debbie.codes, syndicate to Dev.to with a canonical URL, then draft LinkedIn and X. She called it the start of the workflow, not a toy list."
 categories: [marketing]
 format: use-case
-awesome_score: 66
+awesome_score: 65
+score_breakdown:
+  reproducibility: 15
+  ambition: 12
+  concreteness: 18
+  novelty: 9
+  evidence: 4
+  craft: 7
 category: marketing
 subcategory: content
 bot_name: Pipeline

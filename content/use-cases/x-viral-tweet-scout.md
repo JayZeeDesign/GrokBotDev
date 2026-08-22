@@ -7,7 +7,14 @@ headline: "Catch the angle traveling before you write"
 summary: "Another of Peter's bots watches X for tweets that are breaking out, so he can see which angles travel before he writes."
 categories: [marketing]
 format: use-case
-awesome_score: 64
+awesome_score: 53
+score_breakdown:
+  reproducibility: 13
+  ambition: 7
+  concreteness: 16
+  novelty: 8
+  evidence: 3
+  craft: 6
 category: marketing
 subcategory: social
 bot_name: Scout

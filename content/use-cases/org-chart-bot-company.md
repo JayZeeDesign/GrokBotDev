@@ -7,7 +7,14 @@ headline: "Eight bots, an org chart, and no task list"
 summary: "Ridark gave Grok Bot an org chart instead of tasks. Eight bots running the company; he shared the full design. 1.6K likes / 409K views."
 categories: [work]
 format: use-case
-awesome_score: 71
+awesome_score: 70
+score_breakdown:
+  reproducibility: 15
+  ambition: 18
+  concreteness: 16
+  novelty: 10
+  evidence: 4
+  craft: 7
 category: work
 subcategory: tasks
 bot_name: OrgChart

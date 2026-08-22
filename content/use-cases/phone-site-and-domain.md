@@ -7,7 +7,14 @@ headline: "Two prompts from a phone: site, domain, redirects"
 summary: "Wayne Sutton installed Convex and Cloudflare plugins, built a demo site (front and backend), bought the domain, and set up Cloudflare redirect rules — all in two prompts from his phone (tryground.dev). 377 likes / 566K views."
 categories: [engineering]
 format: use-case
-awesome_score: 64
+awesome_score: 68
+score_breakdown:
+  reproducibility: 14
+  ambition: 12
+  concreteness: 18
+  novelty: 11
+  evidence: 6
+  craft: 7
 category: engineering
 subcategory: agents-ops
 bot_name: Builder

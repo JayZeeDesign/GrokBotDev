@@ -8,6 +8,13 @@ summary: "Roan's article on turning Grok Bot into a self-improving AI hedge-fund
 categories: [trading-crypto, data]
 format: use-case
 awesome_score: 72
+score_breakdown:
+  reproducibility: 15
+  ambition: 17
+  concreteness: 15
+  novelty: 12
+  evidence: 6
+  craft: 7
 category: trading-crypto
 subcategory: markets
 bot_name: Research Desk

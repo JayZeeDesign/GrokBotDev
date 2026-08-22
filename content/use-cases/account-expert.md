@@ -7,7 +7,14 @@ headline: "Ask where the deal stalled, get dates and links"
 summary: "Krista Letz’s SpaceXAI GTM write-up describes a Customer Expert: one agent per strategic account that watches Slack, Gmail, Gong, and Granola, answers from running context, and flags feature requests plus support tickets. Same article as her weekly GTM operator."
 categories: [sales]
 format: use-case
-awesome_score: 69
+awesome_score: 68
+score_breakdown:
+  reproducibility: 16
+  ambition: 14
+  concreteness: 18
+  novelty: 10
+  evidence: 3
+  craft: 7
 category: sales
 subcategory: crm
 bot_name: Ace

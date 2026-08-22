@@ -7,7 +7,14 @@ headline: "Every meeting split into your promises and theirs"
 summary: "Polls your notetaker for newly recorded meetings, ingests the transcript, and writes a summary plus action items — specifically separating what you committed to from what the other party committed to you, delivered into Grok Bot, Slack, or Telegram."
 categories: [work]
 format: use-case
-awesome_score: 75
+awesome_score: 79
+score_breakdown:
+  reproducibility: 18
+  ambition: 13
+  concreteness: 19
+  novelty: 12
+  evidence: 9
+  craft: 8
 category: work
 subcategory: meetings
 bot_name: Recap

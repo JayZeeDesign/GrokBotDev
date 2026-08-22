@@ -7,7 +7,14 @@ headline: "The entire X loop, from research to posting time"
 summary: "Scotty documented how he automated X end to end with Grok Bot: research, design, copy, analytics, and timing. 1.4K likes / 4.5M views."
 categories: [marketing]
 format: use-case
-awesome_score: 66
+awesome_score: 64
+score_breakdown:
+  reproducibility: 15
+  ambition: 13
+  concreteness: 18
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: marketing
 subcategory: social
 bot_name: Engine

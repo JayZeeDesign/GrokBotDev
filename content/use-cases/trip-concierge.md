@@ -7,7 +7,14 @@ headline: "The booking email lands, the fare hunt begins"
 summary: "The fifth bot in Peter’s tutorial is a personal concierge that saves money on trips. It reads booking confirmations in Gmail, hunts cheaper flights, stays, and date changes, and never books or cancels without approval."
 categories: [personal]
 format: use-case
-awesome_score: 64
+awesome_score: 60
+score_breakdown:
+  reproducibility: 15
+  ambition: 9
+  concreteness: 18
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: personal
 subcategory: travel
 bot_name: Concierge

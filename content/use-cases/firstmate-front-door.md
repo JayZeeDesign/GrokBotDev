@@ -7,7 +7,14 @@ headline: "Dump a messy ask, get plain-language results back"
 summary: "Kun Chen’s Firstmate setup is a single Grok Bot you talk to for everything. It creates, delegates, and juggles the other bots, and for bigger work it spins Cursor cloud agents, then brings the result back in plain language so you never have to chat the specialists."
 categories: [work]
 format: use-case
-awesome_score: 71
+awesome_score: 65
+score_breakdown:
+  reproducibility: 14
+  ambition: 15
+  concreteness: 17
+  novelty: 9
+  evidence: 3
+  craft: 7
 category: work
 subcategory: tasks
 bot_name: Firstmate

@@ -7,7 +7,14 @@ headline: "A forgotten $150 Southwest credit, found in Gmail"
 summary: "Same 24-hour run: Royce’s bot found a $150 Southwest flight credit he thought he had misplaced. Receipt, not a generic “travel agent” prompt."
 categories: [personal]
 format: use-case
-awesome_score: 64
+awesome_score: 52
+score_breakdown:
+  reproducibility: 14
+  ambition: 7
+  concreteness: 16
+  novelty: 6
+  evidence: 3
+  craft: 6
 category: personal
 subcategory: travel
 bot_name: Credit

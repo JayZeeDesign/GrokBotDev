@@ -8,6 +8,13 @@ summary: "Avid's chief-of-staff prompt: it mines everything you've done on your 
 categories: [engineering]
 format: use-case
 awesome_score: 91
+score_breakdown:
+  reproducibility: 24
+  ambition: 19
+  concreteness: 19
+  novelty: 14
+  evidence: 6
+  craft: 9
 category: engineering
 subcategory: agents-ops
 bot_name: Chief of Staff

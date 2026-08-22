@@ -7,7 +7,14 @@ headline: "120 days of marketing mail, unsubscribed in one run"
 summary: "Todd had Grok Bot unsubscribe him from 120 days of marketing mail. Same tweet also audited paid subscriptions. 2.1K likes / 422K views."
 categories: [work]
 format: use-case
-awesome_score: 64
+awesome_score: 52
+score_breakdown:
+  reproducibility: 14
+  ambition: 7
+  concreteness: 17
+  novelty: 5
+  evidence: 3
+  craft: 6
 category: work
 subcategory: email
 bot_name: Unsub

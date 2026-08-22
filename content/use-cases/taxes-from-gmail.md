@@ -7,7 +7,14 @@ headline: "The tax return, assembled from 40,000 emails"
 summary: "A non-coder connected Gmail (~40,000 emails) and asked Grok Bot to do his taxes. It found the documents in mail and assembled the return. Same tweet as the Japan award-ticket hunt and the hourly political brief — he is not a programmer."
 categories: [finance-ops]
 format: use-case
-awesome_score: 69
+awesome_score: 65
+score_breakdown:
+  reproducibility: 15
+  ambition: 11
+  concreteness: 18
+  novelty: 11
+  evidence: 3
+  craft: 7
 category: finance-ops
 subcategory: compliance
 bot_name: Filer

@@ -7,7 +7,14 @@ headline: "Stalled deals get a next move drafted every day"
 summary: "Same Eric Osiu post: a deal-desk bot whose job is to move the ball on stalled, lost, and lookalike deals — every day, not a weekly pipeline poem."
 categories: [sales]
 format: use-case
-awesome_score: 74
+awesome_score: 61
+score_breakdown:
+  reproducibility: 14
+  ambition: 12
+  concreteness: 16
+  novelty: 9
+  evidence: 3
+  craft: 7
 category: sales
 subcategory: pipeline
 bot_name: Desk

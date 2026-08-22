@@ -7,7 +7,14 @@ headline: "A CFO report that leaves runway blank if it can’t tell"
 summary: "Same Jesse thread: a CFO bot on Stripe, Xero/QuickBooks, and Gmail. Weekly spend scan for things he missed, a COGS audit, a monthly CFO report. He told people to get concrete, not theatrical — connect the three systems and look."
 categories: [finance-ops]
 format: use-case
-awesome_score: 69
+awesome_score: 65
+score_breakdown:
+  reproducibility: 14
+  ambition: 13
+  concreteness: 18
+  novelty: 9
+  evidence: 3
+  craft: 8
 category: finance-ops
 subcategory: reporting
 bot_name: Jesse

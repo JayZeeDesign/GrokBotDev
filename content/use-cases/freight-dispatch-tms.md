@@ -7,7 +7,14 @@ headline: "A dispatch desk texting 100+ drivers in a few hours"
 summary: "A supply-chain CEO with limited product knowledge stood up a dispatch bot in a few hours: it tracked hundreds of loads, texted 100+ drivers, booked loads, requested proofs of delivery, and uploaded them to the TMS. He is on the $300/month plan."
 categories: [work]
 format: use-case
-awesome_score: 64
+awesome_score: 74
+score_breakdown:
+  reproducibility: 16
+  ambition: 16
+  concreteness: 19
+  novelty: 12
+  evidence: 3
+  craft: 8
 category: work
 subcategory: tasks
 bot_name: Dispatch

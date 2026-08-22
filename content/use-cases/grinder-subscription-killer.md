@@ -7,7 +7,14 @@ headline: "It argued with Restream support and got an offer"
 summary: "The second bot is Grinder. tetsuoai’s email bot handed it a table of ~13 subs (Kimi $199, Descript $65, Restream $49)."
 categories: [finance-ops]
 format: use-case
-awesome_score: 64
+awesome_score: 61
+score_breakdown:
+  reproducibility: 15
+  ambition: 8
+  concreteness: 18
+  novelty: 11
+  evidence: 3
+  craft: 6
 category: finance-ops
 subcategory: subscriptions
 bot_name: Grinder

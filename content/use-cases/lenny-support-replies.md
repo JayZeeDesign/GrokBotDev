@@ -7,7 +7,14 @@ headline: "Support replies already waiting when you sit down"
 summary: "Lenny’s same early-access note: auto-replying to support emails, which he said saves him hours. Drafts in his voice; he stays on the send button."
 categories: [support]
 format: use-case
-awesome_score: 64
+awesome_score: 50
+score_breakdown:
+  reproducibility: 13
+  ambition: 7
+  concreteness: 15
+  novelty: 6
+  evidence: 3
+  craft: 6
 category: support
 subcategory: replies
 bot_name: Lenny

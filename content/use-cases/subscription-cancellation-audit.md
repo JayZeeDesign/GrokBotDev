@@ -7,7 +7,14 @@ headline: "Every subscription sorted into keep, cancel, or ask me"
 summary: "Same Todd Saunders tweet: after the unsubscribes, the bot audited all subscriptions and recommended cancellations. One tweet, two jobs."
 categories: [finance-ops]
 format: use-case
-awesome_score: 69
+awesome_score: 52
+score_breakdown:
+  reproducibility: 14
+  ambition: 7
+  concreteness: 17
+  novelty: 5
+  evidence: 3
+  craft: 6
 category: finance-ops
 subcategory: subscriptions
 bot_name: Auditor

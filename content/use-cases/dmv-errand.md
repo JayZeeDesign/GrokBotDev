@@ -7,7 +7,14 @@ headline: "Your vehicle renewal, filled out on the real DMV site"
 summary: "Same tweet: he had it handle DMV registration — the boring civic errand agents are actually good at."
 categories: [personal]
 format: use-case
-awesome_score: 74
+awesome_score: 53
+score_breakdown:
+  reproducibility: 12
+  ambition: 7
+  concreteness: 16
+  novelty: 9
+  evidence: 3
+  craft: 6
 category: personal
 subcategory: home
 bot_name: Errand

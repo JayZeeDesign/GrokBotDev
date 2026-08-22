@@ -7,7 +7,14 @@ headline: "The one bot whose only job is chasing the others"
 summary: "Peter Yang's setup tutorial starts with a bot-manager / advisor that coordinates the rest of the crew (YouTube researcher, X scout, and others). 1.5K likes / 8.9M views."
 categories: [work]
 format: use-case
-awesome_score: 64
+awesome_score: 67
+score_breakdown:
+  reproducibility: 15
+  ambition: 14
+  concreteness: 17
+  novelty: 9
+  evidence: 5
+  craft: 7
 category: work
 subcategory: tasks
 bot_name: Foreman

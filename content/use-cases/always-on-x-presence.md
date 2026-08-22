@@ -7,7 +7,14 @@ headline: "48 hours alone with a Mac and my X account"
 summary: "Daniel gave a bot a full macOS machine plus Gmail and an X account. It ran for two days posting and joining group chats. 353 likes / 86K views."
 categories: [marketing]
 format: use-case
-awesome_score: 64
+awesome_score: 62
+score_breakdown:
+  reproducibility: 14
+  ambition: 13
+  concreteness: 16
+  novelty: 10
+  evidence: 3
+  craft: 6
 category: marketing
 subcategory: social
 bot_name: Presence

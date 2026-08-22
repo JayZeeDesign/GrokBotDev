@@ -7,7 +7,14 @@ headline: "It noticed who I was ignoring and booked the call"
 summary: "Jesse’s Chief of Staff reads Gmail, Calendar, Slack/Discord, and sends a 5am summary with fires. Unlike his old script, he can ask it to do something after: it noticed he was ignoring Nate Berkopec, opened SavvyCal, and found a time in both timezones."
 categories: [work]
 format: use-case
-awesome_score: 64
+awesome_score: 62
+score_breakdown:
+  reproducibility: 14
+  ambition: 12
+  concreteness: 18
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: work
 subcategory: meetings
 bot_name: Jesse

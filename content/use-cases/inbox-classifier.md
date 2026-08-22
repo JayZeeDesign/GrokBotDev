@@ -7,7 +7,14 @@ headline: "Every sponsor email scored before you open it"
 summary: "A standing classifier that labels mail so it is sortable later and scores every inbound sponsorship email — spammy ones auto-archive, the rest become a lead-scoring queue. Classify and sync are two separate steps; your own decisions are never overwritten."
 categories: [work]
 format: use-case
-awesome_score: 81
+awesome_score: 85
+score_breakdown:
+  reproducibility: 24
+  ambition: 13
+  concreteness: 20
+  novelty: 10
+  evidence: 9
+  craft: 9
 category: work
 subcategory: email
 bot_name: Classify

@@ -7,7 +7,14 @@ headline: "One ticket, a root-caused PR, and a reply by morning"
 summary: "Wilson (euboid) built the loop after asking whether Grok Bot could debug tickets, open a PR, and draft a reply. Incoming ticket → agent reads Fern docs, codebase, Axiom logs → bug gets RCA + PR + Linear, feature request hits the board, customer reply is drafted in his voice."
 categories: [support]
 format: use-case
-awesome_score: 64
+awesome_score: 71
+score_breakdown:
+  reproducibility: 16
+  ambition: 14
+  concreteness: 19
+  novelty: 11
+  evidence: 3
+  craft: 8
 category: support
 subcategory: triage
 bot_name: Fixer

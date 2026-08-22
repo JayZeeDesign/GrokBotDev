@@ -7,7 +7,14 @@ headline: "The cart that never forgets the no-olives rule"
 summary: "Rhys’s benchmark for agents is automated grocery ordering. Grok Bot was the first to do it well: a dedicated groceries chat that remembers preferences, a browser signed into Amazon and Costco, scheduled orders, and calendar updates for what to cook — cheaper and more granular than HelloFresh."
 categories: [personal]
 format: use-case
-awesome_score: 74
+awesome_score: 67
+score_breakdown:
+  reproducibility: 15
+  ambition: 12
+  concreteness: 19
+  novelty: 10
+  evidence: 3
+  craft: 8
 category: personal
 subcategory: home
 bot_name: Pantry

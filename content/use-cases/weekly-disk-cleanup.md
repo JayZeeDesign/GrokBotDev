@@ -7,7 +7,14 @@ headline: "380GB flagged, and it still deletes nothing"
 summary: "Exploits the fact that Grok Bot is a cloud agent that also has access to your machine: it scans every file weekly, finds deletion candidates, and sorts them into low, medium and high risk — with one hard rule, do not delete anything, categorize by risk."
 categories: [personal]
 format: use-case
-awesome_score: 72
+awesome_score: 75
+score_breakdown:
+  reproducibility: 18
+  ambition: 9
+  concreteness: 19
+  novelty: 11
+  evidence: 9
+  craft: 9
 category: personal
 subcategory: home
 bot_name: Sweep

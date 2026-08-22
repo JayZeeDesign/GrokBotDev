@@ -7,7 +7,14 @@ headline: "Guest briefs with three threads and a first question"
 summary: "Lenny Rachitsky got early access and listed real jobs that made his life better — including “really good” briefs for upcoming podcast guests. Same tweet as his support auto-replies."
 categories: [marketing]
 format: use-case
-awesome_score: 64
+awesome_score: 55
+score_breakdown:
+  reproducibility: 14
+  ambition: 7
+  concreteness: 16
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: marketing
 subcategory: content
 bot_name: Briefer

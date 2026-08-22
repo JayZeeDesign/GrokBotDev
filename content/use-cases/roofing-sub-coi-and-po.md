@@ -7,7 +7,14 @@ headline: "It caught the insurance gap before the job started"
 summary: "Same contractor run: it found a discrepancy in subcontractor insurance certificates and drafted/sent email to their brokers; wrote a work order for a sub from a customer contract plus a materials list; filled out a credit application for a new supplier and emailed the right person."
 categories: [finance-ops]
 format: use-case
-awesome_score: 64
+awesome_score: 65
+score_breakdown:
+  reproducibility: 14
+  ambition: 12
+  concreteness: 18
+  novelty: 11
+  evidence: 3
+  craft: 7
 category: finance-ops
 subcategory: compliance
 bot_name: Compliance

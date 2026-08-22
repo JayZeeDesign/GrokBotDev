@@ -7,7 +7,14 @@ headline: "Double-bookings arrive with a fix already drafted"
 summary: "Same Matthew Berman tweet: the bot handled calendar conflict scheduling. A reconstructed Grok Bot use case drawn from a high-engagement X post."
 categories: [work]
 format: use-case
-awesome_score: 64
+awesome_score: 46
+score_breakdown:
+  reproducibility: 12
+  ambition: 7
+  concreteness: 13
+  novelty: 6
+  evidence: 3
+  craft: 5
 category: work
 subcategory: scheduling
 bot_name: Clash

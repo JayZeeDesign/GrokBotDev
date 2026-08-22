@@ -7,7 +7,14 @@ headline: "Hundreds of PRs in a day, each closed with proof"
 summary: "Kun rabbit-holed into Grok Ship — a software factory inside Grok Bot. He said yesterday alone, hundreds of issues and PRs across his repos got done by it. Captain the ship; it ships."
 categories: [engineering]
 format: use-case
-awesome_score: 64
+awesome_score: 67
+score_breakdown:
+  reproducibility: 15
+  ambition: 16
+  concreteness: 18
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: engineering
 subcategory: ci-cd
 bot_name: Grok Ship

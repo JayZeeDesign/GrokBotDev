@@ -7,7 +7,14 @@ headline: "Wake up to the CPA spike already diagnosed"
 summary: "A media buyer paid Cursor Ultra $200 vs ~$100 for Codex/Claude and gave Grok Bot one job: be my media buyer. It connected ad accounts, spreadsheets, analytics, and campaign context."
 categories: [marketing]
 format: use-case
-awesome_score: 64
+awesome_score: 67
+score_breakdown:
+  reproducibility: 15
+  ambition: 14
+  concreteness: 18
+  novelty: 10
+  evidence: 3
+  craft: 7
 category: marketing
 subcategory: ads
 bot_name: Buyer

@@ -7,7 +7,14 @@ headline: "Twice-daily triage that reports its own unread count"
 summary: "Matthew Berman used Grok Bot for inbox zero (plus calendar, DMV, Amazon — split out). 509 likes / 41K views."
 categories: [work]
 format: use-case
-awesome_score: 64
+awesome_score: 48
+score_breakdown:
+  reproducibility: 12
+  ambition: 8
+  concreteness: 14
+  novelty: 5
+  evidence: 3
+  craft: 6
 category: work
 subcategory: email
 bot_name: Zero

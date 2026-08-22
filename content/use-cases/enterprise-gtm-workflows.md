@@ -7,7 +7,14 @@ headline: "The weekly GTM loop a real operator actually runs"
 summary: "Krista Letz (GTM) published the actual enterprise go-to-market workflows she runs on Grok Bot — not a toy demo. 3.3K likes / 1.5M views."
 categories: [sales]
 format: use-case
-awesome_score: 69
+awesome_score: 63
+score_breakdown:
+  reproducibility: 14
+  ambition: 14
+  concreteness: 17
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: sales
 subcategory: pipeline
 bot_name: GTM

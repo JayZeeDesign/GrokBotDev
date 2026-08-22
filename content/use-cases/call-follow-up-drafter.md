@@ -7,7 +7,14 @@ headline: "Follow-ups built from the notes, not the pleasantries"
 summary: "In the same GTM article, Krista automates follow-up drafts from Granola or Gong notes after external calls. Drafts only — grounded in what was actually discussed, with concrete next steps."
 categories: [sales]
 format: use-case
-awesome_score: 64
+awesome_score: 58
+score_breakdown:
+  reproducibility: 15
+  ambition: 8
+  concreteness: 18
+  novelty: 7
+  evidence: 3
+  craft: 7
 category: sales
 subcategory: calls
 bot_name: Followup

@@ -7,7 +7,14 @@ headline: "Text an errand from the couch, approve the cart"
 summary: "Same tweet: Amazon tasks with a Telegram hookup so he can tap the bot from his phone."
 categories: [personal]
 format: use-case
-awesome_score: 64
+awesome_score: 52
+score_breakdown:
+  reproducibility: 14
+  ambition: 8
+  concreteness: 15
+  novelty: 7
+  evidence: 3
+  craft: 5
 category: personal
 subcategory: home
 bot_name: Shopper

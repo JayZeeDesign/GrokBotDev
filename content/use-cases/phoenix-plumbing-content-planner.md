@@ -7,7 +7,14 @@ headline: "The $2k-a-month marketing bottleneck a bot took over"
 summary: "Jon ONeill (HouseHackerJon) hired a Grok Bot named Mary as marketing manager for his Phoenix plumbing company."
 categories: [marketing]
 format: use-case
-awesome_score: 74
+awesome_score: 69
+score_breakdown:
+  reproducibility: 15
+  ambition: 14
+  concreteness: 19
+  novelty: 11
+  evidence: 3
+  craft: 7
 category: marketing
 subcategory: content
 bot_name: Planner

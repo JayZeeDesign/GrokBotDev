@@ -7,7 +7,14 @@ headline: "The docs update themselves the moment a PR merges"
 summary: "Damon’s Intercom + GitHub bot watches every merged PR, decides whether a help-center article needs updating, then drafts and publishes it. 82 likes / 11.4K views."
 categories: [support]
 format: use-case
-awesome_score: 69
+awesome_score: 68
+score_breakdown:
+  reproducibility: 15
+  ambition: 12
+  concreteness: 18
+  novelty: 12
+  evidence: 3
+  craft: 8
 category: support
 subcategory: knowledge-base
 bot_name: Scribe

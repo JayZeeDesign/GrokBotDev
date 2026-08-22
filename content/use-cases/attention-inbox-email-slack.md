@@ -7,7 +7,14 @@ headline: "Five inboxes, six Slacks, silence unless it needs me"
 summary: "Same Yu-kai setup: the bot informs him of any message from five email addresses and six Slack servers that requires his attention, and keeps him organized. Ping only what needs him."
 categories: [work]
 format: use-case
-awesome_score: 64
+awesome_score: 59
+score_breakdown:
+  reproducibility: 15
+  ambition: 11
+  concreteness: 17
+  novelty: 7
+  evidence: 3
+  craft: 6
 category: work
 subcategory: email
 bot_name: Watcher

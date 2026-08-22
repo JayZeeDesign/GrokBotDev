@@ -7,7 +7,14 @@ headline: "Five reasons they left, five things to ship this week"
 summary: "After the win-back emails, Liam's bot analysed overnight why people left and turned that into a 5-step plan. Same tweet as the win-back campaign — this is the research half of the job."
 categories: [data]
 format: use-case
-awesome_score: 64
+awesome_score: 56
+score_breakdown:
+  reproducibility: 15
+  ambition: 8
+  concreteness: 18
+  novelty: 5
+  evidence: 3
+  craft: 7
 category: data
 subcategory: enrichment
 bot_name: Exit

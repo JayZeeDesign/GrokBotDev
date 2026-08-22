@@ -7,7 +7,14 @@ headline: "It read the tests, found the bug gone, and closed it"
 summary: "Debbie spun up a coding bot on debs-obrien/playwright-movies-app. It checked issue 29, found the tests already used waitForURL with no hard waits, asked if it should close, then closed it with a note after GitHub was connected — she clicked through to GitHub to confirm."
 categories: [engineering]
 format: use-case
-awesome_score: 64
+awesome_score: 65
+score_breakdown:
+  reproducibility: 14
+  ambition: 8
+  concreteness: 19
+  novelty: 9
+  evidence: 7
+  craft: 8
 category: engineering
 subcategory: issues
 bot_name: Closer

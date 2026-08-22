@@ -7,7 +7,14 @@ headline: "Run daily GTM and dev on collaborating agents"
 summary: "Chris Maconi on how Hechura runs on Grok Bot: a team of role-based agents — a Head of Sales and a Head of Product Marketing running the daily GTM motion, plus agents collaborating on daily development work — so the company's day-to-day is operated by agents that specialize and coordinate."
 categories: [sales, marketing, engineering]
 format: use-case
-awesome_score: 74
+awesome_score: 71
+score_breakdown:
+  reproducibility: 14
+  ambition: 18
+  concreteness: 16
+  novelty: 10
+  evidence: 4
+  craft: 9
 category: work
 subcategory: tasks
 bot_name: Company OS

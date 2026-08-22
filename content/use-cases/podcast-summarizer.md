@@ -7,7 +7,14 @@ headline: "Built in 15 seconds, better than the paid tool"
 summary: "Gavin Baker built a podcast summarizer in about 15 seconds inside Grok Bot that beat the tool he was already paying for. Said his personal AI usage jumped ~100x. 5.7K likes / 5.2M views."
 categories: [personal]
 format: use-case
-awesome_score: 61
+awesome_score: 54
+score_breakdown:
+  reproducibility: 14
+  ambition: 7
+  concreteness: 17
+  novelty: 6
+  evidence: 3
+  craft: 7
 category: personal
 subcategory: learning
 bot_name: Digest

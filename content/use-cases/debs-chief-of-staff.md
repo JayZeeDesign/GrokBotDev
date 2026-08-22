@@ -7,7 +7,14 @@ headline: "The bot that audits the bots you already built"
 summary: "Debbie O’Brien’s CoS tweet is the prompt: look at me, look at the bots I already created, tell me what to change, how to manage the team, and what else would make me productive. The screenshot is the answer she got back."
 categories: [work]
 format: use-case
-awesome_score: 74
+awesome_score: 70
+score_breakdown:
+  reproducibility: 15
+  ambition: 14
+  concreteness: 17
+  novelty: 10
+  evidence: 6
+  craft: 8
 category: work
 subcategory: tasks
 bot_name: Deb

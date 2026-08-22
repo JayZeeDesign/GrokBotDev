@@ -8,6 +8,13 @@ summary: "Stella used Grok Bot on her back-to-school emails and to-dos for multi
 categories: [personal]
 format: use-case
 awesome_score: 64
+score_breakdown:
+  reproducibility: 15
+  ambition: 12
+  concreteness: 17
+  novelty: 10
+  evidence: 3
+  craft: 7
 category: personal
 subcategory: family
 bot_name: Loadout

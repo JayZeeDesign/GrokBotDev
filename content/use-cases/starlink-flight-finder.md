@@ -7,7 +7,14 @@ headline: "Book flights where wifi outranks price"
 summary: "Ben Lang collected internal Grok Bot use cases; the one to copy is his: find/book flights biased toward Starlink access. Peer one-liners (contractors, recipes, film scans) skipped — this is the job with a clear preference."
 categories: [personal]
 format: use-case
-awesome_score: 64
+awesome_score: 60
+score_breakdown:
+  reproducibility: 15
+  ambition: 8
+  concreteness: 17
+  novelty: 10
+  evidence: 3
+  craft: 7
 category: personal
 subcategory: travel
 bot_name: Finder

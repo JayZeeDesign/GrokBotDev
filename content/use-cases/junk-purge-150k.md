@@ -7,7 +7,14 @@ headline: "150,000 junk emails, deleted after one dry run"
 summary: "Yu-kai Chou used Grok Bot to clean up 150,000 junk emails and unsubscribe from senders he never reads. Same tweet as the attention watch on five addresses and six Slack workspaces. This is Yu-kai’s 150k, not the separate 90k two-account purge."
 categories: [work]
 format: use-case
-awesome_score: 64
+awesome_score: 54
+score_breakdown:
+  reproducibility: 15
+  ambition: 8
+  concreteness: 17
+  novelty: 4
+  evidence: 3
+  craft: 7
 category: work
 subcategory: email
 bot_name: Purge

@@ -7,7 +7,14 @@ headline: "A dense optimizer paper as a 4-minute animation"
 summary: "He asked Grok Bot to generate a 4:22 animated video explaining rank, spectral power, and optimization vs Adam/Muon/Aurora. Video attached. 377 likes / 1.7M views (Elon quote-tweet did 2.1M)."
 categories: [fun]
 format: use-case
-awesome_score: 64
+awesome_score: 66
+score_breakdown:
+  reproducibility: 13
+  ambition: 8
+  concreteness: 16
+  novelty: 13
+  evidence: 9
+  craft: 7
 category: fun
 subcategory: creative
 bot_name: Explainer

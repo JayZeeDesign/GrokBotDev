@@ -7,7 +7,14 @@ headline: "Game assets that match the last approved style"
 summary: "A game developer had Grok Bot drive his custom art-gen webpage to generate game art assets and prep them as transparent PNGs in a consistent style. 992 likes / 375.8K views."
 categories: [fun]
 format: use-case
-awesome_score: 69
+awesome_score: 61
+score_breakdown:
+  reproducibility: 12
+  ambition: 10
+  concreteness: 18
+  novelty: 11
+  evidence: 3
+  craft: 7
 category: fun
 subcategory: creative
 bot_name: Forge

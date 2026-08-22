@@ -8,6 +8,13 @@ summary: "Vlad Dubchak's team (Maxfusion) open-sourced their marketing departmen
 categories: [marketing]
 format: use-case
 awesome_score: 93
+score_breakdown:
+  reproducibility: 21
+  ambition: 20
+  concreteness: 20
+  novelty: 13
+  evidence: 10
+  craft: 9
 category: marketing
 subcategory: content
 bot_name: Marketing OS

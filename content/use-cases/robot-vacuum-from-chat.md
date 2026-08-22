@@ -7,7 +7,14 @@ headline: "One bot built the bridge to my robot vacuum"
 summary: "Yun-Ta Tsai had his 'Chief Engineer' bot build a feature so he can text his Matic robot vacuum from Grok Bot. Video/thread. 2.7K likes / 1.8M views."
 categories: [personal]
 format: use-case
-awesome_score: 64
+awesome_score: 68
+score_breakdown:
+  reproducibility: 13
+  ambition: 11
+  concreteness: 16
+  novelty: 12
+  evidence: 9
+  craft: 7
 category: personal
 subcategory: home
 bot_name: Roomba

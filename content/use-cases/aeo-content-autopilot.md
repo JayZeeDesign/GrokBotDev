@@ -7,7 +7,14 @@ headline: "Your old sales calls become the next ranking post"
 summary: "Eric Osiu, Grok Botting on Starlink, described an AEO/SEO bot: ingest top content (sales calls, customer calls, podcasts, YouTube), combine ClickFlow / GA4 / Ahrefs / GSC, and draft into the CMS on autopilot. Listed as an agent to build, with a real stack, not a one-word role."
 categories: [marketing]
 format: use-case
-awesome_score: 61
+awesome_score: 63
+score_breakdown:
+  reproducibility: 15
+  ambition: 13
+  concreteness: 17
+  novelty: 9
+  evidence: 3
+  craft: 6
 category: marketing
 subcategory: seo
 bot_name: AEO

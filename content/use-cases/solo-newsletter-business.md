@@ -7,7 +7,14 @@ headline: "Run a whole newsletter business while you sleep"
 summary: "Greg Isenberg's thread on his friend Billy: a non-technical solo founder runs an entire newsletter business on a team of Grok Bot agents — research, drafting, editing, scheduling and growth handled by the agents, so one person operates what used to need a small team."
 categories: [marketing]
 format: use-case
-awesome_score: 82
+awesome_score: 79
+score_breakdown:
+  reproducibility: 17
+  ambition: 20
+  concreteness: 16
+  novelty: 12
+  evidence: 4
+  craft: 10
 category: marketing
 subcategory: content
 bot_name: Newsroom

@@ -7,7 +7,14 @@ headline: "The win-back bot that paid for its own subscription"
 summary: "Liam gave Grok Bot one job: win back churned customers. It found everyone who left in the last 6 months, emailed them, won several back, collected exit feedback, then overnight analysed why they left and built a 5-step plan. The bot covered its own subscription cost. 3."
 categories: [sales]
 format: use-case
-awesome_score: 69
+awesome_score: 71
+score_breakdown:
+  reproducibility: 17
+  ambition: 14
+  concreteness: 19
+  novelty: 10
+  evidence: 3
+  craft: 8
 category: sales
 subcategory: crm
 bot_name: Winback

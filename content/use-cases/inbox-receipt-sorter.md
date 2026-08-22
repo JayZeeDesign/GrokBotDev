@@ -7,7 +7,14 @@ headline: "Find the spend first, let another bot go kill it"
 summary: "tetsuoai set up two bots so Grok Bot would pay for itself. The first has Gmail and keeps the inbox sorted so it knows where receipts and billing mail live — the feed for the subscription killer sitting next to it."
 categories: [finance-ops]
 format: use-case
-awesome_score: 64
+awesome_score: 56
+score_breakdown:
+  reproducibility: 14
+  ambition: 8
+  concreteness: 16
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: finance-ops
 subcategory: bookkeeping
 bot_name: Sorter

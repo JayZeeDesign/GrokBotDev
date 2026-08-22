@@ -7,7 +7,14 @@ headline: "Record the shame video or X stays locked"
 summary: "Alex Lieberman (businessbarista) one-shotted a Chrome extension with Grok Bot: when he hits X or LinkedIn, it bricks the screen until he records himself saying “I’m being a bad, bad boy.” Best Grok Bot use case he had, with video."
 categories: [fun]
 format: use-case
-awesome_score: 74
+awesome_score: 72
+score_breakdown:
+  reproducibility: 16
+  ambition: 9
+  concreteness: 18
+  novelty: 13
+  evidence: 8
+  craft: 8
 category: fun
 subcategory: creative
 bot_name: Shame

@@ -7,7 +7,14 @@ headline: "In-policy refunds issued straight through Stripe"
 summary: "Gergely Orosz hooked Grok Bot to customer support email and the Stripe API so routine refunds run as an agentic workflow. 764 likes / 366K views."
 categories: [support]
 format: use-case
-awesome_score: 69
+awesome_score: 68
+score_breakdown:
+  reproducibility: 16
+  ambition: 12
+  concreteness: 19
+  novelty: 10
+  evidence: 3
+  craft: 8
 category: support
 subcategory: triage
 bot_name: Refund

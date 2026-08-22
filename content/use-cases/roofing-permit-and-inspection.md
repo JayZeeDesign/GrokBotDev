@@ -7,7 +7,14 @@ headline: "Through the city permit form, captcha and all"
 summary: "A roofing contractor spent two days with Grok Bot on live jobs. Among the runs: it filled out and pulled an online roofing permit, then filled out and booked a roof inspection via an online form that had a captcha. Same thread as the proposal and sub/COI work."
 categories: [work]
 format: use-case
-awesome_score: 61
+awesome_score: 60
+score_breakdown:
+  reproducibility: 14
+  ambition: 9
+  concreteness: 17
+  novelty: 10
+  evidence: 3
+  craft: 7
 category: work
 subcategory: tasks
 bot_name: Permit

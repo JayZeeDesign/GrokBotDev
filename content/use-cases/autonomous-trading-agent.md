@@ -7,7 +7,14 @@ headline: "Paper trades only, until you arm it yourself"
 summary: "RitOnchain posted a Stanford researcher’s write-up: an autonomous trading agent built entirely with Grok Bots. Screenshot of the agent stack. Bookmark-it-before-it’s-lost energy — research/paper first, not a hot-tip bot."
 categories: [trading-crypto]
 format: use-case
-awesome_score: 71
+awesome_score: 70
+score_breakdown:
+  reproducibility: 15
+  ambition: 15
+  concreteness: 17
+  novelty: 10
+  evidence: 6
+  craft: 7
 category: trading-crypto
 subcategory: markets
 bot_name: Trader

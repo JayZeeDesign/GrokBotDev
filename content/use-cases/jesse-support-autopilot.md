@@ -7,7 +7,14 @@ headline: "Reply by text, and it works the helpdesk for you"
 summary: "Jesse Hanley’s thread is not a one-liner dump: he already runs a support bot against Bento Chat / helpdesk. It sweeps a few times a day, summarises what is assigned or escalated, and he texts back what to do — then it hits the admin MCP. “This is what I’ve done and it’s fantastic.”"
 categories: [support]
 format: use-case
-awesome_score: 74
+awesome_score: 68
+score_breakdown:
+  reproducibility: 15
+  ambition: 13
+  concreteness: 18
+  novelty: 11
+  evidence: 3
+  craft: 8
 category: support
 subcategory: replies
 bot_name: Jesse

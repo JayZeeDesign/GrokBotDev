@@ -7,7 +7,14 @@ headline: "$50 a month gone, with cancel screenshots to prove it"
 summary: "Royce’s bot helped cut $50 in monthly subscriptions in the first 24 hours — one of the line items that made Grok Bot earn its keep for a non-programmer."
 categories: [finance-ops]
 format: use-case
-awesome_score: 64
+awesome_score: 53
+score_breakdown:
+  reproducibility: 14
+  ambition: 7
+  concreteness: 17
+  novelty: 5
+  evidence: 3
+  craft: 7
 category: finance-ops
 subcategory: subscriptions
 bot_name: Trimmer

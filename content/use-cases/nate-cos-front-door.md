@@ -7,7 +7,14 @@ headline: "One thread in, and the right bot picks it up"
 summary: "Nate’s second run job: Klaus is the only bot he talks to. Before doing work, Klaus checks whether another Grok Bot owns it, delegates, and brings the result back to the main thread. Specialists stay narrow; he does not want a four-bot org chart to babysit."
 categories: [work]
 format: use-case
-awesome_score: 61
+awesome_score: 55
+score_breakdown:
+  reproducibility: 13
+  ambition: 13
+  concreteness: 15
+  novelty: 5
+  evidence: 3
+  craft: 6
 category: work
 subcategory: tasks
 bot_name: Klaus

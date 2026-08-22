@@ -7,7 +7,14 @@ headline: "Ten minutes per work order, booked across five systems"
 summary: "Jon ONeill (HouseHackerJon), a plumbing-company owner, spent about four hours on a Grok Bot free trial after a week of ~80% Claude work."
 categories: [work]
 format: use-case
-awesome_score: 74
+awesome_score: 70
+score_breakdown:
+  reproducibility: 15
+  ambition: 15
+  concreteness: 19
+  novelty: 11
+  evidence: 3
+  craft: 7
 category: work
 subcategory: tasks
 bot_name: Intake

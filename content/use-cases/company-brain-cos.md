@@ -7,7 +7,14 @@ headline: "One chat that knows the business better than I do"
 summary: "A non-developer connected Slack, email, meeting notes, Notion, and Stripe so one Grok Bot chat knows the business better than he does. 1.8K likes / 705K views."
 categories: [work]
 format: use-case
-awesome_score: 74
+awesome_score: 66
+score_breakdown:
+  reproducibility: 15
+  ambition: 15
+  concreteness: 18
+  novelty: 8
+  evidence: 3
+  craft: 7
 category: work
 subcategory: research
 bot_name: Brain

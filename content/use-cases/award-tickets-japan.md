@@ -7,7 +7,14 @@ headline: "Three first-class seats to Japan for 60K points"
 summary: "Same non-coder run: he asked Grok Bot to find first-class award tickets to Japan. With permission it logged into his airline accounts and found three first-class Japan tickets for 60K points. He stopped it because the dates were not firm — it would have booked."
 categories: [personal]
 format: use-case
-awesome_score: 64
+awesome_score: 59
+score_breakdown:
+  reproducibility: 14
+  ambition: 8
+  concreteness: 17
+  novelty: 10
+  evidence: 3
+  craft: 7
 category: personal
 subcategory: travel
 bot_name: Award

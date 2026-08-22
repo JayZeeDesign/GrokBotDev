@@ -7,7 +7,14 @@ headline: "A draft in my voice that flags its own weak claims"
 summary: "Farzad’s Grok Bot team list is mostly names; the job to copy is Writey — article/newsletter writer. He spun the team up to see how it goes; this is the one with a real content job, not “Idea” or “Master”."
 categories: [marketing]
 format: use-case
-awesome_score: 74
+awesome_score: 55
+score_breakdown:
+  reproducibility: 15
+  ambition: 8
+  concreteness: 16
+  novelty: 7
+  evidence: 3
+  craft: 6
 category: marketing
 subcategory: content
 bot_name: Writey

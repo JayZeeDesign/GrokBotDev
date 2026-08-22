@@ -7,7 +7,14 @@ headline: "An LED strip on my desk scrolls the SPCX price"
 summary: "Dan connected Grok Bot to his Arduino and turned the LED display into a live scrolling SPCX stock ticker with a line graph plus SpaceX headlines. Video in the post. 350 likes / 149.8K views."
 categories: [fun]
 format: use-case
-awesome_score: 64
+awesome_score: 67
+score_breakdown:
+  reproducibility: 14
+  ambition: 8
+  concreteness: 16
+  novelty: 13
+  evidence: 9
+  craft: 7
 category: fun
 subcategory: media
 bot_name: Ticker

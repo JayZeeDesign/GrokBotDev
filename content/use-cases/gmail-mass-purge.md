@@ -8,6 +8,13 @@ summary: "Mike P let Grok Bot go through 90,000 emails across two Gmail accounts
 categories: [work]
 format: use-case
 awesome_score: 64
+score_breakdown:
+  reproducibility: 16
+  ambition: 9
+  concreteness: 18
+  novelty: 7
+  evidence: 6
+  craft: 8
 category: work
 subcategory: email
 bot_name: Purge

@@ -7,7 +7,14 @@ headline: "A voice note becomes a live LinkedIn post"
 summary: "Debbie created a LinkedIn bot, signed in on the bot’s computer (it never sees the password), let it learn her existing posts, dumped a messy voice note, and told it to post. It posted. Receipt, not a draft-only demo."
 categories: [marketing]
 format: use-case
-awesome_score: 64
+awesome_score: 59
+score_breakdown:
+  reproducibility: 14
+  ambition: 8
+  concreteness: 17
+  novelty: 9
+  evidence: 4
+  craft: 7
 category: marketing
 subcategory: social
 bot_name: Poster

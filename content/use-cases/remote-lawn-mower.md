@@ -7,7 +7,14 @@ headline: "Mow the lawn from 50 miles away"
 summary: "Sawyer set up Grok Bot to remotely control his autonomous lawn mower, 50 miles from home. Two-minute setup. Video. 3.6K likes / 269K views."
 categories: [personal]
 format: use-case
-awesome_score: 61
+awesome_score: 58
+score_breakdown:
+  reproducibility: 12
+  ambition: 7
+  concreteness: 15
+  novelty: 9
+  evidence: 9
+  craft: 6
 category: personal
 subcategory: home
 bot_name: Mower
