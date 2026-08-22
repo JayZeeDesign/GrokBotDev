@@ -7,6 +7,7 @@
 import Chip from './Chip.astro';
 import FeaturedTag from './FeaturedTag.astro';
 import UseCaseCard from './UseCaseCard.astro';
+import PluginIcon from './PluginIcon.astro';
 import { entryUrl, memberSummary, splitNamedCharacter } from '../lib/format';
 import type { CollectionEntry, Entry, PluginEntry, UseCaseEntry } from '../lib/types';
 
@@ -69,21 +70,26 @@ const typeLabel = entry.type === 'use-case' ? 'use case' : entry.type;
     >
       {isFeatured && <FeaturedTag />}
 
-      <Heading class="font-sans text-lg font-medium text-text">
-        <a href={href} class="entry-card__link">
-          {named ? (
-            <>
-              <span class="font-mono">{named.character}</span>
-              <span aria-hidden="true" class="text-text-muted">
-                {' · '}
-              </span>
-              <span>{named.role}</span>
-            </>
-          ) : (
-            entry.name
-          )}
-        </a>
-      </Heading>
+      {/* Operator: plugin cards (incl. related plugins on the detail page) show the product
+          favicon left of the title — same mark as the listing, sized for a card. */}
+      <div class="flex items-center gap-2.5">
+        {plugin && <PluginIcon slug={entry.slug} name={entry.name} size="sm" />}
+        <Heading class="font-sans text-lg font-medium text-text">
+          <a href={href} class="entry-card__link">
+            {named ? (
+              <>
+                <span class="font-mono">{named.character}</span>
+                <span aria-hidden="true" class="text-text-muted">
+                  {' · '}
+                </span>
+                <span>{named.role}</span>
+              </>
+            ) : (
+              entry.name
+            )}
+          </a>
+        </Heading>
+      </div>
 
       {collection && (
         <p class="font-mono text-sm text-text-muted">
