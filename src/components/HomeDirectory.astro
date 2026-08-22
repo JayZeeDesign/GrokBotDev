@@ -26,13 +26,19 @@ const featuredUseCases = useCases.filter(isFeatured);
 ---
 
 <section class="homeDirectory container-page flex flex-col gap-6 pt-6 pb-12 md:pt-8 md:pb-16" aria-label="directory">
-  {/* ── TAB SWITCHER (centred, slate active) ──────────────────────────────────────────── */}
+  {/* ── TAB SWITCHER — segmented control (base A) + count boxes (from C) ───────────────── */}
   <input type="radio" name="home-tab" id="home-tab-use-cases" class="sr-only" checked />
   <input type="radio" name="home-tab" id="home-tab-plugins" class="sr-only" />
 
-  <div class="homeTabs flex flex-wrap items-center justify-center gap-2" role="presentation">
-    <label for="home-tab-use-cases" data-home-tab="use-cases" class="homeTab">Awesome Use Cases</label>
-    <label for="home-tab-plugins" data-home-tab="plugins" class="homeTab">Plugins</label>
+  <div class="flex justify-center" role="presentation">
+    <div class="homeTabs">
+      <label for="home-tab-use-cases" data-home-tab="use-cases" class="homeTab">
+        awesome use cases <span class="homeTab__n">{useCases.length}</span>
+      </label>
+      <label for="home-tab-plugins" data-home-tab="plugins" class="homeTab">
+        plugins <span class="homeTab__n">{plugins.length}</span>
+      </label>
+    </div>
   </div>
 
   {/* ── PLUGINS ─────────────────────────────────────────────────────────────────────── */}
@@ -136,17 +142,70 @@ const featuredUseCases = useCases.filter(isFeatured);
 </section>
 
 <style>
-  /* ---------- tabs + view switch ---------- */
-  .homeTab,
+  /* ---------- tab switcher: segmented control (base A) + count boxes (from C) ---------- */
+  /* One bordered track holding both segments — reads as "two views of one list", not two
+     separate buttons. Active segment fills with ink; each label carries a count box. */
+  .homeTabs {
+    display: inline-flex;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    max-inline-size: 100%;
+  }
+  .homeTab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: 40px;
+    padding-inline: 1rem;
+    border-radius: 1px;
+    font-family: var(--font-mono);
+    text-transform: lowercase;
+    font-size: var(--text-base);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      color 0.15s,
+      background-color 0.15s;
+  }
+  .homeTab:hover {
+    color: var(--color-text);
+  }
+  .homeTab__n {
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 1px;
+    padding-inline: 0.375rem;
+  }
+  /* Active segment: ink fill, and the count box inverts to stay legible on it. */
+  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'],
+  .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'] {
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'] .homeTab__n,
+  .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'] .homeTab__n {
+    color: var(--color-bg);
+    border-color: currentColor;
+  }
+
+  /* ---------- view switch (table | cards, plugins only) ---------- */
   .homeViewBtn {
     display: inline-flex;
     align-items: center;
-    min-block-size: 44px;
-    padding-inline: 0.75rem;
+    justify-content: center;
+    min-block-size: 32px;
+    min-inline-size: 36px;
     border: 1px solid var(--color-border-interactive);
     border-radius: var(--radius-sm);
     font-family: var(--font-mono);
     text-transform: lowercase;
+    font-size: var(--text-xs);
     color: var(--color-text-muted);
     cursor: pointer;
     transition:
@@ -154,17 +213,6 @@ const featuredUseCases = useCases.filter(isFeatured);
       border-color 0.15s,
       background-color 0.15s;
   }
-  .homeTab {
-    font-size: var(--text-base);
-  }
-  .homeViewBtn {
-    font-size: var(--text-xs);
-    min-block-size: 32px;
-    min-inline-size: 36px;
-    justify-content: center;
-    padding-inline: 0;
-  }
-  .homeTab:hover,
   .homeViewBtn:hover {
     color: var(--color-text);
   }
@@ -173,13 +221,6 @@ const featuredUseCases = useCases.filter(isFeatured);
     border-color: var(--color-accent-strong);
     background: var(--color-accent-strong);
     color: var(--color-accent-contrast);
-  }
-  /* Active tab wears the slate secondary. */
-  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'],
-  .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'] {
-    border-color: var(--color-cat-solid);
-    background: var(--color-cat-solid);
-    color: var(--color-cat-on-solid);
   }
 
   /* ---------- count / view-all line ---------- */
