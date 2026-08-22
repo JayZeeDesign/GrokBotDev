@@ -168,6 +168,18 @@ export function categoriesOf(doc: AnyDoc): string[] {
   return d.category ? [d.category as string] : [];
 }
 
+/** Operator (2026-08-22): plugin listings put SPONSORS first, then the rest alphabetically.
+ * Server order is deterministic (sponsors alphabetical too, for no-JS/SEO); a small client
+ * shuffle randomizes the sponsor block per page load. */
+export function sortSponsorsFirst(docs: AnyDoc[]): AnyDoc[] {
+  return [...docs].sort((a, b) => {
+    const sa = (a.data as { sponsor?: boolean }).sponsor ? 0 : 1;
+    const sb = (b.data as { sponsor?: boolean }).sponsor ? 0 : 1;
+    if (sa !== sb) return sa - sb;
+    return titleOf(a).toLowerCase().localeCompare(titleOf(b).toLowerCase());
+  });
+}
+
 /** Resolve the card "source" line: YouTube channel, or the X handle (author, else first tweet). */
 function resolveCardSource(
   doc: UseCaseDoc

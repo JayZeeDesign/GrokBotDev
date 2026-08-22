@@ -122,11 +122,11 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
               <th scope="col" class="hubTable__catcol">category</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody data-sponsor-shuffle-group>
             {entries.map((entry) => {
               const p = entry.data as { slug: string; name: string; tagline: string; category: string; sponsor?: boolean };
               return (
-              <tr>
+              <tr data-sponsor-item={p.sponsor ? 'true' : undefined}>
                 <td>
                   <span class="flex items-center gap-3">
                     {variant === 'plugin' && (
@@ -265,3 +265,19 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
     padding: 1px 5px;
   }
 </style>
+
+<script>
+  // Operator: sponsors sit on top in RANDOM order per page load; the rest stay alphabetical.
+  // The server renders sponsors first (alphabetical, for no-JS/SEO); this shuffles only the
+  // sponsor block. Bundled module — CSP-clean.
+  document.querySelectorAll<HTMLElement>('[data-sponsor-shuffle-group]').forEach((group) => {
+    const items = Array.from(group.querySelectorAll<HTMLElement>(':scope > [data-sponsor-item]'));
+    if (items.length < 2) return;
+    const anchor = items[items.length - 1].nextElementSibling; // first non-sponsor (or null)
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    items.forEach((item) => group.insertBefore(item, anchor));
+  });
+</script>

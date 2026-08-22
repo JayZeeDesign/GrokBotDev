@@ -7,7 +7,7 @@
 import EntryCard from './EntryCard.astro';
 import Chip from './Chip.astro';
 import PluginIcon from './PluginIcon.astro';
-import { toCardEntry, kindOf } from '../lib/entries';
+import { toCardEntry, kindOf, sortSponsorsFirst } from '../lib/entries';
 import type { AnyDoc } from '../lib/entries';
 import categories from '../data/categories.json';
 
@@ -20,7 +20,8 @@ const { plugins, useCases } = Astro.props;
 const labelOf = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
 
 const isFeatured = (d: AnyDoc) => Boolean(d.data.featured);
-const featuredPlugins = plugins.filter(isFeatured);
+// Operator: sponsors on top (client-shuffled per load), rest alphabetical.
+const featuredPlugins = sortSponsorsFirst(plugins.filter(isFeatured));
 const featuredUseCases = useCases.filter(isFeatured);
 ---
 
@@ -79,12 +80,12 @@ const featuredUseCases = useCases.filter(isFeatured);
             <th scope="col">Category</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody data-sponsor-shuffle-group>
           {
             featuredPlugins.map((doc) => {
               const p = doc.data as { slug: string; name: string; tagline: string; category: string; sponsor?: boolean };
               return (
-              <tr>
+              <tr data-sponsor-item={p.sponsor ? 'true' : undefined}>
                 <td>
                   <span class="flex items-center gap-3">
                     <PluginIcon slug={p.slug} name={p.name} size="sm" />
@@ -107,8 +108,12 @@ const featuredUseCases = useCases.filter(isFeatured);
     </div>
 
     {/* CARDS */}
-    <div data-home-view-panel="cards" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
-      {featuredPlugins.map((doc) => <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />)}
+    <div data-home-view-panel="cards" data-sponsor-shuffle-group class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+      {featuredPlugins.map((doc) => (
+        <div data-sponsor-item={(doc.data as { sponsor?: boolean }).sponsor ? 'true' : undefined} class="contents">
+          <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />
+        </div>
+      ))}
     </div>
   </div>
 
@@ -276,3 +281,18 @@ const featuredUseCases = useCases.filter(isFeatured);
     }
   }
 </style>
+
+<script>
+  // Operator: sponsors on top in RANDOM order per load; rest alphabetical (server-sorted).
+  // Shuffles only the sponsor block in the table AND the cards grid. CSP-clean bundle.
+  document.querySelectorAll<HTMLElement>('[data-sponsor-shuffle-group]').forEach((group) => {
+    const items = Array.from(group.querySelectorAll<HTMLElement>(':scope > [data-sponsor-item]'));
+    if (items.length < 2) return;
+    const anchor = items[items.length - 1].nextElementSibling;
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    items.forEach((item) => group.insertBefore(item, anchor));
+  });
+</script>
