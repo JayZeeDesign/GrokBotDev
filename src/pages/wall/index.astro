@@ -187,7 +187,7 @@ const graph = [
   </figure>`;
 
     const card = (it: Item) => `
-<article class="flex flex-col gap-3">
+<article class="wallCard flex flex-col gap-3">
 ${it.kind === 'youtube-video' ? ytEmbed(it) : xEmbed(it)}
   <a href="${esc(it.entry_href)}" class="inline-flex min-h-6 items-center self-start rounded-sm border border-border-interactive px-2 py-1 font-mono text-xs text-text hover:border-accent hover:text-accent-text">→ posted on grokbot.dev: ${esc(it.entry_name)}</a>
 </article>`;

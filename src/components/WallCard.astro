@@ -31,7 +31,7 @@ interface Props {
 const { source, entryName, entryHref, class: className = '' } = Astro.props;
 ---
 
-<article class:list={['flex flex-col gap-3', className]}>
+<article class:list={['wallCard flex flex-col gap-3', className]}>
   {
     source.kind === 'youtube-video' ? (
       <YouTubeEmbed

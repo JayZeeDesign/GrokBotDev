@@ -185,17 +185,33 @@
  *
  * global.css always ships, so both routes get exactly one copy and neither can lose it.
  */
+/* Perf (operator, 2026-08-22): the wall was CSS multi-column (`columns: 2`). Multicol
+ * re-balances EVERY column on each appended batch and on each embed that changes height as it
+ * loads — so a long wall got heavier to scroll the further you went. Switched to CSS grid:
+ * each card is an independent block that never triggers a whole-wall recolumn, which also lets
+ * `content-visibility` (below) actually skip off-screen cards. Row-aligned instead of a tight
+ * masonry stagger — the tradeoff that buys smooth scrolling at scale. */
 .wallMasonry {
-  columns: 1;
-  column-gap: 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
   max-inline-size: 620px;   /* single column ~= one tweet, centered */
   margin-inline: auto;
 }
 @media (min-width: 768px) {
   .wallMasonry {
-    columns: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     max-inline-size: 1160px;   /* two ~550 tweets + gap, centered */
   }
+}
+/* The heart of the fix: off-screen wall cards cost the browser ~nothing — no layout, no paint,
+ * and a heavy third-party X/YouTube iframe that has scrolled away stops costing main-thread
+ * time. `contain-intrinsic-size` reserves a plausible height so the scrollbar stays stable and
+ * cards don't collapse; `auto` remembers each card's real height once it has rendered once. */
+.wallCard {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
 }
 /* Direct round: capped at TWO columns (was 3 at xl) — operator wants a 2-col wall, and
    an X embed is ~550px wide, so 2 columns fill the container with no right-side waste. */
