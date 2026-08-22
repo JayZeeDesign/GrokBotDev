@@ -5,6 +5,11 @@
 # THIS IS THE ONE SAFE USE OF pull_request_target: it checks out NOTHING and runs NO
 # repository code. It reads the PR author from the event payload and calls the labels API.
 # Never add a checkout step to this file.
+#
+# Every incoming PR is a community submission (our own agents push directly to main, they do
+# not open PRs), so this always applies `community` + `needs-verification`. A maintainer clears
+# `needs-verification` once the entry is reviewed. (There is no "agent PR" fast-path — if one is
+# ever wired to a real bot account, add the branch back here.)
 name: labeler
 
 on:
@@ -19,15 +24,12 @@ jobs:
   label:
     runs-on: ubuntu-latest
     steps:
-      - name: apply via-agent or community
+      - name: apply community labels
         uses: actions/github-script@v7
         with:
           script: |
-            const AGENT_ALLOWLIST = ['grokbot-agent'];
             const author = context.payload.pull_request.user.login;
-            const labels = AGENT_ALLOWLIST.includes(author)
-              ? ['via-agent']
-              : ['community', 'needs-verification'];
+            const labels = ['community', 'needs-verification'];
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,

@@ -1,4 +1,7 @@
-# §8.6 — the merge gate. Fails CLOSED: an unlabelled PR never merges.
+# §8.6 — the merge gate. Fails CLOSED: an unlabelled or unverified PR never merges.
+# Every PR is a community submission (see labeler.yml). The gate requires: the `community`
+# label is present, the PR only ADDs new files under content/, a maintainer has cleared
+# `needs-verification`, and there is a fresh approval against the current head SHA.
 name: merge-gate
 
 on:
@@ -20,14 +23,13 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
-            const AGENT_ALLOWLIST = ['grokbot-agent'];
             const pr = context.payload.pull_request;
             const labels = pr.labels.map((l) => l.name);
             const author = pr.user.login;
 
             // Unlabelled → fail closed.
-            if (!labels.includes('community') && !labels.includes('via-agent')) {
-              core.setFailed('unlabelled PR — a maintainer must apply community or via-agent');
+            if (!labels.includes('community')) {
+              core.setFailed('unlabelled PR — the community label must be present (the labeler applies it)');
               return;
             }
 
@@ -35,22 +37,10 @@ jobs:
               owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.number,
             });
             const isContent = (f) => f.filename.startsWith('content/');
+
+            // Community PRs may only ADD new files under content/. Anything else — edits,
+            // deletes, integrations, or code — needs a maintainer (open an issue).
             const codeScope = files.filter((f) => !isContent(f));
-
-            if (labels.includes('via-agent')) {
-              if (codeScope.length) {
-                core.setFailed('agent PRs are scoped to content/ — split this PR');
-                return;
-              }
-              if (!AGENT_ALLOWLIST.includes(author)) {
-                core.setFailed(`via-agent label on a PR from ${author}, who is not in the agent allowlist`);
-                return;
-              }
-              core.info('agent path: content-only, author allowlisted — gate passes');
-              return;
-            }
-
-            // Community path.
             const mutated = files.filter((f) => isContent(f) && f.status !== 'added');
             if (codeScope.length || mutated.length) {
               core.setFailed(
@@ -58,6 +48,7 @@ jobs:
               );
               return;
             }
+
             if (labels.includes('needs-verification')) {
               core.setFailed('needs-verification is still applied — a maintainer must verify this entry (§10.1)');
               return;
@@ -72,4 +63,4 @@ jobs:
               core.setFailed('no maintainer approval against the current head SHA (a stale approval does not count)');
               return;
             }
-            core.info('community path: content-only ADDs, verified, fresh approval — gate passes');
+            core.info(`community path (${author}): content-only ADDs, verified, fresh approval — gate passes`);
