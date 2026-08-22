@@ -19,11 +19,12 @@ export const GET: APIRoute = async () => {
   const integrationCount = integrationItems(included(hubPool)).length;
 
   const items = [
-    { name: 'index', url: `${SITE_URL}/api/v1/index.json`, description: 'Site meta, counts, endpoint directory', count: 7 },
-    { name: 'latest', url: `${SITE_URL}/api/v1/latest.json`, description: '50 newest entries across all types', count: latestCount },
-    { name: 'plugins', url: `${SITE_URL}/api/v1/plugins.json`, description: 'All plugins', count: p },
-    { name: 'use_cases', url: `${SITE_URL}/api/v1/use-cases.json`, description: 'All use cases with full prompt text', count: u },
-    { name: 'collections', url: `${SITE_URL}/api/v1/collections.json`, description: 'All collections', count: c },
+    { name: 'index', url: `${SITE_URL}/api/v1/index.json`, description: 'Site meta, counts, endpoint directory', count: 9 },
+    { name: 'feed', url: `${SITE_URL}/api/v1/feed.json`, description: 'RECOMMENDED. Complete lean feed (all types, newest first, no prompt/body). Scan + rank here, then fetch item.detail_url for the full record.', count: p + u + c },
+    { name: 'latest', url: `${SITE_URL}/api/v1/latest.json`, description: '50 newest entries across all types (full records)', count: latestCount },
+    { name: 'plugins', url: `${SITE_URL}/api/v1/plugins.json`, description: 'All plugins (full records). Per-entry detail: /api/v1/plugins/<slug>.json', count: p },
+    { name: 'use_cases', url: `${SITE_URL}/api/v1/use-cases.json`, description: 'All use cases with full prompt text. Per-entry detail: /api/v1/use-cases/<slug>.json', count: u },
+    { name: 'collections', url: `${SITE_URL}/api/v1/collections.json`, description: 'All collections. Per-entry detail: /api/v1/collections/<slug>.json', count: c },
     { name: 'categories', url: `${SITE_URL}/api/v1/categories.json`, description: 'Category tree with counts', count: categories.length },
     { name: 'integrations', url: `${SITE_URL}/api/v1/integrations.json`, description: 'Integration vocabulary with counts', count: integrationCount },
   ];

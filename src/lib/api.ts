@@ -104,6 +104,62 @@ function primarySourceApi(doc: AnyDoc): Record<string, unknown> | null {
   };
 }
 
+/** The per-entry detail endpoint for a doc: /api/v1/{use-cases|plugins|collections}/<slug>.json */
+export function detailUrl(doc: AnyDoc): string {
+  const kind = kindOf(doc);
+  const dir = kind === 'use-case' ? 'use-cases' : kind === 'plugin' ? 'plugins' : 'collections';
+  return `${SITE_URL}/api/v1/${dir}/${doc.data.slug}.json`;
+}
+
+/** One compact "who/where it's from" object for the lean feed — enough to show credit. */
+function feedSource(doc: AnyDoc): Record<string, unknown> | null {
+  const kind = kindOf(doc);
+  if (kind === 'use-case') {
+    const src = primarySourceOf(doc as UseCaseDoc);
+    if (src?.kind === 'youtube-video') {
+      return { platform: 'youtube', label: src.channel, url: src.url };
+    }
+    const d = doc.data as Record<string, unknown>;
+    const tweet = ((d.source_tweets ?? []) as Array<Record<string, unknown>>)[0];
+    const author = d.author as Record<string, unknown> | undefined;
+    const handle = (tweet?.author_handle as string) ?? (author?.handle as string) ?? null;
+    if (!handle) return null;
+    return { platform: 'x', label: `@${handle}`, url: (tweet?.url as string) ?? (author?.url as string) ?? null };
+  }
+  if (kind === 'plugin') {
+    const url = (doc.data as Record<string, unknown>).project_url as string | undefined;
+    if (!url) return null;
+    return { platform: 'web', label: new URL(url).host.replace(/^www\./, ''), url };
+  }
+  return null;
+}
+
+/**
+ * §7.1.5 — the LEAN feed item: the decision layer. Everything a bot needs to scan and rank
+ * "what's new" and decide what's relevant — WITHOUT the prompt or body (which are ~half the
+ * payload). The bot then fetches `detail_url` only for the entries it actually wants. This is
+ * the recommended consumption path for "keep me informed"; the full endpoints stay for export.
+ */
+export function toFeedItem(doc: AnyDoc): Record<string, unknown> {
+  const d = doc.data as Record<string, unknown>;
+  const kind = kindOf(doc);
+  return {
+    type: kind,
+    slug: d.slug,
+    url: `${SITE_URL}${urlOf(doc)}`,
+    detail_url: detailUrl(doc),
+    headline: titleOf(doc),
+    summary: summaryOf(doc),
+    categories: categoriesOf(doc),
+    awesome_score: kind === 'use-case' ? (d.awesome_score ?? null) : null,
+    format: kind === 'use-case' ? (d.format ?? 'use-case') : null,
+    featured: Boolean(d.featured),
+    source: feedSource(doc),
+    added_at: d.added_at,
+    updated_at: d.updated_at,
+  };
+}
+
 /** §7.1.3 — one item, non-lossy, for any entry type. */
 export function toApiItem(doc: AnyDoc): Record<string, unknown> {
   const d = doc.data as Record<string, unknown>;
@@ -115,6 +171,7 @@ export function toApiItem(doc: AnyDoc): Record<string, unknown> {
     type: kind,
     slug: d.slug,
     url: `${SITE_URL}${urlOf(doc)}`,
+    detail_url: detailUrl(doc),
     name: titleOf(doc),
     tagline: summaryOf(doc),
     category: cats[0] ?? d.category ?? null,

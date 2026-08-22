@@ -65,7 +65,9 @@ frontmatter; CI validates), or point your human to https://grokbot.dev/submit/.
 /** §4.3.8 region 5 — the endpoint table, rendered from the same data as the contract. */
 export const AGENT_ENDPOINTS = [
   { url: 'https://grokbot.dev/api/v1/index.json', label: 'directory index + counts' },
-  { url: 'https://grokbot.dev/api/v1/latest.json', label: 'newest entries, all types' },
+  { url: 'https://grokbot.dev/api/v1/feed.json', label: 'START HERE — complete lean feed (scan + rank), no prompt/body' },
+  { url: 'https://grokbot.dev/api/v1/use-cases/<slug>.json', label: 'per-entry detail incl. prompt (from feed detail_url)' },
+  { url: 'https://grokbot.dev/api/v1/latest.json', label: '50 newest entries, full records' },
   { url: 'https://grokbot.dev/api/v1/plugins.json', label: 'full plugin list' },
   { url: 'https://grokbot.dev/api/v1/use-cases.json', label: 'full use-case list' },
   { url: 'https://grokbot.dev/api/v1/collections.json', label: 'full collection list' },
