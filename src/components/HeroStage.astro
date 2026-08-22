@@ -199,6 +199,16 @@ const SUBLINE =
   color:var(--muted); opacity:.4; transition:opacity .15s;
 }
 .stage .drop-bots:hover, .stage .drop-bots:focus-visible{ opacity:.9; text-decoration:underline; text-underline-offset:3px; }
+/* Operator: the hero stage is full-bleed (the bots roam the whole width). At the rail
+   breakpoint (≥1600px) the sponsor rails run the full height of the side gutters, so pull the
+   assembly label and the drop-bots control IN to the hero container's content edges — otherwise
+   they sit on top of the rails. Aligned to (100vw − container)/2 + the desktop page gutter.
+   These must come AFTER the base `.hero-seed`/`.drop-bots` rules so equal-specificity source
+   order lets the override win. */
+@media(min-width:1600px){
+  .stage .hero-seed{ right: calc((100vw - var(--container-max)) / 2 + 24px); }
+  .stage .drop-bots{ left: calc((100vw - var(--container-max)) / 2 + 24px); }
+}
 /* F3b restored touch drag (hit-tested on touchstart), so the gesture is real again on a
    phone — the cursor rule is only about not showing a grab cursor where there is no cursor. */
 @media(pointer:coarse){ .stage{cursor:auto} }

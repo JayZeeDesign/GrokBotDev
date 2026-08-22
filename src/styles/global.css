@@ -83,6 +83,16 @@
     gap: 24px;
   }
 
+  /* Operator: at the rail breakpoint (≥1600px, where sponsors move to the side gutters), the
+     header is constrained to the container so its bar/border no longer spans the gutters —
+     that clears the top of both gutters, so the side rails run the full height of the page. */
+  @media (min-width: 1600px) {
+    .siteHeader {
+      max-inline-size: var(--container-max);
+      margin-inline: auto;
+    }
+  }
+
   .display-track {
     letter-spacing: var(--tracking-display);
   }

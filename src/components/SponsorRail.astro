@@ -60,9 +60,12 @@ const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless
   .sponsorRail {
     display: none;
     position: fixed;
-    inset-block-start: 96px;
+    /* Operator: the rails run the full height of the side gutters. The header is constrained
+       to the container at this breakpoint (see .siteHeader in global.css), so the gutters are
+       clear from the very top — the rails start near the top instead of below the header. */
+    inset-block-start: 16px;
     inline-size: 160px;
-    max-block-size: calc(100vh - 140px);
+    max-block-size: calc(100vh - 32px);
     z-index: 20;
   }
   /* Only when the viewport is wide enough to have a REAL gutter beside the content.
