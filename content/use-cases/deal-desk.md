@@ -37,7 +37,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Desk** and connect Gmail, Google Calendar.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: deal advancer.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way Same Eric Osiu post: a deal-desk bot whose job is to move the ball on stalled, lost, and lookalike deals — every day, not a weekly pipeline 
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it each morning; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

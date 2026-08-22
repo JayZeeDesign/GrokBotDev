@@ -38,7 +38,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Jesse** and connect Gmail, Stripe, QuickBooks.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: saas cfo.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way Same Jesse thread: a CFO bot on Stripe, Xero/QuickBooks, and Gmail. Weekly spend scan for things he missed, a COGS audit, a monthly CFO repo
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it each week; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

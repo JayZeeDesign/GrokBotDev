@@ -39,7 +39,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Scribe** and connect GitHub.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: help-center updater.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way Damon’s Intercom + GitHub bot watches every merged PR, decides whether a help-center article needs updating, then drafts and publishes it. 8
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it on demand; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

@@ -36,7 +36,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Grinder** and connect GitHub.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: subscription killer.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way The second bot is Grinder. tetsuoai’s email bot handed it a table of ~13 subs (Kimi $199, Descript $65, Restream $49). Grinder refused to op
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it on demand; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

@@ -39,7 +39,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Brief** and connect Slack, Gmail, Google Calendar, Salesforce.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: meeting prepper.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way Krista’s daily meeting-prep routine pulls Salesforce, Gmail, Slack, Granola, and Gong into a short, skimmable brief she can read on her phon
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it each morning; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

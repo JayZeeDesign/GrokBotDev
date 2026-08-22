@@ -38,7 +38,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **AEO** and connect the accounts it needs.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: content autopilot.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way Eric Osiu, Grok Botting on Starlink, described an AEO/SEO bot: ingest top content (sales calls, customer calls, podcasts, YouTube), combine 
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it each week; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

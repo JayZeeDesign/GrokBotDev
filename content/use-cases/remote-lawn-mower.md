@@ -38,7 +38,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Mower** and connect the accounts it needs.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: remote driver.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way Sawyer set up Grok Bot to remotely control his autonomous lawn mower, 50 miles from home. Two-minute setup. Video. 3.6K likes / 269K views.
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it on demand; it runs autonomously and only pings you when something needs a decision.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

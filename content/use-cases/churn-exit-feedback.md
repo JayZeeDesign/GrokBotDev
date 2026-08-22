@@ -36,7 +36,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Exit** and connect X.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: churn analyst.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way After the win-back emails, Liam's bot analysed overnight why people left and turned that into a 5-step plan. Same tweet as the win-back camp
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it each morning; it runs autonomously and only pings you when something needs a decision.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

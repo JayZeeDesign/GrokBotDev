@@ -41,7 +41,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Filer** and connect Gmail, Google Docs, X.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: tax assembler.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way A non-coder connected Gmail (~40,000 emails) and asked Grok Bot to do his taxes. It found the documents in mail and assembled the return. Sa
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it every hour; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

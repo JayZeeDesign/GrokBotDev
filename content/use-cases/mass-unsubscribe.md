@@ -40,7 +40,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Unsub** and connect Gmail, X.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: email purger.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way Todd had Grok Bot unsubscribe him from 120 days of marketing mail. Same tweet also audited paid subscriptions. 2.1K likes / 422K views.
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it on demand; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 

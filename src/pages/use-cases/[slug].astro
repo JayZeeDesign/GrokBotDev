@@ -217,15 +217,14 @@ const graph = [
       <InstallModal id={d.slug} variant="entry" prompt={prompt ?? undefined} entryName={d.name} />
     </div>
 
-    <section class="flex flex-col gap-4">
-      <SectionHeading title="what it does" variant="sub" level={2} />
-      <p class="max-w-prose text-base text-text">{d.what_it_does}</p>
-    </section>
+    {/* FINAL model: the hero already shows `summary` (which carries what_it_does), so the
+        old standalone "what it does" section rendered the same text twice — removed. */}
 
     {/* The body carries "## How it's set up", "## Prompt" and "## Why it's cool" (§5.3).
         Its single fenced block is hidden and re-rendered below through PromptBlock, so the
         prompt gets its copy button, microhint and the canonical CTA rather than appearing
-        twice on the page. */}
+        twice on the page. The "## Prompt" heading itself is hidden too (h2:has(+ pre)) —
+        otherwise it renders as an empty orphan heading with its content hoisted away. */}
     <div class="prose-body prose-body--prompt-hoisted flex max-w-prose flex-col gap-4 text-base text-text">
       <Content />
     </div>
@@ -311,6 +310,33 @@ const graph = [
      has exactly one fenced block, so hiding `pre` here can never hide anything else. */
   .prose-body--prompt-hoisted pre {
     display: none;
+  }
+
+  /* Body section headings ("How it's set up" / "Why it's cool") — same treatment as
+     SectionHeading's sub variant, so body-driven and template-driven sections match. */
+  .prose-body h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    margin-block-start: 0.75rem;
+  }
+
+  /* The "## Prompt" heading's content is hoisted into PromptBlock below, which carries its
+     own labelled header — so the body heading would sit orphaned above nothing. Hide it. */
+  .prose-body--prompt-hoisted h2:has(+ pre) {
+    display: none;
+  }
+
+  /* The setup steps are an ordered list; the global reset strips markers, which turned
+     "1. 2. 3." into an unnumbered wall. Restore proper list rendering inside the body. */
+  .prose-body ol,
+  .prose-body ul {
+    list-style: revert;
+    padding-inline-start: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   /* F13 — one column below lg (the documented stacked order, §4.3.5 region [8]), two from

@@ -40,7 +40,7 @@ prompt_provenance: curator
 
 1. In Grok Bot, create a bot named **Kondo** and connect Gmail, GitHub, Google Drive, X, Stripe.
 2. Paste the reconstructed prompt below in as its standing instructions, then tell it the one job: inbox tidier.
-3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can work the way Peter Yang’s five-bot tutorial includes a digital Marie Kondo that audits Gmail, Google Drive, and paid subscriptions, then proposes a clean
+3. Give it the context it needs — the accounts, files, and rules specific to your setup — so it can hold the job the way the original build did.
 4. Run it each morning; it acts once you approve each step.
 5. Watch the first few runs, correct anything off, then let it hold the job. Adapt the connected tools to match your own stack.
 
