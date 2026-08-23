@@ -15,6 +15,7 @@ import Callout from '../../components/Callout.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import InstallModal from '../../components/InstallModal.astro';
 import ConnectCallout from '../../components/ConnectCallout.astro';
+import ShareBar from '../../components/ShareBar.astro';
 import TweetEmbed from '../../components/TweetEmbed.astro';
 import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import PromptBlock from '../../components/PromptBlock.astro';
@@ -223,6 +224,10 @@ const graph = [
     <div class="flex flex-wrap items-center gap-4">
       <InstallModal id={d.slug} variant="entry" prompt={prompt ?? undefined} entryName={heroTitle} />
     </div>
+
+    {/* Operator: share this use case on X (the intent credits @GrokBotDev via `via=`) + a
+        persistent follow affordance on every use-case page. Neutral, secondary to the amber. */}
+    <ShareBar title={heroTitle} path={url} kind="use case" />
 
     {/* FINAL model: the hero already shows `summary` (which carries what_it_does), so the
         old standalone "what it does" section rendered the same text twice — removed. */}

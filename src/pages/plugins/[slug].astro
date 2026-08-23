@@ -14,6 +14,7 @@ import SectionHeading from '../../components/SectionHeading.astro';
 import PromptBlock from '../../components/PromptBlock.astro';
 import InstallModal from '../../components/InstallModal.astro';
 import ConnectCallout from '../../components/ConnectCallout.astro';
+import ShareBar from '../../components/ShareBar.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
 import PagefindMeta from '../../components/PagefindMeta.astro';
@@ -176,6 +177,10 @@ const graph = [
         )}
       </aside>
     </div>
+
+    {/* Operator: share this plugin on X (the intent credits @GrokBotDev via `via=`) + a
+        persistent follow affordance. Neutral, sits under the hero above the install section. */}
+    <ShareBar title={d.name} path={url} kind="plugin" />
 
     <section class="flex flex-col gap-6">
       <SectionHeading title="install / how to use" variant="sub" level={2} />

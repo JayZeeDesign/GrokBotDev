@@ -1,0 +1,85 @@
+---
+// Entry-level social bar: a "share on X" intent link + a "follow @GrokBotDev" link, shown on
+// every plugin and use-case detail page. Two purposes: give readers a one-tap way to share the
+// page (the intent carries `via=GrokBotDev`, so every share also credits the account), and put
+// a persistent follow affordance on the page so the project account is advertised everywhere.
+//
+// Pure <a> links — no JS, no onclick — so it is CSP-safe (§10.7 forbids inline script) and works
+// with JavaScript disabled. Rendered NEUTRAL (bordered, not amber): the one accent on a detail
+// page's action plane is "install in grok bot" (§A1), so these stay secondary.
+//
+// The 𝕏 glyph (U+1D54F) is the site's existing X mark — same one used in the plugin side card.
+import { SITE, SITE_X, SITE_X_URL } from '../lib/seo';
+
+interface Props {
+  /** Page title (headline for a use case, name for a plugin). */
+  title: string;
+  /** Absolute-on-site path of THIS page, e.g. `/use-cases/slug/`. */
+  path: string;
+  /** What is being shared — drives the share text. */
+  kind: 'use case' | 'plugin';
+  class?: string;
+}
+
+const { title, path, kind, class: className } = Astro.props;
+
+const shareText = `${title} - a Grok Bot ${kind}`;
+const shareUrl =
+  `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}` +
+  `&url=${encodeURIComponent(SITE + path)}&via=${SITE_X}`;
+---
+
+<div class:list={['shareBar', className]}>
+  <a
+    class="shareBar__btn"
+    href={shareUrl}
+    target="_blank"
+    rel="noopener"
+    aria-label={`Share this Grok Bot ${kind} on X`}
+  >
+    <span aria-hidden="true" class="shareBar__glyph">𝕏</span> share on x
+  </a>
+  <a
+    class="shareBar__btn shareBar__btn--follow"
+    href={SITE_X_URL}
+    target="_blank"
+    rel="noopener"
+    aria-label={`Follow grokbot.dev (@${SITE_X}) on X`}
+  >
+    follow <span class="shareBar__handle">@{SITE_X}</span> on <span aria-hidden="true" class="shareBar__glyph">𝕏</span>
+  </a>
+</div>
+
+<style>
+  .shareBar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .shareBar__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-block-size: 44px; /* §4.6 / WCAG 2.2 SC 2.5.8 touch target */
+    padding-inline: 1rem;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-text);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .shareBar__btn:hover {
+    border-color: var(--color-text);
+  }
+  .shareBar__glyph {
+    font-size: 0.95em;
+    line-height: 1;
+  }
+  /* handles are brand-cased, not lowercased like the surrounding label */
+  .shareBar__handle {
+    text-transform: none;
+  }
+</style>

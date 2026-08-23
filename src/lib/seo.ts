@@ -6,6 +6,11 @@
 
 export const SITE = 'https://grokbot.dev';
 
+// The project's own X account — advertised in the footer and on every entry via ShareBar
+// (both the "share on X" intent `via=` credit and the "follow" link). Handle only, no leading @.
+export const SITE_X = 'GrokBotDev';
+export const SITE_X_URL = `https://x.com/${SITE_X}`;
+
 // OG image cache-buster. Appended as `?v=` to every og:image so X/LinkedIn/etc. re-fetch a
 // changed card instead of serving a stale copy from their scrape cache. BUMP THIS whenever an
 // OG image is regenerated (default.png, hub cards, or the entry-card renderer).
