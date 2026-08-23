@@ -6,6 +6,11 @@
 
 export const SITE = 'https://grokbot.dev';
 
+// OG image cache-buster. Appended as `?v=` to every og:image so X/LinkedIn/etc. re-fetch a
+// changed card instead of serving a stale copy from their scrape cache. BUMP THIS whenever an
+// OG image is regenerated (default.png, hub cards, or the entry-card renderer).
+export const OG_VERSION = '20260823';
+
 /** §6.3: descriptions are ≤155 by construction; truncate at a word boundary if not. */
 export function clampDescription(value: string, max = 155): string {
   if (value.length <= max) return value;

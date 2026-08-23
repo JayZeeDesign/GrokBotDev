@@ -10,7 +10,7 @@ import InstallModal from '../components/InstallModal.astro';
 import ConnectNudge from '../components/ConnectNudge.astro';
 import { ENABLE_RAILS, ENABLE_SPONSORS } from '../lib/buildFlags';
 import { siteStats } from '../lib/entries';
-import { SITE, baseGraph } from '../lib/seo';
+import { SITE, baseGraph, OG_VERSION } from '../lib/seo';
 import geistDisplayUrl from '@fontsource/geist/files/geist-latin-600-normal.woff2?url';
 import interBodyUrl from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
 import geistMonoUrl from '@fontsource/geist-mono/files/geist-mono-latin-400-normal.woff2?url';
@@ -67,7 +67,7 @@ const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={`${ogImage.startsWith('http') ? ogImage : SITE + ogImage}?v=${OG_VERSION}`} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
