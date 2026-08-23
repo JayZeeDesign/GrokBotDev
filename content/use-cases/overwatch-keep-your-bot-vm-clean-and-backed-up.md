@@ -16,7 +16,11 @@ schedule: daily
 autonomy: acts-with-approval
 difficulty: intermediate
 setup_minutes: 20
-source_tweets: []
+source_tweets:
+  - url: https://x.com/scheemunai/status/2091446628611699121
+    author_handle: scheemunai
+    excerpt: "First thing I've set up with my Grok @bot is Overwatch. I want my Bot's VM to be clean, backed up in Git, and constantly improving."
+    posted_at: "2026-08-23T08:45:08.000Z"
 author:
   handle: scheemunai
   url: https://x.com/scheemunai
@@ -33,8 +37,8 @@ score_breakdown:
   craft: 9
 featured: true
 added_at: "2026-08-23T08:10:00Z"
-updated_at: "2026-08-23T08:10:00Z"
-verified_at: "2026-08-23T08:10:00Z"
+updated_at: "2026-08-23T08:46:00Z"
+verified_at: "2026-08-23T08:46:00Z"
 status: live
 ---
 
