@@ -19,7 +19,23 @@ fi
 
 MAIN=$(git rev-parse --short main)
 echo "[promote] fast-forwarding production -> main ($MAIN)…"
-git push origin main:production
+# Push with a FRESH token from the credential store rather than git's cached credential helper,
+# which can go stale and 403 ("denied to …") even though the current token is valid. Falls back
+# to a plain `git push origin` if the credential CLI is unavailable (e.g. running off-box).
+CRED_CLI=/opt/projects/control-room/server/services/credentials-cli.js
+ORIGIN_URL=$(git remote get-url origin)
+if [ -f "$CRED_CLI" ] && command -v node >/dev/null 2>&1; then
+  GT=$(node "$CRED_CLI" get-key github-zeropointrepo 2>/dev/null || true)
+  if [ -n "${GT:-}" ]; then
+    PUSH_URL=$(printf '%s' "$ORIGIN_URL" | sed -E "s#https://[^@]*@#https://#; s#https://#https://x-access-token:${GT}@#")
+    git push "$PUSH_URL" main:production
+    unset GT PUSH_URL
+  else
+    git push origin main:production
+  fi
+else
+  git push origin main:production
+fi
 
 echo "[promote] running prod deploy on crhq-products…"
 ssh crhq-products 'sudo -u agent /opt/projects/user/grokbot/deploy.sh'
