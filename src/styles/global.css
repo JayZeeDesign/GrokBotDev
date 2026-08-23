@@ -67,6 +67,17 @@
     overflow-wrap: anywhere;
   }
 
+  /* …but the numbered index label ("01"/"02"/"03") that leads a flex step row must NOT be
+     shrunk to a single glyph and broken between digits by the rule above (it is a flex child,
+     and `overflow-wrap: anywhere` drops its min-content to one character so the flex algorithm
+     squeezes it). Pin it to its content width. Regression fixed here rather than per-template:
+     it is always the mono span that is the first child of a flex `<li>` (plugin install steps,
+     the install modal, the /agent and /contribute step lists). */
+  li.flex > .font-mono:first-child {
+    flex: none;
+    white-space: nowrap;
+  }
+
   a {
     color: inherit;
     text-decoration: none;
