@@ -141,6 +141,11 @@ const featuredUseCases = useCases.filter(isFeatured);
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
       {featuredUseCases.map((doc) => <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />)}
     </div>
+
+    {/* Operator: a prominent way off the featured set into the full, filterable hub. */}
+    <div class="homeAllRow">
+      <a href="/use-cases/" class="homeAllBtn">all awesome use cases ({useCases.length}) →</a>
+    </div>
   </div>
 </section>
 
@@ -262,6 +267,35 @@ const featuredUseCases = useCases.filter(isFeatured);
   .homeMeta__all:hover {
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+
+  /* ---------- bottom "all use cases" button (operator) ---------- */
+  /* Centered, bordered pill under the featured grid — a clear exit into the full hub. Neutral
+     (not the amber fill) so it does not compete with the one accent per viewport. */
+  .homeAllRow {
+    display: flex;
+    justify-content: center;
+    margin-block-start: 0.5rem;
+  }
+  .homeAllBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-block-size: 44px;
+    padding-inline: 1.5rem;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-text);
+    transition:
+      border-color 0.15s,
+      color 0.15s;
+  }
+  .homeAllBtn:hover {
+    border-color: var(--color-text);
+    color: var(--color-text);
   }
 
   /* ---------- panel visibility ---------- */
