@@ -53,7 +53,7 @@ export const CP_101_WALL_EMPTY =
   'nothing on the wall yet. post what you built with your Grok Bot — the Scouts will find you.';
 
 /** §13.4 — InstallModal (Addendum B3 named the sections; the strings were never written). */
-export const CP_102_INSTALL_TITLE = 'plug your Grok Bot in';
+export const CP_102_INSTALL_TITLE = 'Connect your Grok Bot to feed';
 export const CP_103_INSTALL_SECTION1 = 'install this';
 export const CP_104_INSTALL_SECTION2 = 'keep getting new ones';
 export const CP_105_INSTALL_SECTION2_BODY =
@@ -158,7 +158,7 @@ export const CP_125_MONO_TOKEN = 'www.youtube-nocookie.com';
 export const CP_121_INSTALL_SECTION2 =
   'Keep getting new Awesome Use Cases and Plugins. Your Grok Bot will proactively recommend how to improve your Grok Bots — personalized to what you need, and to the coolest setups others are posting about.';
 export const CP_122_INSTALL_STEP_1 = 'pick your settings';
-export const CP_123_INSTALL_STEP_2 = 'copy the prompt and paste it into your Grok Bot';
+export const CP_123_INSTALL_STEP_2 = 'Copy the prompt and paste it into your Grok Bot. It checks the feed once a day.';
 
 /**
  * CP-124 v2 — OPERATOR RE-AMENDED (direct round, 2026-08-21). The F10 application over-cut:

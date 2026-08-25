@@ -37,7 +37,7 @@ score_breakdown:
   novelty: 12
   evidence: 7
   craft: 9
-featured: false
+featured: true
 added_at: "2026-08-25T11:15:00Z"
 updated_at: "2026-08-25T11:15:00Z"
 verified_at: "2026-08-25T11:15:00Z"

@@ -30,7 +30,6 @@ import {
   CP_102_INSTALL_TITLE,
   CP_103_INSTALL_SECTION1,
   CP_121_INSTALL_SECTION2,
-  CP_122_INSTALL_STEP_1,
   CP_123_INSTALL_STEP_2,
   CP_124_ROUTINE_PROMPT,
   CP_124_CADENCE,
@@ -76,37 +75,11 @@ const {
 
 const modalId = `install-${id}`;
 const titleId = `${modalId}-title`;
-const scheduleName = `${modalId}-schedule`;
 
-// B3 section 2 — the §7.3 routine prompt, packaged for humans. One template per
-// schedule option; the picker swaps which one is visible (and copyable).
-// Class strings are written out in full: Tailwind scans source text, so a class name
-// assembled from a template literal would never be generated.
-const SCHEDULES = [
-  {
-    key: 'hourly',
-    label: 'hourly',
-  },
-  {
-    key: 'daily',
-    label: 'daily',
-  },
-  {
-    key: 'two-days',
-    label: 'every 2 days',
-  },
-  {
-    key: 'weekly',
-    label: 'weekly',
-  },
-] as const;
-
-// F10(6) — the modal now speaks to a HUMAN picking a cadence, not to a machine reading a
-// spec. CP-124 is the operator's one-liner; only the cadence opener is templated. The full
-// §7.3 machine contract is untouched and still lives on /agent/, which this modal links to
-// (CP-107) exactly as B3 specified — it moved audience, it was not deleted.
-const routinePrompt = (key: keyof typeof CP_124_CADENCE) =>
-  CP_124_ROUTINE_PROMPT(CP_124_CADENCE[key]);
+// Operator (2026-08-25): the cadence picker is gone. The feed routine now defaults to a
+// DAILY check, so the modal renders exactly one prompt. CP-124 is the operator's one-liner;
+// the full §7.3 machine contract is untouched and still lives on /agent/ (CP-107).
+const dailyRoutinePrompt = CP_124_ROUTINE_PROMPT(CP_124_CADENCE.daily);
 
 const defaultTrigger =
   triggerLabel ?? (variant === 'site' ? CP_102_INSTALL_TITLE : CP_109_INSTALL_TRIGGER);
@@ -198,70 +171,20 @@ const defaultTrigger =
             body text (smaller than the old display h3). It sets up the steps below. */}
         <p class="max-w-prose text-sm leading-relaxed text-text-muted">{CP_121_INSTALL_SECTION2}</p>
 
-        {/* F10(3) — two numbered steps, one line each, a step up from the old caption:
-            mono index in accent + text at --text-base. Prominent, not shouty. */}
-        <ol class="flex flex-col gap-2">
-          <li class="flex items-baseline gap-3">
-            <span class="font-mono text-sm text-accent-text">1</span>
-            <span class="text-base text-text">{CP_122_INSTALL_STEP_1}</span>
-          </li>
-          <li class="flex items-baseline gap-3">
-            <span class="font-mono text-sm text-accent-text">2</span>
-            <span class="text-base text-text">{CP_123_INSTALL_STEP_2}</span>
-          </li>
-        </ol>
+        {/* Operator (2026-08-25): cadence picker removed — the feed routine defaults to a
+            daily check, so the modal shows one instruction and one prompt. */}
+        <p class="text-base text-text">{CP_123_INSTALL_STEP_2}</p>
 
+        {/* `.schedule-picker` wrapper kept ONLY so the copy button still reports as
+            `subscribe_copy` (the island JS keys off `closest('.schedule-picker')`). */}
         <div class="schedule-picker flex flex-col gap-3">
-          {/* F10(4) — ONE mechanism for both the chip state and the panel visibility.
-              It previously used Tailwind's `peer-checked/*`, whose selector is
-              `.peer:checked ~ *` — a SIBLING combinator. The radios were siblings of a
-              wrapper div while the labels sat inside it, so the chip rules were generated
-              and matched nothing: every chip rendered identically no matter what was
-              selected, which is what the operator reported. Making the labels siblings then
-              broke the panels, because they stopped following the radios.
-              `:has()` on the container keys off the checked radio's VALUE and does not care
-              about DOM order at all, so chips and panels can sit wherever they read best. */}
-          {
-            SCHEDULES.map((option) => (
-              <input
-                type="radio"
-                class="sr-only"
-                name={scheduleName}
-                id={`${modalId}-${option.key}`}
-                value={option.key}
-                checked={option.key === 'daily'}
-                data-schedule-input
-              />
-            ))
-          }
-
-          <div class="flex flex-wrap items-center gap-2">
-            {
-              SCHEDULES.map((option) => (
-                <label
-                  for={`${modalId}-${option.key}`}
-                  data-schedule-chip={option.key}
-                  class="inline-flex min-h-11 cursor-pointer items-center rounded-sm border border-border-interactive px-3 py-1 font-mono text-xs lowercase text-text-muted"
-                >
-                  {option.label}
-                </label>
-              ))
-            }
-          </div>
-
-          {
-            SCHEDULES.map((option) => (
-              <div data-schedule-panel={option.key}>
-                <PromptBlock
-                  prompt={routinePrompt(option.key)}
-                  label={`routine · ${option.label}`}
-                  copyLabel="copy routine prompt"
-                  copyVariant="slate"
-                  align="start"
-                />
-              </div>
-            ))
-          }
+          <PromptBlock
+            prompt={dailyRoutinePrompt}
+            label="routine · daily"
+            copyLabel="copy routine prompt"
+            copyVariant="slate"
+            align="start"
+          />
         </div>
 
         {/* Both links are site-only now that the whole section is — the inner
@@ -296,26 +219,6 @@ const defaultTrigger =
   .install-modal:target,
   .install-modal[data-open] {
     display: flex;
-  }
-
-  /* F10(4) — selected chip = FILLED + INVERTED (was: a faint border/text tint that never
-     applied at all). Unselected stay outline. Default `daily` comes from the radio. */
-  .schedule-picker [data-schedule-panel] {
-    display: none;
-  }
-  .schedule-picker:has(input[value='hourly']:checked) [data-schedule-panel='hourly'],
-  .schedule-picker:has(input[value='daily']:checked) [data-schedule-panel='daily'],
-  .schedule-picker:has(input[value='two-days']:checked) [data-schedule-panel='two-days'],
-  .schedule-picker:has(input[value='weekly']:checked) [data-schedule-panel='weekly'] {
-    display: block;
-  }
-  .schedule-picker:has(input[value='hourly']:checked) [data-schedule-chip='hourly'],
-  .schedule-picker:has(input[value='daily']:checked) [data-schedule-chip='daily'],
-  .schedule-picker:has(input[value='two-days']:checked) [data-schedule-chip='two-days'],
-  .schedule-picker:has(input[value='weekly']:checked) [data-schedule-chip='weekly'] {
-    border-color: var(--color-accent-strong);
-    background: var(--color-accent-strong);
-    color: var(--color-accent-contrast);
   }
 
   .install-modal__scrim {
