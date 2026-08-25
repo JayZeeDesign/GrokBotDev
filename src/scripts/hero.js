@@ -143,11 +143,30 @@ function buildStatics(){
   var right = M.Bodies.rectangle(W+T/2, H/2, T, H*3, opts);
 
   // the headline + CTA block is part of the environment.
+  // Operator (2026-08-25): the block used to be the WHOLE #content rect — when the bookmark
+  // pill became content's first child, the rect's top edge rose to the pill, and bots
+  // hovered mid-air left and right of it. Now the block starts at the H1's top edge, and
+  // the narrow pill gets its own little shelf: bots perch on the pill in the middle and
+  // fall past its sides onto the headline.
   var c=content.getBoundingClientRect();
-  var cx=c.left-B.left+c.width/2, cy=c.top-B.top+c.height/2;
-  var block = M.Bodies.rectangle(cx, cy, c.width, c.height, Object.assign({},opts,{chamfer:{radius:14}}));
+  var h1El=content.querySelector('h1');
+  var hTop=h1El ? h1El.getBoundingClientRect().top : c.top;
+  var bTop=hTop-B.top, bH=(c.top-B.top)+c.height-bTop;
+  var cx=c.left-B.left+c.width/2, cy=bTop+bH/2;
+  var block = M.Bodies.rectangle(cx, cy, c.width, bH, Object.assign({},opts,{chamfer:{radius:14}}));
 
   statics=[floor,left,right,block];
+
+  var pillEl=content.querySelector('[data-bookmark-nudge]');
+  if(pillEl){
+    var p=pillEl.getBoundingClientRect();
+    var shelf=M.Bodies.rectangle(
+      p.left-B.left+p.width/2, p.top-B.top+p.height/2,
+      p.width, p.height,
+      Object.assign({},opts,{chamfer:{radius:Math.min(14,p.height/2)}}));
+    statics.push(shelf);
+  }
+
   M.Composite.add(world, statics);
 }
 
@@ -403,7 +422,10 @@ function pileRows(n){
 }
 function renderStatic(){
   var B=stageBox(), c=content.getBoundingClientRect();
-  var contentTop=c.top-B.top;
+  // Same reference as buildStatics(): the pile rests just above the H1, not above the
+  // bookmark pill (which is content's first child and would float the pile mid-air).
+  var h1El=content.querySelector('h1');
+  var contentTop=(h1El ? h1El.getBoundingClientRect().top : c.top)-B.top;
 
   // biggest bots at the bottom of the pile
   var order=bots.slice().sort(function(a,b){ return b.size-a.size; });
