@@ -30,6 +30,7 @@ import {
   CP_102_INSTALL_TITLE,
   CP_103_INSTALL_SECTION1,
   CP_121_INSTALL_SECTION2,
+  CP_122_INSTALL_STEP_1,
   CP_123_INSTALL_STEP_2,
   CP_124_ROUTINE_PROMPT,
   CP_124_CADENCE,
@@ -171,11 +172,21 @@ const defaultTrigger =
             body text (smaller than the old display h3). It sets up the steps below. */}
         <p class="max-w-prose text-sm leading-relaxed text-text-muted">{CP_121_INSTALL_SECTION2}</p>
 
-        {/* Operator (2026-08-25): cadence picker removed — the feed routine defaults to a
-            daily check, so the modal shows one instruction and one prompt. */}
-        <p class="text-base text-text">{CP_123_INSTALL_STEP_2}</p>
+        {/* F10(3) — two numbered steps, one line each: mono index in accent + text at
+            --text-base. Restored verbatim (operator, 2026-08-25). */}
+        <ol class="flex flex-col gap-2">
+          <li class="flex items-baseline gap-3">
+            <span class="font-mono text-sm text-accent-text">1</span>
+            <span class="text-base text-text">{CP_122_INSTALL_STEP_1}</span>
+          </li>
+          <li class="flex items-baseline gap-3">
+            <span class="font-mono text-sm text-accent-text">2</span>
+            <span class="text-base text-text">{CP_123_INSTALL_STEP_2}</span>
+          </li>
+        </ol>
 
-        {/* `.schedule-picker` wrapper kept ONLY so the copy button still reports as
+        {/* Operator (2026-08-25): cadence picker removed — single daily routine prompt below.
+            `.schedule-picker` wrapper kept ONLY so the copy button still reports as
             `subscribe_copy` (the island JS keys off `closest('.schedule-picker')`). */}
         <div class="schedule-picker flex flex-col gap-3">
           <PromptBlock

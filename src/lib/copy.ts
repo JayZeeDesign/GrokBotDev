@@ -158,7 +158,7 @@ export const CP_125_MONO_TOKEN = 'www.youtube-nocookie.com';
 export const CP_121_INSTALL_SECTION2 =
   'Keep getting new Awesome Use Cases and Plugins. Your Grok Bot will proactively recommend how to improve your Grok Bots — personalized to what you need, and to the coolest setups others are posting about.';
 export const CP_122_INSTALL_STEP_1 = 'pick your settings';
-export const CP_123_INSTALL_STEP_2 = 'Copy the prompt and paste it into your Grok Bot. It checks the feed once a day.';
+export const CP_123_INSTALL_STEP_2 = 'copy the prompt and paste it into your Grok Bot';
 
 /**
  * CP-124 v2 — OPERATOR RE-AMENDED (direct round, 2026-08-21). The F10 application over-cut:
