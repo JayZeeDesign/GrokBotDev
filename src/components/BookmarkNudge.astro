@@ -1,0 +1,93 @@
+---
+// BookmarkNudge — "bookmark us" keycap pill (operator, 2026-08-25; YouTubeToTranscript
+// pattern). A static reminder that the site is one keystroke away: [ctrl] + [d] bookmark us!
+//
+// OS-aware: renders `ctrl` (the majority default, and the correct no-JS fallback), and a
+// bundled script swaps the modifier keycap to `⌘` on Mac/iOS. Astro hoists the <script>
+// into the external bundle, so §10.7's zero-inline-script CSP gate is untouched — and Astro
+// dedupes it when the component renders twice on one page (hero + footer).
+//
+// Ctrl+D cannot be triggered programmatically (browser security), so this is deliberately
+// NON-interactive chrome, not a button — exactly like the reference site.
+//
+// Variants: `hero` = centered pill above the home H1 · `footer` = compact inline, sitewide.
+interface Props {
+  variant?: 'hero' | 'footer';
+  class?: string;
+}
+
+const { variant = 'hero', class: className } = Astro.props;
+---
+
+<span
+  class:list={['bookmarkNudge', `bookmarkNudge--${variant}`, className]}
+  data-bookmark-nudge
+  aria-label="Press control and D to bookmark this site"
+>
+  <kbd class="bookmarkNudge__key" data-bookmark-mod>ctrl</kbd>
+  <span class="bookmarkNudge__plus" aria-hidden="true">+</span>
+  <kbd class="bookmarkNudge__key">d</kbd>
+  <span class="bookmarkNudge__label">bookmark us!</span>
+</span>
+
+<style>
+  .bookmarkNudge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+  .bookmarkNudge__key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1.6em;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--color-border-interactive);
+    border-block-end-width: 2px; /* keycap depth */
+    border-radius: 6px;
+    background: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    line-height: 1.4;
+    color: var(--color-text);
+    text-transform: lowercase;
+  }
+  .bookmarkNudge__plus {
+    font-size: 0.85em;
+  }
+  .bookmarkNudge__label {
+    color: var(--color-text);
+    text-transform: lowercase;
+  }
+
+  .bookmarkNudge--hero {
+    font-size: var(--text-sm);
+    margin-block-end: 1.1rem;
+  }
+  .bookmarkNudge--footer {
+    font-size: var(--text-xs);
+    padding: 0.25rem 0.65rem;
+  }
+</style>
+
+<script>
+  // Mac/iOS → the bookmark shortcut is ⌘D, not Ctrl+D. Default markup says `ctrl`, so
+  // no-JS visitors (and every other OS) see the right thing without this running.
+  const ua = navigator.userAgent;
+  const isApple = /Mac|iPhone|iPad|iPod/.test(navigator.platform) || /Mac OS X/.test(ua);
+  if (isApple) {
+    document.querySelectorAll('[data-bookmark-mod]').forEach((key) => {
+      key.textContent = '⌘';
+    });
+    document.querySelectorAll('[data-bookmark-nudge]').forEach((nudge) => {
+      nudge.setAttribute('aria-label', 'Press command and D to bookmark this site');
+    });
+  }
+</script>

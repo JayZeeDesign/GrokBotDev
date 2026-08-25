@@ -23,6 +23,7 @@
 //
 // Copy: CP-113 (FENCED h1) · CP-002 (subline, money phrase) · CP-003 (primary CTA) ·
 // CP-004 (friction line) · CP-005 + CP-006 (KEEP).
+import BookmarkNudge from './BookmarkNudge.astro';
 import InstallModal from './InstallModal.astro';
 import { CP_102_INSTALL_TITLE, CP_113_HOME_H1 } from '../lib/copy';
 
@@ -42,6 +43,9 @@ const SUBLINE =
   <div class="botlayer" id="botlayer" aria-hidden="true"></div>
 
   <div class="content" id="content">
+    {/* Operator (2026-08-25): "bookmark us" keycap pill above the title — the
+        YouTubeToTranscript pattern. OS-aware (ctrl/⌘) via BookmarkNudge's bundled script. */}
+    <BookmarkNudge variant="hero" />
     <h1>{CP_113_HOME_H1}</h1>
     <p class="sub">{SUBLINE}</p>
 

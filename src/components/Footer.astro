@@ -1,4 +1,5 @@
 ---
+import BookmarkNudge from './BookmarkNudge.astro';
 import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
 import ThemeToggle from './ThemeToggle.astro';
@@ -101,6 +102,9 @@ const columns = [
       {/* F9 — the bottom bar, not the link columns: a button among a list of links reads as
           a broken link. This row already holds non-link chrome (mark, disclaimer, stamp). */}
       <p class="flex items-center gap-4">
+        {/* Operator (2026-08-25): sitewide bookmark reminder — most visitors land on a
+            detail page from X, so the footer carries the compact variant on every page. */}
+        <BookmarkNudge variant="footer" />
         <span>built {builtStamp}</span>
         <ThemeToggle variant="inline" />
       </p>
