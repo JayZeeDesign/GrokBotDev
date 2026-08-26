@@ -123,6 +123,12 @@ const featuredUseCases = useCases.filter(isFeatured);
       ))}
     </div>
 
+    {/* Operator (2026-08-26): same prominent exit as the use-cases tab — off the featured
+        set into the full, filterable hub. */}
+    <div class="homeAllRow">
+      <a href="/plugins/" class="homeAllBtn">all plugins ({plugins.length}) →</a>
+    </div>
+
     <PluginSubmitCTA class="mt-2" />
   </div>
 
