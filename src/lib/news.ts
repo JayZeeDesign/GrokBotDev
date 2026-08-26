@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { envelope, SITE_URL } from './api';
+import { CP_145_NEWS_OPEN_LABEL } from './copy';
 
 export type NewsDoc = CollectionEntry<'news'>;
 export type NewsKind = 'release' | 'deal' | 'update' | 'announcement';
@@ -59,6 +60,11 @@ function newsSource(doc: NewsDoc): Record<string, unknown> | null {
   return null;
 }
 
+function newsCtaLabel(doc: NewsDoc): string | null {
+  if (!doc.data.external_url) return null;
+  return doc.data.cta_label ?? CP_145_NEWS_OPEN_LABEL;
+}
+
 export function toNewsIndexItem(doc: NewsDoc): Record<string, unknown> {
   const d = doc.data;
   return {
@@ -68,6 +74,7 @@ export function toNewsIndexItem(doc: NewsDoc): Record<string, unknown> {
     kind: d.kind,
     important: d.important,
     external_url: d.external_url ?? null,
+    cta_label: newsCtaLabel(doc),
     published_at: d.published_at,
     detail_url: newsDetailUrl(doc),
   };
@@ -87,7 +94,7 @@ export function toNewsFeedItem(doc: NewsDoc): Record<string, unknown> {
     kind: d.kind,
     important: d.important,
     external_url: d.external_url ?? null,
-    cta_label: d.cta_label ?? null,
+    cta_label: newsCtaLabel(doc),
     source: newsSource(doc),
     categories: [],
     awesome_score: null,
@@ -111,7 +118,7 @@ export function toNewsApiItem(doc: NewsDoc): Record<string, unknown> {
     kind: d.kind,
     important: d.important,
     external_url: d.external_url ?? null,
-    cta_label: d.cta_label ?? null,
+    cta_label: newsCtaLabel(doc),
     source_tweets: sourceTweets(d.source_tweets),
     published_at: d.published_at,
     updated_at: d.updated_at,
