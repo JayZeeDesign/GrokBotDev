@@ -2,7 +2,7 @@
 type: use-case
 name: "Detox · Newsletter Unsubscriber"
 slug: newsletter-unsubscribe-audit
-headline: "Audit every newsletter you get, review one HTML page, then it unsubscribes"
+headline: "Newsletter detox: the bot audits, you review one page, it unsubscribes"
 summary: "A two-phase inbox detox with a human gate. The bot sweeps your email and builds a simple HTML review page of every newsletter you receive, sorted into keep vs certainly-unsubscribe with its reasoning. You decide. Then it works the list slowly in the browser, logging every attempt in a progress file."
 category: work
 subcategory: email
@@ -15,30 +15,38 @@ schedule: adhoc
 autonomy: acts-with-approval
 difficulty: beginner
 setup_minutes: 10
+source_tweets:
+  - url: https://x.com/scheemunai/status/2092591711557947796
+    author_handle: scheemunai
+    excerpt: "Newsletter DETOX! Grok Bot got rid of 76 newsletter signups from my inbox. I've been avoiding it for years! It went through 6 months of email, built me one simple HTML - maybe keep vs certainly unsubscribe - I skimmed it for 90 seconds."
+    posted_at: "2026-08-26T12:35:17.000Z"
+primary_source:
+  kind: x-post
+  url: https://x.com/scheemunai/status/2092591711557947796
 author:
   handle: scheemunai
   url: https://x.com/scheemunai
   platform: x
 replicability: "Paste the prompt as-is - it works on whatever email your bot can read. The review gate is structural: the bot builds the HTML list and stops until you decide. Transactional email is fenced off, and anything that demands a login or looks like a trap gets flagged, not clicked."
 prompt_provenance: author
-awesome_score: 84
+awesome_score: 86
 score_breakdown:
   reproducibility: 23
   ambition: 15
   concreteness: 19
   novelty: 13
-  evidence: 5
+  evidence: 7
   craft: 9
 featured: false
 added_at: "2026-08-26T14:30:00Z"
-updated_at: "2026-08-26T14:30:00Z"
+updated_at: "2026-08-26T15:40:00Z"
 verified_at: "2026-08-26T14:30:00Z"
 status: live
 ---
 
 ## How it's set up
 
-Plenty of people have pointed a bot at a messy inbox and posted the body count - [6,000 emails and 40 lists](/use-cases/inbox-delete-unsub/), [150,000 junk emails](/use-cases/junk-purge-150k/). This is the careful version: a method with a review gate in the middle, so nothing you actually wanted disappears.
+Plenty of people have pointed a bot at a messy inbox and posted the body count - [6,000 emails and 40 lists](/use-cases/inbox-delete-unsub/), [150,000 junk emails](/use-cases/junk-purge-150k/). This is the careful version: a method with a review gate in the middle, so nothing you actually wanted disappears. First run: 76 newsletter signups gone, across multiple inboxes, after a 90-second review.
 
 1. **Connect your email** (Gmail or whatever your bot reads) and paste the prompt below.
 2. **Phase 1 - the audit.** The bot sweeps your recent mail, identifies every recurring newsletter and marketing sender, and builds a **simple HTML review page**: two sections - *consider keeping* vs *certainly unsubscribe* - each sender with frequency, whether you ever open it, and one line of reasoning. Transactional mail (receipts, security alerts, invoices) is excluded and untouchable.
