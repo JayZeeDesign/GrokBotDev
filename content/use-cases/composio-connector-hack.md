@@ -48,7 +48,7 @@ status: live
 
 Grok Bot rides on Cursor's connector catalog, which is thinner than Claude's or ChatGPT's - and sooner or later you hit a tool your bot simply can't reach natively. Corey Ganim's workaround (his second entry here, after his [Chief of Staff build](/use-cases/exact-chief-of-staff-prompt/)) is to stop collecting connectors and install a hub instead:
 
-1. **Connect the Composio connector** to your Grok Bot (an MCP connector like any other).
+1. **Connect the [Composio connector](/plugins/composio/)** to your Grok Bot (an MCP connector like any other).
 2. **Connect the integrations you actually use inside Composio** - it carries 1,000+ of them: CRMs, project managers, marketing tools, the niche SaaS nothing ships a native connector for.
 3. **Your bot now drives all of them via Composio MCP** - one connector on the Grok Bot side, an entire catalog behind it.
 
