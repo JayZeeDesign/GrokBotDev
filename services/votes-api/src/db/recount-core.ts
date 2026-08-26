@@ -56,6 +56,36 @@ export async function verifyLedger(sql: Db): Promise<LedgerVerification> {
   return { ok: errors.length === 0, events: rows.length, errors };
 }
 
+async function flagDecisions(sql: Db) {
+  const rows = await sql<{ target: string; action: string; at: Date }[]>`
+    select distinct on (target) target, action, at
+    from audit_log
+    where action in ('bless_flag', 'bury_flag')
+    order by target, at desc, id desc
+  `;
+  const blessed = new Set<string>();
+  const buried = new Set<string>();
+  for (const row of rows) {
+    if (row.action === 'bless_flag') blessed.add(row.target);
+    if (row.action === 'bury_flag') buried.add(row.target);
+  }
+  return { blessed, buried };
+}
+
+function signalFlags(signals: unknown): string[] {
+  if (!signals || typeof signals !== 'object') return [];
+  const raw = (signals as { flags?: unknown }).flags;
+  return Array.isArray(raw) ? raw.filter((flag): flag is string => typeof flag === 'string') : [];
+}
+
+function effectiveWeight(slug: string, storedWeight: number, signals: unknown, decisions: Awaited<ReturnType<typeof flagDecisions>>) {
+  const flags = signalFlags(signals);
+  if (!flags.length || storedWeight > 0) return storedWeight;
+  const targets = flags.map((flag) => `${slug}:${flag}`);
+  if (targets.some((target) => decisions.buried.has(target))) return 0;
+  return targets.every((target) => decisions.blessed.has(target)) ? 1 : 0;
+}
+
 export async function rebuildMaterializedVotes(sql: Db) {
   const rows = await sql<{
     seq: string;
@@ -64,17 +94,25 @@ export async function rebuildMaterializedVotes(sql: Db) {
     slug: string;
     action: 'cast' | 'uncast';
     weight: number;
+    signals: unknown;
   }[]>`
-    select seq::text, at, identity_id, slug, action, weight
+    select seq::text, at, identity_id, slug, action, weight, signals
     from vote_events
     order by seq asc
   `;
+  const decisions = await flagDecisions(sql);
 
   const current = new Map<string, { identityId: string; slug: string; weight: number; at: Date }>();
   for (const row of rows) {
     const key = `${row.identityId}\u0000${row.slug}`;
-    if (row.action === 'cast') current.set(key, { identityId: row.identityId, slug: row.slug, weight: Number(row.weight), at: row.at });
-    else current.delete(key);
+    if (row.action === 'cast') {
+      current.set(key, {
+        identityId: row.identityId,
+        slug: row.slug,
+        weight: effectiveWeight(row.slug, Number(row.weight), row.signals, decisions),
+        at: row.at,
+      });
+    } else current.delete(key);
   }
 
   await sql.begin(async (tx) => {

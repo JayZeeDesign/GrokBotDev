@@ -73,7 +73,7 @@ npm run review-flags -- bless --slug account-expert --flag velocity --reason "op
 npm run review-flags -- bury  --slug account-expert --flag velocity --reason "bot cluster"
 ```
 
-The CLI records the decision in `audit_log`; the ledger remains append-only.
+The CLI records the decision in `audit_log`, verifies the hash chain, and rebuilds materialized `votes`/`vote_counts`; the ledger remains append-only.
 
 ## Daily digest
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 import { loadConfig } from '../src/config.js';
 import { connect } from '../src/db/client.js';
+import { rebuildMaterializedVotes, verifyLedger } from '../src/db/recount-core.js';
 
 const args = process.argv.slice(2);
 const get = (name: string) => {
@@ -38,7 +39,10 @@ async function review(action: 'bless' | 'bury') {
     insert into audit_log (actor, action, target, detail)
     values ('votes_admin_cli', ${action === 'bless' ? 'bless_flag' : 'bury_flag'}, ${`${slug}:${flag}`}, ${db.json({ slug, flag, reason })})
   `;
-  console.log(JSON.stringify({ ok: true, action, slug, flag, note: 'audit_log recorded; ledger remains append-only. Run recount after policy review.' }, null, 2));
+  const verification = await verifyLedger(db);
+  if (!verification.ok) throw new Error(`ledger verification failed: ${verification.errors.join('; ')}`);
+  const rebuilt = await rebuildMaterializedVotes(db);
+  console.log(JSON.stringify({ ok: true, action, slug, flag, rebuilt, note: 'audit_log recorded; materialized votes/counts rebuilt; ledger remains append-only.' }, null, 2));
 }
 
 try {
