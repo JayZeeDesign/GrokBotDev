@@ -22,7 +22,8 @@ const DIST = 'dist';
 // be a blocking classic script in <head> because an Astro-compiled module defers past first
 // paint and reintroduces the flash. Still same-origin and still external, so §10.7's
 // `script-src 'self'` is unchanged — this widens what the AUDIT accepts, never the CSP.
-const ALLOWED_SRC_PREFIXES = ['/_astro/', '/pagefind/'];
+// Turnstile is the P1 upvote island's only third-party script and is loaded lazily from this origin.
+const ALLOWED_SRC_PREFIXES = ['/_astro/', '/pagefind/', 'https://challenges.cloudflare.com/'];
 const ALLOWED_SRC_EXACT = ['/theme-init.js'];
 const ALLOWED_INLINE_TYPES = ['application/ld+json'];
 
@@ -126,6 +127,7 @@ const REQUIRED_CSP_TOKENS = [
   'https://platform.twitter.com', // F5 embeds (script-src + frame-src)
   'https://syndication.twitter.com', // F5 embeds
   'https://plausible.io', // §9.7 Plausible (script + ingest)
+  'https://challenges.cloudflare.com', // P1 Turnstile for upvote identity proof (script + frame + connect)
   'https://www.youtube-nocookie.com', // F17 embeds (frame-src ONLY — see below)
   "object-src 'none'",
   "frame-ancestors 'none'",
@@ -160,6 +162,11 @@ if (!existsSync(HEADERS_CONF)) {
     ['script-src', "'wasm-unsafe-eval'"],
     ['connect-src', 'https://plausible.io'],
     ['script-src-elem', 'https://plausible.io'],
+    // P1 upvotes: Turnstile is a conscious third-party allowlist entry for identity proof.
+    ['script-src', 'https://challenges.cloudflare.com'],
+    ['script-src-elem', 'https://challenges.cloudflare.com'],
+    ['frame-src', 'https://challenges.cloudflare.com'],
+    ['connect-src', 'https://challenges.cloudflare.com'],
     // F17 — the YouTube host is gated exactly the way the twitter ones are: presence in the
     // policy is not enough, it has to be in the directive that actually does the work.
     ['frame-src', 'https://www.youtube-nocookie.com'],
