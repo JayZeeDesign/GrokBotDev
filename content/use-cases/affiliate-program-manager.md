@@ -3,17 +3,33 @@ type: use-case
 slug: affiliate-program-manager
 headline: "Automate your affiliate program with an AI affiliate manager"
 summary: "An Affonso-powered Grok Bot automates weekly affiliate management: it compares performance, finds growth opportunities and risks, and prepares partner actions. Program changes, payouts, and partner messages still require approval."
+category: marketing
+subcategory: analytics
 categories: [marketing, finance-ops]
+bot_name: "Affiliate Manager"
+schedule: weekly
+autonomy: acts-with-approval
+difficulty: intermediate
+setup_minutes: 20
 format: use-case
 author:
   handle: affonso-io
   url: https://github.com/affonso-io
   platform: github
 prompt_provenance: author
+awesome_score: 80
+score_breakdown:
+  reproducibility: 20
+  ambition: 17
+  concreteness: 19
+  novelty: 12
+  evidence: 3
+  craft: 9
 replicability: "Use the published prompt verbatim, then adapt its timezone, currencies, success metrics, approval rules, communication channel, and cadence to your own affiliate program."
 added_at: "2026-08-26T12:12:25Z"
-updated_at: "2026-08-26T12:12:25Z"
-status: proposed
+updated_at: "2026-08-26T13:00:00Z"
+verified_at: "2026-08-26T13:00:00Z"
+status: live
 ---
 
 ## How it's set up

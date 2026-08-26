@@ -24,9 +24,11 @@ author:
   platform: github
 source_url: https://github.com/affonso-io/agent-skills
 pricing_note: "See affonso.io/pricing for current plans."
+setup_minutes: 15
 added_at: "2026-08-26T12:12:25Z"
 updated_at: "2026-08-26T12:12:25Z"
-status: proposed
+verified_at: "2026-08-26T13:00:00Z"
+status: live
 ---
 
 ## What it does

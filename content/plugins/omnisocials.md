@@ -21,11 +21,12 @@ author:
   handle: "omnisocials"
   url: "https://omnisocials.com"
   platform: web
-pricing_note: "Pro is $10/mo per workspace billed yearly ($12/mo billed monthly); full API, SDKs, and MCP access included on every plan."
+pricing_note: "Pro from $10/mo per workspace; full API, SDKs, and MCP access on every plan."
 setup_minutes: 10
 added_at: "2026-08-26T00:00:00Z"
 updated_at: "2026-08-26T00:00:00Z"
-status: proposed
+verified_at: "2026-08-26T13:00:00Z"
+status: live
 ---
 
 ## What it does
