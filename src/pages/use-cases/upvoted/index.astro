@@ -1,0 +1,51 @@
+---
+// Dynamic "sort by upvotes" view: one static page with every live use case rendered by the
+// normal hub/card components. No-JS fallback is Awesome Score order; the bundled island fetches
+// fresh vote counts and reorders the existing DOM nodes globally. noindex because the final order
+// is client-mutated and should not compete with the canonical /use-cases/ lane.
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import LaneIndexPage from '../../../components/LaneIndexPage.astro';
+import { allUseCases, sortByScore, urlOf } from '../../../lib/entries';
+import { breadcrumbList, collectionPage, itemList } from '../../../lib/seo';
+
+const useCases = sortByScore(await allUseCases());
+const meta = {
+  title: 'Upvoted Use Cases | grokbot.dev',
+  description:
+    'Every live Grok Bot use case on one page, sorted by fresh community upvotes in your browser.',
+};
+const url = '/use-cases/upvoted/';
+const crumbs = [
+  { label: 'home', href: '/' },
+  { label: 'use cases', href: '/use-cases/' },
+  { label: 'upvotes' },
+];
+const graph = [
+  collectionPage(url, meta.title, meta.description),
+  breadcrumbList(crumbs),
+  itemList(useCases.map((entry) => ({ url: urlOf(entry), name: entry.data.name }))),
+];
+const page = { currentPage: 1, lastPage: 1, url: {} };
+---
+
+<BaseLayout title={meta.title} description={meta.description} graph={graph} robots="noindex,follow" laneFeed="use-cases" ogImage="/og/hubs/use-cases.png">
+  <LaneIndexPage
+    h1="Awesome Use Cases"
+    intro="every live use case on one page, sorted by fresh community upvotes. without JavaScript, this starts in Awesome Score order."
+    entries={useCases}
+    page={page}
+    baseUrl="/use-cases/upvoted/"
+    variant="use-case"
+    facets={['category']}
+    source="use-cases-index"
+    pool={useCases}
+    laneLabel="use cases"
+    showSponsorSlot={true}
+    sort={{ current: 'upvotes', newestUrl: '/use-cases/', scoreUrl: '/use-cases/top/', upvotesUrl: '/use-cases/upvoted/' }}
+  />
+</BaseLayout>
+
+<script>
+  import { initUpvotedSort } from '../../../scripts/upvoted-sort';
+  initUpvotedSort();
+</script>

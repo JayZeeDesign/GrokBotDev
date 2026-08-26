@@ -121,6 +121,19 @@ Compute at cast; store in signals jsonb; weight ∈ {0, 1}:
   the 50-slug cap, fetches `GET /api/v1/votes/counts`, and fills numbers. The placeholder is `0`
   and stays harmless when the API is absent. Plugins do not render card vote counts.
 
+### Sort by upvotes — `/use-cases/upvoted/` (P2 on this branch)
+- Add a third sort link, `upvotes`, beside `newest` and `awesome score` on every use-case listing
+  sort row (`/use-cases/`, `/use-cases/top/`, `/use-cases/upvoted/`). The active state appears
+  only on the actual current route.
+- `/use-cases/upvoted/` is statically generated, `noindex,follow`, and renders **all** live
+  use-case cards on one page using the normal hub/card components. Its no-JS fallback order is
+  Awesome Score descending.
+- A bundled island on that route reads existing card vote blocks (`data-vote-slug`), batch-fetches
+  counts in ≤50-slug chunks, fills the Reddit-style counts, then reorders the existing card DOM
+  nodes by `visible_count desc`, `awesome_score desc`, `added_at desc`, then slug.
+- This is a dynamic view only; do not bake these counts into the static pages until the future
+  nightly bake work exists.
+
 ### nginx (dev vhost only in this phase)
 `infra/nginx-grokbot-upvotes-dev.conf` (new file, applied to dev box nginx):
 preview 4382 + `location /api/v1/ { proxy_pass http://127.0.0.1:4391; }` with
@@ -138,7 +151,8 @@ prod rollout steps (operator applies later).
 - E2E happy path via the running dev vhost (curl or playwright): fresh browser context →
   button appears → vote → POST response has `{slug, my_vote: true, count: 1}` in a clean run
   → detail button shows `upvoted · 1` immediately → reload → state persists → unvote; use-case
-  hub cards hydrate vote counts from the counts endpoint.
+  hub cards hydrate vote counts from the counts endpoint; `/use-cases/upvoted/` fetches all card
+  counts and reorders globally after an API cast on a low-score slug.
 
 ### Runbook — `services/votes-api/RUNBOOK.md`
 Start/stop, migrate, backup (pg_dump nightly cron example), restore drill, recount,
@@ -150,12 +164,12 @@ flag review, key rotation (pepper), what to do on a surge alert.
   labeled/segmentable in counts; read endpoints stay public keyless forever; advanced ops
   (bot voting, favorites, submissions, higher limits) require the key. Your job in v1: the
   `kind` column, the `api_keys` table, and a clean auth middleware seam.
-- P2: sort-by-upvotes, nightly bake. P3: X-verify, favorites, accounts.
+- P2 remaining: nightly bake. P3: X-verify, favorites, accounts.
 
 ## Definition of done (P1)
 1. Full gate green on the branch (`npm run build` incl. audit-scripts).
 2. All tests green; E2E demo works at grokbot-upvotes.anacreon.ai (screenshot the states:
-   detail voted `upvoted · 1`, listing card vote blocks, mobile).
+   detail voted `upvoted · 1`, listing card vote blocks, sort-by-upvotes desktop/mobile).
 3. Ledger verified: recount.ts output clean after the E2E session.
 4. RUNBOOK + prod rollout steps written. NOTHING deployed to staging/prod.
 5. Report back: what was built, test results, screenshots, the exact list of things the

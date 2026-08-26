@@ -36,8 +36,13 @@ interface Props {
   layout?: 'cards' | 'table';
   /** Operator: /plugins/ and /use-cases/ carry one rotating sponsored slot. */
   showSponsorSlot?: boolean;
-  /** Operator: two server-rendered sort views (newest default, or by Awesome Score). */
-  sort?: { current: 'newest' | 'score'; newestUrl: string; scoreUrl: string };
+  /** Operator: use-case hubs expose static newest/score views plus a dynamic upvotes view. */
+  sort?: {
+    current: 'newest' | 'score' | 'upvotes';
+    newestUrl: string;
+    scoreUrl: string;
+    upvotesUrl: string;
+  };
 }
 
 const {
@@ -89,6 +94,7 @@ const options = {
 const offset = (page.currentPage - 1) * 24;
 const crumbs = [{ label: 'home', href: '/' }, { label: laneLabel }];
 const searchScope = variant === 'collection' ? undefined : { type: variant };
+const upvoteSortEnabled = sort?.current === 'upvotes';
 ---
 
 <div class="container-page flex flex-col gap-12 py-12 md:py-16">
@@ -116,6 +122,8 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
         <a href={sort.newestUrl} class:list={['sortControl__opt', sort.current === 'newest' && 'is-active']} aria-current={sort.current === 'newest' ? 'true' : undefined}>newest</a>
         <span class="sortControl__sep" aria-hidden="true">·</span>
         <a href={sort.scoreUrl} class:list={['sortControl__opt', sort.current === 'score' && 'is-active']} aria-current={sort.current === 'score' ? 'true' : undefined}>awesome score</a>
+        <span class="sortControl__sep" aria-hidden="true">·</span>
+        <a href={sort.upvotesUrl} class:list={['sortControl__opt', sort.current === 'upvotes' && 'is-active']} aria-current={sort.current === 'upvotes' ? 'true' : undefined}>upvotes</a>
       </div>
     )
   }
@@ -183,15 +191,28 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
           'grid grid-cols-1 gap-4 md:gap-6',
           variant === 'collection' ? 'md:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3',
         ]}
+        data-upvoted-sort-root={upvoteSortEnabled ? 'true' : undefined}
       >
-        {entries.map((entry, index) => (
-          <div class="flex flex-col gap-2">
-            <span class="font-mono text-xs text-text-muted">
-              {String(offset + index + 1).padStart(2, '0')}
-            </span>
-            <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} headingLevel={2} />
-          </div>
-        ))}
+        {entries.map((entry, index) => {
+          const score =
+            typeof (entry.data as { awesome_score?: number }).awesome_score === 'number'
+              ? (entry.data as { awesome_score: number }).awesome_score
+              : -1;
+          return (
+            <div
+              class="flex flex-col gap-2"
+              data-upvoted-sort-card={upvoteSortEnabled ? 'true' : undefined}
+              data-upvoted-sort-slug={upvoteSortEnabled ? entry.data.slug : undefined}
+              data-upvoted-sort-score={upvoteSortEnabled ? String(score) : undefined}
+              data-upvoted-sort-added-at={upvoteSortEnabled ? entry.data.added_at : undefined}
+            >
+              <span class="font-mono text-xs text-text-muted" data-upvoted-sort-index={upvoteSortEnabled ? 'true' : undefined}>
+                {String(offset + index + 1).padStart(2, '0')}
+              </span>
+              <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} headingLevel={2} />
+            </div>
+          );
+        })}
       </div>
     )
   }
@@ -217,8 +238,8 @@ const searchScope = variant === 'collection' ? undefined : { type: variant };
 </div>
 
 <style>
-  /* Operator: two-view sort control (newest default · awesome score). Plain links to the two
-     server-rendered views — static, SEO-clean, correct across the whole set (not just a page). */
+  /* Operator: sort control. Newest + awesome score are server-rendered static views; upvotes is
+     an all-cards noindex view that reorders client-side from fresh vote counts. */
   .sortControl {
     display: flex;
     align-items: center;
