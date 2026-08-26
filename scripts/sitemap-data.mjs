@@ -4,8 +4,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
-const DIRS = { plugin: 'content/plugins', 'use-case': 'content/use-cases', collection: 'content/collections' };
-const LANE = { plugin: 'plugins', 'use-case': 'use-cases', collection: 'collections' };
+const DIRS = { plugin: 'content/plugins', 'use-case': 'content/use-cases', collection: 'content/collections', news: 'content/news' };
+const LANE = { plugin: 'plugins', 'use-case': 'use-cases', collection: 'collections', news: 'news' };
 
 function read(dir) {
   if (!existsSync(dir)) return [];
@@ -29,14 +29,17 @@ export function sitemapData() {
 
   for (const entry of entries) {
     const url = `/${LANE[entry.type]}/${entry.slug}/`;
-    lastmod.set(url, entry.updated_at);
+    lastmod.set(url, entry.updated_at ?? entry.published_at);
     // Deprecated + demo entries are noindex (§5.6 rule 8, Addendum B4).
-    if (entry.status === 'deprecated' || entry.status === 'demo') noindex.add(url);
+    if (entry.status === 'deprecated' || entry.status === 'demo' || entry.status === 'draft') noindex.add(url);
   }
+
+  const liveNews = entries.filter((e) => e.type === 'news' && e.status === 'live');
+  if (liveNews.length) lastmod.set('/news/', liveNews.map((e) => e.updated_at ?? e.published_at).sort().at(-1));
 
   // Hubs: plugins + use cases only (§6.2). Thin (<3) hubs are noindex,follow.
   const hubEntries = entries.filter(
-    (e) => e.type !== 'collection' && e.status !== 'deprecated' && e.status !== 'demo'
+    (e) => (e.type === 'plugin' || e.type === 'use-case') && e.status !== 'deprecated' && e.status !== 'demo'
   );
   const bucket = new Map();
   const push = (key, entry) => {

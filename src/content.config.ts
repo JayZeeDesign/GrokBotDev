@@ -39,6 +39,17 @@ const scoutedBy = z
   })
   .strict();
 
+const sourceTweet = z
+  .object({
+    // F17: the pattern moved to lib/sources.js so the schema and the primary-source
+    // union validate an X URL with the same regex rather than two copies of it.
+    url: z.string().regex(X_STATUS_RE),
+    author_handle: z.string().min(1).max(15), // no leading @
+    excerpt: z.string().min(20).max(280), // short attributed quote — NEVER the full post (§10.6, §5.6 rule 10)
+    posted_at: isoDate.optional(),
+  })
+  .strict();
+
 // Addendum B4: `demo` joins the enum. A demo entry is an explicitly-labelled example —
 // it never carries verified_at and is excluded from the API, feeds, wall and sitemap.
 // `proposed` (2026-08-22) is the state a SUBMITTER writes: it validates without verified_at, and
@@ -179,6 +190,14 @@ function datesSane(
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'verified_at must be ≥ added_at' });
 }
 
+function newsDatesSane(
+  data: { published_at: string; updated_at: string },
+  ctx: z.RefinementCtx
+) {
+  if (data.updated_at < data.published_at)
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'updated_at must be ≥ published_at' });
+}
+
 // no unverified entry ever publishes (§10.1) — deprecated pages are kept but were verified once
 function verifiedWhenLive(data: { status: string; verified_at?: string }, ctx: z.RefinementCtx) {
   // Addendum B4: a demo entry must NEVER carry a verification claim.
@@ -301,18 +320,7 @@ const useCases = defineCollection({
       setup_minutes: z.number().int().min(1).max(240).optional(),
       cost_note: z.string().max(120).optional(),
       source_tweets: z
-        .array(
-          z
-            .object({
-              // F17: the pattern moved to lib/sources.js so the schema and the primary-source
-              // union validate an X URL with the same regex rather than two copies of it.
-              url: z.string().regex(X_STATUS_RE),
-              author_handle: z.string().min(1).max(15), // no leading @
-              excerpt: z.string().min(20).max(280), // short attributed quote — NEVER the full post (§10.6, §5.6 rule 10)
-              posted_at: isoDate.optional(),
-            })
-            .strict()
-        )
+        .array(sourceTweet)
         .max(5)
         .default([]), // embed source; see rules in §5.6 (floor 6, cap 10)
       // F17 — the ONE source this entry was found in. Optional: absent means the first
@@ -338,6 +346,28 @@ const useCases = defineCollection({
     .superRefine(verifiedWhenLive)
     .superRefine(primaryIsCredited)
     .superRefine(useCaseEssentials),
+});
+
+// ---------- NEWS ----------
+const newsEntries = defineCollection({
+  loader: glob({ pattern: '*.md', base: './content/news' }),
+  schema: z
+    .object({
+      type: z.literal('news').default('news'),
+      slug,
+      title: z.string().min(10).max(100),
+      summary: z.string().min(80).max(320),
+      kind: z.enum(['release', 'deal', 'update', 'announcement']),
+      important: z.boolean().default(false),
+      external_url: httpsUrl.optional(),
+      cta_label: z.string().max(40).optional(),
+      source_tweets: z.array(sourceTweet).max(5).default([]),
+      published_at: isoDate,
+      updated_at: isoDate,
+      status: z.enum(['live', 'draft']).default('draft'),
+    })
+    .strict()
+    .superRefine(newsDatesSane),
 });
 
 // ---------- COLLECTION ----------
@@ -375,4 +405,5 @@ export const collections = {
   plugins,
   'use-cases': useCases,
   collections: collectionEntries,
+  news: newsEntries,
 };

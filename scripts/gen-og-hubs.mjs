@@ -43,6 +43,7 @@ const MARK = `<svg viewBox="0 0 36 36" width="42" height="42" aria-hidden="true"
 const HUBS = [
   { name: 'use-cases',   h1: 'Awesome Grok&nbsp;Bot use cases', sub: 'Ready-to-use prompts, curated from X and YouTube, delivered to your Grok&nbsp;Bot.', eyebrow: 'awesome use cases', h1size: 72 },
   { name: 'plugins',     h1: 'Grok&nbsp;Bot plugins',           sub: 'Agentic tools your Grok&nbsp;Bot can actually plug into and use.', eyebrow: 'plugins', h1size: 84 },
+  { name: 'news',        h1: 'Grok&nbsp;Bot news',              sub: 'Releases, deals, and opportunities worth surfacing to your Grok&nbsp;Bot.', eyebrow: 'news', h1size: 96 },
   { name: 'collections', h1: 'Grok&nbsp;Bot collections',       sub: 'Whole setups that work as one, put together for you.', eyebrow: 'collections', h1size: 82 },
   { name: 'wall',        h1: 'The wall',                        sub: 'Everything people are building with Grok&nbsp;Bot, as it lands.', eyebrow: 'the wall', h1size: 96 },
 ];

@@ -1,0 +1,176 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import PagefindMeta from '../../components/PagefindMeta.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import TweetEmbed from '../../components/TweetEmbed.astro';
+import { CP_143_NEWS_IMPORTANT_LABEL, CP_145_NEWS_OPEN_LABEL } from '../../lib/copy';
+import { isoToDate } from '../../lib/format';
+import { newsUrlOf } from '../../lib/news';
+import { SITE, breadcrumbList, newsEntryDescription, newsEntryTitle } from '../../lib/seo';
+
+export async function getStaticPaths() {
+  const news = (await getCollection('news')).filter((entry) => entry.data.status === 'live');
+  return news.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const url = newsUrlOf(entry);
+const crumbs = [{ label: 'news', href: '/news/' }, { label: d.title }];
+const citations = [
+  ...d.source_tweets.map((tweet) => tweet.url),
+  ...(d.external_url ? [d.external_url] : []),
+];
+const graph = [
+  {
+    '@type': 'NewsArticle',
+    headline: d.title,
+    name: d.title,
+    description: d.summary,
+    url: `${SITE}${url}`,
+    mainEntityOfPage: `${SITE}${url}`,
+    datePublished: d.published_at,
+    dateModified: d.updated_at,
+    isAccessibleForFree: true,
+    author: {
+      '@type': 'Organization',
+      name: 'grokbot.dev',
+      url: SITE,
+    },
+    ...(citations.length ? { citation: citations } : {}),
+  },
+  breadcrumbList(crumbs),
+];
+---
+
+<BaseLayout
+  title={newsEntryTitle(d.title)}
+  description={newsEntryDescription(d.summary)}
+  ogImage={`${SITE}/og/news/${d.slug}.png`}
+  graph={graph}
+>
+  <article class="container-page flex flex-col gap-8 py-12 md:py-16" data-pagefind-body>
+    <Breadcrumbs items={crumbs} />
+
+    <PagefindMeta
+      type="news"
+      status={d.status}
+      url={url}
+    />
+
+    <div class="entryGrid">
+      <div class="entryGrid__main flex flex-col gap-8">
+        <header class="flex flex-col gap-4">
+          <div class="flex flex-wrap items-center gap-2 font-mono text-xs lowercase text-text-muted">
+            <time datetime={d.published_at}>{isoToDate(d.published_at)}</time>
+            <span class="newsKind">{d.kind}</span>
+            {d.important && <span class="newsImportant">{CP_143_NEWS_IMPORTANT_LABEL}</span>}
+          </div>
+
+          <h1
+            class="display-track font-display text-3xl text-text md:text-4xl"
+            data-pagefind-weight="10"
+            data-pagefind-meta="name"
+          >
+            {d.title}
+          </h1>
+          <p class="max-w-prose text-lg text-text-muted" data-pagefind-meta="tagline">{d.summary}</p>
+
+          {d.external_url && (
+            <a href={d.external_url} target="_blank" rel="noopener" class="newsCta">
+              {d.cta_label ?? CP_145_NEWS_OPEN_LABEL} <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </header>
+
+        <div class="prose-body flex max-w-prose flex-col gap-4 text-base text-text">
+          <Content />
+        </div>
+      </div>
+
+      {
+        d.source_tweets.length > 0 && (
+          <aside class="entryGrid__rail flex flex-col gap-4" aria-label="source posts">
+            <SectionHeading title="source" variant="sub" level={2} />
+            <div class="flex flex-col gap-4">
+              {d.source_tweets.map((tweet) => (
+                <TweetEmbed
+                  tweetUrl={tweet.url}
+                  authorHandle={tweet.author_handle}
+                  excerpt={tweet.excerpt}
+                  postedAt={tweet.posted_at}
+                />
+              ))}
+            </div>
+          </aside>
+        )
+      }
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .newsKind,
+  .newsImportant {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 1.5rem;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.5rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .newsKind {
+    color: var(--color-text-muted);
+  }
+  .newsImportant {
+    border-color: var(--color-accent);
+    background: var(--color-accent-tint);
+    color: var(--color-accent-text);
+  }
+  .newsCta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: fit-content;
+    min-block-size: 44px;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    padding-inline: 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-text);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .newsCta:hover {
+    border-color: var(--color-text);
+    color: var(--color-accent-text);
+  }
+  .entryGrid {
+    display: grid;
+    gap: 3rem;
+  }
+  @media (min-width: 1024px) {
+    .entryGrid {
+      grid-template-columns: minmax(0, 1fr) 22rem;
+      align-items: start;
+    }
+    .entryGrid__rail {
+      position: sticky;
+      inset-block-start: 1.5rem;
+      max-block-size: calc(100vh - 3rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .entryGrid__rail {
+      position: static;
+    }
+  }
+</style>

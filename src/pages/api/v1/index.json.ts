@@ -3,27 +3,31 @@
 import type { APIRoute } from 'astro';
 import categories from '../../../data/categories.json';
 import { allCollections, allPlugins, allUseCases, hubEligible } from '../../../lib/entries';
+import { allNews } from '../../../lib/news';
 import { SITE_URL, envelope, included, integrationItems, jsonResponse } from '../../../lib/api';
 import { STABILITY } from '../../../lib/apiMeta';
 
 export const GET: APIRoute = async () => {
-  const [plugins, useCases, collections, hubPool] = await Promise.all([
+  const [plugins, useCases, collections, hubPool, news] = await Promise.all([
     allPlugins(),
     allUseCases(),
     allCollections(),
     hubEligible(),
+    allNews(),
   ]);
   const p = included(plugins).length;
   const u = included(useCases).length;
   const c = included(collections).length;
+  const n = news.length;
   const latestCount = Math.min(50, p + u + c);
   const integrationCount = integrationItems(included(hubPool)).length;
 
   const items = [
     { name: 'index', url: `${SITE_URL}/api/v1/index.json`, description: 'Site meta, counts, endpoint directory', count: 10 },
     { name: 'status', url: `${SITE_URL}/api/v1/status.json`, description: 'API self-description: version, capabilities, notices, deprecations, changelog. Poll this to learn if the API changed.', count: 0 },
-    { name: 'feed', url: `${SITE_URL}/api/v1/feed.json`, description: 'RECOMMENDED. Complete lean feed (all types, newest first, no prompt/body). Scan + rank here, then fetch item.detail_url for the full record.', count: p + u + c },
-    { name: 'latest', url: `${SITE_URL}/api/v1/latest.json`, description: '50 newest entries across all types (full records)', count: latestCount },
+    { name: 'feed', url: `${SITE_URL}/api/v1/feed.json`, description: "RECOMMENDED. Complete lean feed (plugins, use cases, collections and news), newest first. News items carry type 'news', kind, important and external_url.", count: p + u + c + n },
+    { name: 'news', url: `${SITE_URL}/api/v1/news.json`, description: 'News list: releases, deals, announcements and updates. Per-item detail: /api/v1/news/<slug>.json', count: n },
+    { name: 'latest', url: `${SITE_URL}/api/v1/latest.json`, description: '50 newest plugins, use cases and collections (full records)', count: latestCount },
     { name: 'plugins', url: `${SITE_URL}/api/v1/plugins.json`, description: 'All plugins (full records). Per-entry detail: /api/v1/plugins/<slug>.json', count: p },
     { name: 'use_cases', url: `${SITE_URL}/api/v1/use-cases.json`, description: 'All use cases with full prompt text. Per-entry detail: /api/v1/use-cases/<slug>.json', count: u },
     { name: 'collections', url: `${SITE_URL}/api/v1/collections.json`, description: 'All collections. Per-entry detail: /api/v1/collections/<slug>.json', count: c },
@@ -37,7 +41,7 @@ export const GET: APIRoute = async () => {
         name: 'grokbot.dev',
         base_url: `${SITE_URL}/`,
         description:
-          'Open directory of ready-to-use Grok Bot prompts, plugins, and collections. Static JSON API, RSS feeds, MCP at mcp.grokbot.dev.',
+          'Open directory of ready-to-use Grok Bot prompts, plugins, collections, and news. Static JSON API, RSS feeds, MCP at mcp.grokbot.dev.',
         agent_contract_url: `${SITE_URL}/agent/`,
         submit_url: `${SITE_URL}/submit/`,
         repo_url: 'https://github.com/ZeroPointRepo/GrokBotDev',
@@ -46,7 +50,7 @@ export const GET: APIRoute = async () => {
         status_url: `${SITE_URL}/api/v1/status.json`,
         stability: STABILITY,
       },
-      counts: { plugins: p, use_cases: u, collections: c },
+      counts: { plugins: p, use_cases: u, collections: c, news: n },
     })
   );
 };

@@ -74,7 +74,7 @@ const clamp = (s, n) => {
 
 // Brand-true per-entry card (2026-08-22): mark + wordmark, type label, score badge when
 // graded, the HOOK in Geist 600, the summary in Inter, category chips + verified date.
-function card({ typeLabel, name, summary, verified, categories, score, guide }) {
+function card({ typeLabel, name, summary, stamp, categories, score, guide }) {
   const chips = (categories ?? []).filter(Boolean).slice(0, 3);
   return el(
     'div',
@@ -125,8 +125,8 @@ function card({ typeLabel, name, summary, verified, categories, score, guide }) 
           })
         )
       ),
-      verified
-        ? text(`verified ${verified}`, { fontFamily: 'mono', fontSize: 22, color: MUTED })
+      stamp
+        ? text(stamp, { fontFamily: 'mono', fontSize: 22, color: MUTED })
         : el('div', { style: { display: 'flex' } })
     )
   );
@@ -142,7 +142,7 @@ function write(path, buffer) {
   writeFileSync(path, buffer);
 }
 
-const DIRS = { plugins: 'PLUGIN', 'use-cases': 'USE CASE', collections: 'COLLECTION' };
+const DIRS = { plugins: 'PLUGIN', 'use-cases': 'USE CASE', collections: 'COLLECTION', news: 'NEWS' };
 const frontmatter = (file) => {
   const raw = readFileSync(file, 'utf8');
   return parseYaml(raw.slice(3, raw.indexOf('\n---', 3))) ?? {};
@@ -154,20 +154,37 @@ for (const [dir, label] of Object.entries(DIRS)) {
   if (!existsSync(source)) continue;
   for (const name of readdirSync(source).filter((f) => f.endsWith('.md'))) {
     const d = frontmatter(join(source, name));
+    if (dir === 'news' && d.status === 'draft') continue;
+    const newsStamp = dir === 'news' && d.published_at ? String(d.published_at).slice(0, 10) : null;
     const verified = d.status === 'live' && d.verified_at ? String(d.verified_at).slice(0, 10) : null;
     const isGuide = d.format === 'guide';
     write(`dist/og/${dir}/${d.slug}.png`, await png(card({
       typeLabel: isGuide ? 'GUIDE' : label,
-      name: d.headline ?? d.name,
+      name: d.title ?? d.headline ?? d.name,
       summary: d.summary ?? d.tagline ?? d.what_it_does ?? null,
-      verified,
-      categories: (d.categories && d.categories.length ? d.categories : [d.category]),
+      stamp: newsStamp ?? (verified ? `verified ${verified}` : null),
+      categories: dir === 'news'
+        ? [d.kind, d.important ? 'important' : null].filter(Boolean)
+        : (d.categories && d.categories.length ? d.categories : [d.category]),
       score: isGuide ? null : (d.awesome_score ?? null),
       guide: isGuide,
     })));
     count += 1;
   }
 }
+
+write(
+  'dist/og/hubs/news.png',
+  await png(card({
+    typeLabel: 'NEWS',
+    name: 'News for Grok Bot users',
+    summary: 'Releases, deals, opportunities and platform updates worth surfacing to your Bot.',
+    stamp: 'grokbot.dev/news',
+    categories: ['releases', 'deals', 'updates'],
+    score: null,
+    guide: false,
+  }))
+);
 
 // Site default (§6.6): the social card is now a brand-true, browser-rendered image committed
 // at public/og/default.png (scripts/gen-og-default.mjs) — REAL Geist/Inter fonts + REAL
@@ -188,4 +205,4 @@ write(
   )
 );
 
-console.log(`build-og: ${count} entry cards + logo-512.png (default.png is committed at public/og/default.png)`);
+console.log(`build-og: ${count} entry cards + news hub + logo-512.png (default.png is committed at public/og/default.png)`);
