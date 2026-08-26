@@ -3,13 +3,13 @@ type: use-case
 name: "Detox · Newsletter Unsubscriber"
 slug: newsletter-unsubscribe-audit
 headline: "Audit every newsletter you get, review one HTML page, then it unsubscribes"
-summary: "A two-phase inbox detox with a human gate in the middle. The bot sweeps your email and builds a simple HTML review page of every newsletter you receive, sorted into 'consider keeping' vs 'certainly unsubscribe' with its reasoning. You decide. Then it works through the list slowly in the browser, logging every attempt in a progress file."
+summary: "A two-phase inbox detox with a human gate. The bot sweeps your email and builds a simple HTML review page of every newsletter you receive, sorted into keep vs certainly-unsubscribe with its reasoning. You decide. Then it works the list slowly in the browser, logging every attempt in a progress file."
 category: work
 subcategory: email
 categories: [work, personal]
 format: use-case
 bot_name: "Detox"
-what_it_does: "Phase one: the bot audits your inbox, identifies every recurring newsletter, and builds an HTML review page sorted into keep vs certainly-unsubscribe with reasons (open rate, frequency, content type). Phase two, after you decide: it unsubscribes in the browser a few at a time, tracking every sender's status in a dedicated progress file."
+what_it_does: "Phase one: the bot audits your inbox, finds every recurring newsletter, and builds an HTML review page sorted into keep vs certainly-unsubscribe with reasons. Phase two, after you decide: it unsubscribes in the browser a few at a time, tracking every sender in a dedicated progress file."
 integrations: [Gmail]
 schedule: adhoc
 autonomy: acts-with-approval
@@ -19,7 +19,7 @@ author:
   handle: scheemunai
   url: https://x.com/scheemunai
   platform: x
-replicability: "Paste the prompt as-is - it works on whatever email your bot can read. The review gate is structural: the bot builds the HTML list and stops until you decide. Transactional email (receipts, security, invoices) is fenced off, and anything that demands a login or looks like a trap gets flagged to you instead of clicked."
+replicability: "Paste the prompt as-is - it works on whatever email your bot can read. The review gate is structural: the bot builds the HTML list and stops until you decide. Transactional email is fenced off, and anything that demands a login or looks like a trap gets flagged, not clicked."
 prompt_provenance: author
 awesome_score: 84
 score_breakdown:
