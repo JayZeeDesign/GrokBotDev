@@ -25,7 +25,7 @@ function walk(dir) {
 }
 walk(DIST);
 
-for (const extra of ['/llms.txt', '/llms-full.txt', '/robots.txt', '/sitemap-index.xml', '/rss.xml']) {
+for (const extra of ['/llms.txt', '/llms-full.txt', '/robots.txt', '/sitemap-index.xml', '/rss.xml', '/news/rss.xml']) {
   if (existsSync(join(DIST, extra.slice(1)))) urls.push(extra);
 }
 

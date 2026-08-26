@@ -56,7 +56,10 @@ const isCurrent = (href: string) =>
 // breadcrumbs link `/plugins/`, `/use-cases/` and `/collections/` (F14), the footer's browse
 // column links all of them plus `/categories/` and `/integrations/`, and the home table's
 // category chips link the category hubs. Nothing is orphaned.
-const nav = [{ href: '/wall/', label: 'wall' }];
+const nav = [
+  { href: '/wall/', label: 'wall' },
+  { href: '/news/', label: 'news' },
+];
 ---
 
 <header class="siteHeader border-b border-border bg-bg" data-pagefind-ignore>

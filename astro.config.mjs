@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { sitemapData } from './scripts/sitemap-data.mjs';
 
 const devPort = Number(process.env.PORT ?? 4380);
+const devHost = process.env.ASTRO_DEV_HOST;
 
 // §6.5 — real lastmod per URL + the exclusion set, computed from content/ at config load.
 const { lastmod: SITEMAP_LASTMOD, noindex: SITEMAP_NOINDEX, hubUrls: SITEMAP_HUBS } = sitemapData();
@@ -37,17 +38,21 @@ export default defineConfig({
       },
     }),
   ],
-  server: { host: true, port: devPort },
+  server: {
+    host: true,
+    port: devPort,
+    ...(devHost ? { allowedHosts: [devHost] } : {}),
+  },
   vite: {
     plugins: [tailwindcss()],
     // §4.2 / §10.7: island scripts must ALWAYS ship as bundled /_astro/*.js files.
     // Astro inlines small hoisted script chunks by default, which the production CSP
     // (`script-src 'self'`, no 'unsafe-inline', no nonces) would block. 0 disables it.
     build: { assetsInlineLimit: 0 },
-    server: process.env.ASTRO_DEV_HOST
+    server: devHost
       ? {
-          allowedHosts: [process.env.ASTRO_DEV_HOST],
-          hmr: { host: process.env.ASTRO_DEV_HOST, protocol: 'wss', clientPort: 443 },
+          allowedHosts: [devHost],
+          hmr: { host: devHost, protocol: 'wss', clientPort: 443 },
         }
       : undefined,
   },

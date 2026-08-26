@@ -4,6 +4,8 @@
 import type { AnyDoc, UseCaseDoc } from './entries';
 import { kindOf, primarySourceOf, summaryOf, titleOf, urlOf } from './entries';
 import { apiSort, included, SITE_URL } from './api';
+import type { NewsDoc } from './news';
+import { newsUrlOf, sortNews } from './news';
 
 const escape = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -43,16 +45,59 @@ function primarySourceElement(doc: AnyDoc): string {
   return `\n      <gb:primary_source ${rendered} />`;
 }
 
-export function rssFeed(opts: { title: string; description: string; path: string; docs: AnyDoc[] }) {
-  const items = apiSort(included(opts.docs))
+type RssDoc = AnyDoc | NewsDoc;
+
+const isNewsDoc = (doc: RssDoc): doc is NewsDoc => doc.data.type === 'news';
+
+function docUrl(doc: RssDoc): string {
+  return `${SITE_URL}${isNewsDoc(doc) ? newsUrlOf(doc) : urlOf(doc)}`;
+}
+
+function docTitle(doc: RssDoc): string {
+  return isNewsDoc(doc) ? doc.data.title : titleOf(doc);
+}
+
+function docDescription(doc: RssDoc): string {
+  return isNewsDoc(doc) ? doc.data.summary : summaryOf(doc);
+}
+
+function docDate(doc: RssDoc): string {
+  return isNewsDoc(doc) ? doc.data.published_at : doc.data.added_at;
+}
+
+function newsElement(doc: RssDoc): string {
+  if (!isNewsDoc(doc)) return primarySourceElement(doc);
+  const attrs: Array<[string, string]> = [
+    ['kind', doc.data.kind],
+    ['important', String(doc.data.important)],
+  ];
+  if (doc.data.external_url) attrs.push(['external_url', doc.data.external_url]);
+  const rendered = attrs.map(([k, v]) => `${k}="${escape(v)}"`).join(' ');
+  return `\n      <gb:news ${rendered} />`;
+}
+
+function sortRssDocs(docs: RssDoc[]): RssDoc[] {
+  const entryDocs = docs.filter((doc): doc is AnyDoc => !isNewsDoc(doc));
+  const newsDocs = docs.filter(isNewsDoc);
+  return [...apiSort(included(entryDocs)), ...sortNews(newsDocs)].sort((a, b) =>
+    docDate(a) === docDate(b)
+      ? (a.data.slug as string).localeCompare(b.data.slug as string)
+      : docDate(a) < docDate(b)
+        ? 1
+        : -1
+  );
+}
+
+export function rssFeed(opts: { title: string; description: string; path: string; docs: RssDoc[] }) {
+  const items = sortRssDocs(opts.docs)
     .map((doc) => {
-      const url = `${SITE_URL}${urlOf(doc)}`;
+      const url = docUrl(doc);
       return `    <item>
-      <title>${escape(titleOf(doc))}</title>
+      <title>${escape(docTitle(doc))}</title>
       <link>${url}</link>
       <guid isPermaLink="true">${url}</guid>
-      <description>${escape(summaryOf(doc))}</description>
-      <pubDate>${new Date(doc.data.added_at).toUTCString()}</pubDate>${primarySourceElement(doc)}
+      <description>${escape(docDescription(doc))}</description>
+      <pubDate>${new Date(docDate(doc)).toUTCString()}</pubDate>${newsElement(doc)}
     </item>`;
     })
     .join('\n');

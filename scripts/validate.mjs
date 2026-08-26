@@ -28,6 +28,7 @@ const CONTENT_DIRS = {
   plugin: `${ROOT}/plugins`,
   'use-case': `${ROOT}/use-cases`,
   collection: `${ROOT}/collections`,
+  news: `${ROOT}/news`,
 };
 
 const categories = JSON.parse(readFileSync('src/data/categories.json', 'utf8'));
@@ -105,7 +106,7 @@ function splitFrontmatter(raw, file) {
   // fails with a type error. This parser (yaml 2.x, YAML 1.2) would happily pass it, so
   // catch the divergence here rather than letting it surface 20 seconds later.
   for (const match of yamlText.matchAll(
-    /^\s*(added_at|updated_at|verified_at|posted_at):\s*(?!["'])(\d{4}-\d{2}-\d{2}T[^\s#]+)/gm
+    /^\s*(added_at|published_at|updated_at|verified_at|posted_at):\s*(?!["'])(\d{4}-\d{2}-\d{2}T[^\s#]+)/gm
   )) {
     fail(
       file,
@@ -180,7 +181,9 @@ for (const entry of entries) {
   const requiredCommon =
     type === 'plugin'
       ? ['name', 'tagline', 'category', 'subcategory', 'added_at', 'updated_at']
-      : ['added_at', 'updated_at'];
+      : type === 'news'
+        ? ['title', 'summary', 'kind', 'published_at', 'updated_at']
+        : ['added_at', 'updated_at'];
   for (const field of requiredCommon) {
     if (!d[field]) fail(file, '§5.2', `missing required field \`${field}\``);
   }
@@ -204,7 +207,7 @@ for (const entry of entries) {
   }
 
   // §5.6 rule 7 — date sanity
-  for (const field of ['added_at', 'updated_at', 'verified_at']) {
+  for (const field of ['added_at', 'published_at', 'updated_at', 'verified_at']) {
     if (d[field] && !ISO_RE.test(String(d[field]))) {
       fail(file, '§5.6 #7', `\`${field}\` must be ISO 8601 UTC ending in Z (got "${d[field]}")`);
     }
@@ -212,26 +215,36 @@ for (const entry of entries) {
   if (d.added_at && d.updated_at && String(d.updated_at) < String(d.added_at)) {
     fail(file, '§5.6 #7', 'updated_at must be ≥ added_at');
   }
+  if (d.published_at && d.updated_at && String(d.updated_at) < String(d.published_at)) {
+    fail(file, '§5.6 #7', 'updated_at must be ≥ published_at');
+  }
   if (d.added_at && d.verified_at && String(d.verified_at) < String(d.added_at)) {
     fail(file, '§5.6 #7', 'verified_at must be ≥ added_at');
   }
 
   // §5.6 rule 8 + Addendum B4 — status semantics
-  const status = d.status ?? 'proposed';
-  if (!['proposed', 'live', 'needs-update', 'deprecated', 'demo'].includes(status)) {
-    fail(file, '§5.6 #8', `unknown status "${status}"`);
-  }
-  if (status === 'demo' && d.verified_at) {
-    fail(
-      file,
-      'Addendum B4',
-      'demo entries must not carry verified_at — nothing fictional ever carries a verification claim'
-    );
-  }
-  // A SUBMITTER writes status: proposed and leaves verified_at empty; a reviewer sets both
-  // verified_at and status: live. So verified_at is required only for the published states.
-  if (!['deprecated', 'demo', 'proposed'].includes(status) && !d.verified_at) {
-    fail(file, '§10.1', `verified_at is required for status "${status}" — a reviewer sets it; submitters use status: proposed (§10.1)`);
+  const status = d.status ?? (type === 'news' ? 'draft' : 'proposed');
+  if (type === 'news') {
+    if (!['live', 'draft'].includes(status)) {
+      fail(file, 'NEWS-5', `news status must be "live" or "draft" (got "${status}")`);
+    }
+    if (d.verified_at) fail(file, 'NEWS-5', 'news entries do not use verified_at');
+  } else {
+    if (!['proposed', 'live', 'needs-update', 'deprecated', 'demo'].includes(status)) {
+      fail(file, '§5.6 #8', `unknown status "${status}"`);
+    }
+    if (status === 'demo' && d.verified_at) {
+      fail(
+        file,
+        'Addendum B4',
+        'demo entries must not carry verified_at - nothing fictional ever carries a verification claim'
+      );
+    }
+    // A SUBMITTER writes status: proposed and leaves verified_at empty; a reviewer sets both
+    // verified_at and status: live. So verified_at is required only for the published states.
+    if (!['deprecated', 'demo', 'proposed'].includes(status) && !d.verified_at) {
+      fail(file, '§10.1', `verified_at is required for status "${status}" - a reviewer sets it; submitters use status: proposed (§10.1)`);
+    }
   }
 
   // §5.5 — controlled integration vocabulary
@@ -284,6 +297,50 @@ for (const entry of entries) {
     if (body.trim().length < 400) {
       fail(file, '§5.3', `plugin body (description) must be ≥400 chars (is ${body.trim().length})`);
     }
+  }
+
+  if (type === 'news') {
+    if (typeof d.title !== 'string' || d.title.length < 10 || d.title.length > 100) {
+      fail(file, 'NEWS-1', 'title is required, 10–100 chars');
+    }
+    if (typeof d.summary !== 'string' || d.summary.length < 80 || d.summary.length > 320) {
+      fail(file, 'NEWS-2', 'summary is required, 80–320 chars');
+    }
+    if (!['release', 'deal', 'update', 'announcement'].includes(d.kind)) {
+      fail(file, 'NEWS-3', `kind must be release, deal, update, or announcement (got "${d.kind}")`);
+    }
+    if (d.important !== undefined && typeof d.important !== 'boolean') {
+      fail(file, 'NEWS-4', 'important must be boolean when present');
+    }
+    if (d.external_url && !String(d.external_url).startsWith('https://')) {
+      fail(file, 'NEWS-6', `external_url must be https:// (got "${d.external_url}")`);
+    }
+    if (d.cta_label !== undefined) {
+      if (typeof d.cta_label !== 'string' || d.cta_label.length > 40) {
+        fail(file, 'NEWS-6', 'cta_label must be a string ≤40 chars when present');
+      }
+      if (!d.external_url) fail(file, 'NEWS-6', 'cta_label requires external_url');
+    }
+
+    const tweets = Array.isArray(d.source_tweets) ? d.source_tweets : [];
+    if (tweets.length > 5) fail(file, '§5.2', 'source_tweets is capped at 5');
+    for (const tweet of tweets) {
+      if (!TWEET_RE.test(tweet?.url ?? '')) {
+        fail(file, '§5.2', `source_tweets url "${tweet?.url}" is not an x.com/<handle>/status/<id> URL`);
+      }
+      if (
+        typeof tweet?.excerpt !== 'string' ||
+        tweet.excerpt.length < 20 ||
+        tweet.excerpt.length > 280
+      ) {
+        fail(file, '§5.6 #10', 'source_tweets excerpt must be a partial quote of 20–280 chars');
+      }
+      if (String(tweet?.author_handle ?? '').startsWith('@')) {
+        fail(file, '§5.2', `author_handle "${tweet.author_handle}" must not include the leading @`);
+      }
+      track(tweetUrls, tweet?.url, 'source_tweets url');
+    }
+    if (!body.trim()) fail(file, 'NEWS-7', 'news body must not be empty');
   }
 
   if (type === 'use-case') {
@@ -462,8 +519,8 @@ for (const entry of entries.filter((e) => e.type === 'collection')) {
     const memberType = byType.get(member?.slug);
     if (!memberType) {
       fail(entry.file, '§5.6 #9', `dangling member "${member?.slug}" — no plugin or use case has that slug`);
-    } else if (memberType === 'collection') {
-      fail(entry.file, '§5.6 #9', `member "${member.slug}" is a collection — collections never nest`);
+    } else if (memberType !== 'plugin' && memberType !== 'use-case') {
+      fail(entry.file, '§5.6 #9', `member "${member.slug}" is a ${memberType} - collections contain plugins and use cases only`);
     }
   }
 }
@@ -473,11 +530,12 @@ const counts = {
   plugins: entries.filter((e) => e.type === 'plugin').length,
   'use-cases': entries.filter((e) => e.type === 'use-case').length,
   collections: entries.filter((e) => e.type === 'collection').length,
+  news: entries.filter((e) => e.type === 'news').length,
 };
 const demo = entries.filter((e) => (e.data?.status ?? 'live') === 'demo').length;
 
 console.log(
-  `validate: ${entries.length} entries — ${counts.plugins} plugins, ${counts['use-cases']} use cases, ${counts.collections} collections (${demo} demo)`
+  `validate: ${entries.length} entries - ${counts.plugins} plugins, ${counts['use-cases']} use cases, ${counts.collections} collections, ${counts.news} news (${demo} demo)`
 );
 
 if (errors.length) {

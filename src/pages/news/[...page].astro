@@ -1,0 +1,137 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Pagination from '../../components/Pagination.astro';
+import { CP_140_NEWS_H1, CP_141_NEWS_INTRO, CP_142_NEWS_READ_LABEL, CP_143_NEWS_IMPORTANT_LABEL, CP_144_NEWS_EMPTY, CP_145_NEWS_OPEN_LABEL } from '../../lib/copy';
+import { isoToDate } from '../../lib/format';
+import { allNews, newsUrlOf, sortNews, type NewsDoc } from '../../lib/news';
+import { META, breadcrumbList, collectionPage, itemList, paginate } from '../../lib/seo';
+
+export const getStaticPaths = (async ({ paginate: paginateFn }) => {
+  const news = sortNews(await allNews());
+  return paginateFn(news, { pageSize: 20 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props as { page: Page<NewsDoc> };
+const meta = paginate(META.news, page.currentPage, page.lastPage);
+const url = page.currentPage === 1 ? '/news/' : `/news/${page.currentPage}/`;
+const crumbs = [{ label: 'home', href: '/' }, { label: 'news' }];
+const graph = [
+  collectionPage(url, meta.title, meta.description),
+  breadcrumbList(crumbs),
+  itemList(page.data.map((entry) => ({ url: newsUrlOf(entry), name: entry.data.title }))),
+];
+---
+
+<BaseLayout title={meta.title} description={meta.description} graph={graph} laneFeed="news" ogImage="/og/hubs/news.png">
+  <div class="container-page flex flex-col gap-10 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">{CP_140_NEWS_H1}</h1>
+      <p class="max-w-prose text-base text-text-muted">{CP_141_NEWS_INTRO}</p>
+    </header>
+
+    {
+      page.data.length === 0 ? (
+        <p class="rounded-sm border border-border bg-surface p-6 font-mono text-sm lowercase text-text-muted">
+          {CP_144_NEWS_EMPTY}
+        </p>
+      ) : (
+        <div class="newsList divide-y divide-border border-y border-border">
+          {page.data.map((entry) => {
+            const d = entry.data;
+            const href = newsUrlOf(entry);
+            return (
+              <article class="newsRow grid gap-4 py-5 md:items-start">
+                <div class="flex flex-wrap items-center gap-2 font-mono text-xs lowercase text-text-muted md:flex-col md:items-start">
+                  <time datetime={d.published_at}>{isoToDate(d.published_at)}</time>
+                  <span class="newsKind">{d.kind}</span>
+                  {d.important && <span class="newsImportant">{CP_143_NEWS_IMPORTANT_LABEL}</span>}
+                </div>
+
+                <div class="flex min-w-0 flex-col gap-2">
+                  <h2 class="font-sans text-xl font-medium text-text">
+                    <a href={href} class="newsTitle">{d.title}</a>
+                  </h2>
+                  <p class="max-w-prose text-base text-text-muted">{d.summary}</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 md:justify-end">
+                  <a href={href} class="newsAction">{CP_142_NEWS_READ_LABEL}</a>
+                  {d.external_url && (
+                    <a href={d.external_url} target="_blank" rel="noopener" class="newsAction newsAction--external">
+                      {d.cta_label ?? CP_145_NEWS_OPEN_LABEL} <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )
+    }
+
+    {
+      page.lastPage > 1 && (
+        <Pagination
+          page={{
+            current: page.currentPage,
+            total: page.lastPage,
+            prevUrl: page.url.prev,
+            nextUrl: page.url.next,
+            baseUrl: '/news/',
+          }}
+        />
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .newsTitle:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  @media (min-width: 768px) {
+    .newsRow {
+      grid-template-columns: 9.5rem minmax(0, 1fr) auto;
+    }
+  }
+  .newsKind,
+  .newsImportant,
+  .newsAction {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 1.5rem;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1;
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+  .newsKind {
+    color: var(--color-text-muted);
+  }
+  .newsImportant {
+    border-color: var(--color-accent);
+    background: var(--color-accent-tint);
+    color: var(--color-accent-text);
+  }
+  .newsAction {
+    min-block-size: 2.25rem;
+    color: var(--color-text);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .newsAction:hover {
+    border-color: var(--color-text);
+    color: var(--color-accent-text);
+  }
+  .newsAction--external {
+    color: var(--color-text-muted);
+  }
+</style>
