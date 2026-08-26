@@ -9,7 +9,7 @@ import { clientIp, ip24Hash, ipHash, uaHash } from './security/ip.js';
 import { makeVoterCookie, verifyVoterCookie } from './security/cookies.js';
 import { decideWeight } from './weighting.js';
 import { createLogger, type Logger } from './logger.js';
-import { jsonError } from './http.js';
+import { jsonError, requestTimeout } from './http.js';
 import { defaultLimits, MemoryRateLimiter } from './rate/limiter.js';
 import type { SlugRegistry } from './slug/registry.js';
 import type { TurnstileVerifier } from './turnstile.js';
@@ -137,6 +137,8 @@ export function createApp(deps: CreateAppDeps) {
       });
     }
   });
+
+  app.use('/api/v1/*', requestTimeout);
 
   app.use('/api/v1/*', bodyLimit({
     maxSize: 1024,
