@@ -23,7 +23,8 @@ pricing_note: "Free tier; paid plans available."
 setup_minutes: 5
 added_at: "2026-08-24T00:00:00Z"
 updated_at: "2026-08-24T00:00:00Z"
-status: proposed
+verified_at: "2026-08-26T07:30:00Z"
+status: live
 ---
 
 ## What it does
