@@ -15,7 +15,7 @@ export interface AppendEventInput {
   signals: Record<string, unknown>;
 }
 
-const CHAIN_LOCK_KEY = 4390_2026;
+const CHAIN_LOCK_KEY = 4391_2026;
 
 export async function appendVoteEvent(sql: Sql, input: AppendEventInput) {
   await sql`select pg_advisory_xact_lock(${CHAIN_LOCK_KEY})`;

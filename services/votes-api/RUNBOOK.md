@@ -1,6 +1,6 @@
 # grokbot votes API runbook
 
-P1 local-only service for anonymous use-case upvotes. The API binds `127.0.0.1:4390`; nginx exposes only `/api/v1/*` on the review vhost.
+P1 local-only service for anonymous use-case upvotes. The API binds `127.0.0.1:4391`; nginx exposes only `/api/v1/*` on the review vhost.
 
 ## Local start / stop
 

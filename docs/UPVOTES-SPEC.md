@@ -13,10 +13,10 @@ Read ALL of it before writing code. The reviewer (Project Builder agent) signs o
    The main tree at /opt/projects/grokbotdev stays on `main` (content publishing continues there) —
    do not touch it.
 3. **Local test target (dev box only):** Astro preview of this branch on port **4382**
-   (pm2 name `grokbotdev-upvotes-web`), votes-api on **127.0.0.1:4390**, Postgres 16 via docker
+   (pm2 name `grokbotdev-upvotes-web`), votes-api on **127.0.0.1:4391**, Postgres 16 via docker
    (container `grokbot-votes-pg`, host port **54390**, volume outside the worktree). Add an nginx
    vhost on THIS dev box only: `grokbot-upvotes.anacreon.ai` → 4382 with `location /api/v1/` →
-   4390 (mirror the existing grokbotdev.anacreon.ai vhost; same TLS approach).
+   4391 (mirror the existing grokbotdev.anacreon.ai vhost; same TLS approach).
 4. **Commit + push `feat/upvotes` frequently.** Trailer: `Co-Authored-By: CRHQ <noreply@crhq.ai>`.
 5. **Site invariants hold on the branch:** `npm run build` full gate must stay green
    (validate, contrast, links, **audit-scripts: still 0 inline JS** — the vote island is a
@@ -34,7 +34,7 @@ A same-origin votes API + Postgres + an upvote island on use-case detail pages.
 One upvote per person per use case. Anonymous but hard to game. Fully audited.
 
 ### Service — `services/votes-api/`
-- Node 22, **Hono** (or Fastify), TypeScript, ~small. Binds 127.0.0.1:4390. pm2 ecosystem file.
+- Node 22, **Hono** (or Fastify), TypeScript, ~small. Binds 127.0.0.1:4391. pm2 ecosystem file.
 - Middleware layers kept distinct: rateLimit → identity (cookie HMAC) → [reserved: bearerAuth for V2] → handlers.
 - Structured JSON logs to stdout (pm2 captures). `/api/v1/health` endpoint.
 - Strict validation (zod), 1KB body cap, 5s timeouts, prepared statements only (use `postgres` or `pg` with params).
@@ -109,7 +109,7 @@ Compute at cast; store in signals jsonb; weight ∈ {0, 1}:
 
 ### nginx (dev vhost only in this phase)
 `infra/nginx-grokbot-upvotes-dev.conf` (new file, applied to dev box nginx):
-preview 4382 + `location /api/v1/ { proxy_pass http://127.0.0.1:4390; }` with
+preview 4382 + `location /api/v1/ { proxy_pass http://127.0.0.1:4391; }` with
 `limit_req` zones (identity 3/min burst, votes 30/min burst) as defense-in-depth.
 ALSO author (but DO NOT APPLY) the production nginx diff as
 `infra/nginx-grokbot.dev.votes.snippet.conf` + update `infra/DEPLOYMENT.md` with the

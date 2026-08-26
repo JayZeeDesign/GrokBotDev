@@ -62,7 +62,7 @@ export interface VotesConfig {
 export function loadConfig(overrides: Partial<VotesConfig> = {}): VotesConfig {
   const cfg: VotesConfig = {
     host: process.env.VOTES_HOST ?? '127.0.0.1',
-    port: numberEnv('VOTES_PORT', 4390),
+    port: numberEnv('VOTES_PORT', 4391),
     databaseUrl: required('DATABASE_URL', 'postgres://votes_app:local_votes_app_password@127.0.0.1:54390/grokbot_votes'),
     adminDatabaseUrl: required('ADMIN_DATABASE_URL', 'postgres://votes_admin:local_votes_admin_password@127.0.0.1:54390/grokbot_votes'),
     migrateDatabaseUrl: required('MIGRATE_DATABASE_URL', 'postgres://postgres:local_postgres_password@127.0.0.1:54390/grokbot_votes'),
