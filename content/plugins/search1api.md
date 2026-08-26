@@ -25,7 +25,8 @@ pricing_note: "Free tier: 100 credits. Paid plans from $19/mo; usage-based top-u
 setup_minutes: 10
 added_at: "2026-08-26T00:00:00Z"
 updated_at: "2026-08-26T00:00:00Z"
-status: proposed
+verified_at: "2026-08-26T09:00:00Z"
+status: live
 ---
 
 ## What it does

@@ -3,7 +3,14 @@ type: use-case
 slug: ai-tools-maintainer
 headline: "A weekday bot that updates only what you already installed"
 summary: "Each weekday morning this Grok Bot inventories real binaries on the PC or Mac it can reach, updates only installed tools on the same channel already used, re-runs post-update hooks, honors a deny list, and stays quiet if nothing changed."
+category: engineering
+subcategory: agents-ops
 categories: [engineering, personal]
+bot_name: "AI Tools Maintainer"
+schedule: daily
+autonomy: autonomous
+difficulty: intermediate
+setup_minutes: 15
 format: use-case
 primary_source:
   kind: x-post
@@ -18,10 +25,19 @@ author:
   url: https://x.com/gheeunit
   platform: x
 prompt_provenance: author
+awesome_score: 75
+score_breakdown:
+  reproducibility: 21
+  ambition: 14
+  concreteness: 17
+  novelty: 12
+  evidence: 3
+  craft: 8
 replicability: "Paste the profile and first-message prompt, then swap the typical-set list and deny list for the harnesses you already installed. Give the bot access to the PC or Mac it can reach, keep using that machine's existing install channel, and attach your own post-update hooks."
 added_at: "2026-08-26T03:34:00Z"
-updated_at: "2026-08-26T03:42:00Z"
-status: proposed
+updated_at: "2026-08-26T09:00:00Z"
+verified_at: "2026-08-26T09:00:00Z"
+status: live
 ---
 
 ## How it's set up
