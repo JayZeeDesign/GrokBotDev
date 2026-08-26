@@ -90,7 +90,7 @@ function applyCardCounts(root: HTMLElement, counts: Record<string, number>) {
     const count = countOf(counts, slug);
     const countSlot = block.querySelector<HTMLElement>('[data-vote-count]');
     if (countSlot) countSlot.textContent = String(count);
-    block.setAttribute('aria-label', `${count} upvotes — open use case to vote`);
+    block.setAttribute('aria-label', `${count} ${count === 1 ? "upvote" : "upvotes"} — open use case to vote`);
     block.dataset.voteHydrated = 'true';
   }
 }

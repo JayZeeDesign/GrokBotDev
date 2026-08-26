@@ -30,7 +30,7 @@ function applyCounts(counts: Record<string, number>) {
     const count = Math.max(0, Number(counts[slug] ?? 0));
     const countSlot = block.querySelector<HTMLElement>('[data-vote-count]');
     if (countSlot) countSlot.textContent = String(count);
-    block.setAttribute('aria-label', `${count} upvotes — open use case to vote`);
+    block.setAttribute('aria-label', `${count} ${count === 1 ? "upvote" : "upvotes"} — open use case to vote`);
     block.dataset.voteHydrated = 'true';
   }
 }
