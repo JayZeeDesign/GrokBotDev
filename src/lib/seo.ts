@@ -74,6 +74,11 @@ export const META = {
     description:
       'Who runs grokbot.dev, and how a team of bots keeps it current. An independent community project.',
   },
+  privacy: {
+    title: 'Privacy | grokbot.dev',
+    description:
+      'What grokbot.dev collects and why: cookieless analytics, one functional cookie if you upvote, and nothing sold to anyone.',
+  },
   pluginBuilder: {
     title: 'Plugin Builder Bot — build a Grok Bot plugin | grokbot.dev',
     description:
