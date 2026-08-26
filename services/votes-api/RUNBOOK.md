@@ -1,6 +1,6 @@
 # grokbot votes API runbook
 
-P1 local-only service for anonymous use-case upvotes. The API binds `127.0.0.1:4391`; nginx exposes only `/api/v1/*` on the review vhost.
+P1 local-only service for anonymous use-case upvotes. The API binds `127.0.0.1:4391`; nginx exposes only `/api/v1/*` on the review vhost. Port `4390` remains reserved for the existing `grokbot-services` waitlist/MCP service.
 
 ## Local start / stop
 
@@ -82,6 +82,10 @@ npm run digest
 ```
 
 Shows 24h event totals, top slugs, and flag counts.
+
+## Weighting notes
+
+Young first-vote identities are recorded as `signals.young_identity` but are still visible (`weight=1`). Zero-weight shadowing remains for stronger abuse signals such as same-/24 slug clusters, velocity surges, and datacenter ASN flags.
 
 ## Pepper/key rotation
 

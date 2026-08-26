@@ -25,7 +25,7 @@ export async function verifyLedger(sql: Db): Promise<LedgerVerification> {
   }[]>`
     select seq::text, at, identity_id, slug, action, weight, ip_hash, ip24_hash, ua_hash, asn, signals, prev_hash, row_hash
     from vote_events
-    order by seq asc
+    order by vote_events.seq asc
   `;
 
   const errors: string[] = [];
@@ -98,7 +98,7 @@ export async function rebuildMaterializedVotes(sql: Db) {
   }[]>`
     select seq::text, at, identity_id, slug, action, weight, signals
     from vote_events
-    order by seq asc
+    order by vote_events.seq asc
   `;
   const decisions = await flagDecisions(sql);
 

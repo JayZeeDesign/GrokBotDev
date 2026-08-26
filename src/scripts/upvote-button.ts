@@ -1,6 +1,14 @@
 type CountResponse = { counts?: Record<string, number> };
 type MineResponse = { slugs?: string[] };
-type VoteResponse = { ok?: boolean; voted?: boolean; visible_count?: number; count?: number; error?: string };
+type VoteResponse = {
+  ok?: boolean;
+  slug?: string;
+  my_vote?: boolean;
+  voted?: boolean;
+  visible_count?: number;
+  count?: number;
+  error?: string;
+};
 
 declare global {
   interface Window {
@@ -84,17 +92,38 @@ async function postJson<T>(url: string, body?: unknown): Promise<{ status: numbe
   return { status: res.status, data };
 }
 
+function labelCount(state: { voted: boolean; count: number | null }) {
+  if (state.count == null) return '';
+  if (state.voted) return state.count > 0 ? String(state.count) : '';
+  if (state.count === 0) return 'be the first';
+  return state.count >= 3 ? String(state.count) : '';
+}
+
 function render(button: HTMLButtonElement, countSlot: HTMLElement, live: HTMLElement, state: { voted: boolean; count: number | null; busy: boolean; error?: string }) {
-  const countLabel = state.count == null ? '' : state.count >= 3 ? String(state.count) : 'be the first';
+  const countLabel = labelCount(state);
   const verb = state.voted ? 'upvoted' : 'upvote';
-  const label = state.busy ? 'saving…' : state.error ? 'retry upvote' : `▲ ${verb}${countLabel ? ` · ${countLabel}` : ''}`;
+  const label = state.error ? 'retry upvote' : `▲ ${verb}${countLabel ? ` · ${countLabel}` : ''}`;
   button.textContent = label;
   button.disabled = state.busy;
+  button.setAttribute('aria-busy', state.busy ? 'true' : 'false');
   button.setAttribute('aria-pressed', state.voted ? 'true' : 'false');
   button.dataset.voted = state.voted ? 'true' : 'false';
   button.closest<HTMLElement>('[data-upvote-root]')?.setAttribute('data-upvote-state', state.voted ? 'voted' : 'idle');
   countSlot.textContent = countLabel;
   live.textContent = state.error ? 'Upvote failed. Try again.' : state.busy ? 'Saving upvote.' : state.voted ? 'Upvoted.' : 'Upvote ready.';
+}
+
+function highlightIfLinked(root: HTMLElement, button: HTMLButtonElement) {
+  if (window.location.hash !== '#upvote') return;
+  const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  window.requestAnimationFrame(() => {
+    button.scrollIntoView({ block: 'center', behavior });
+    button.focus({ preventScroll: true });
+    root.dataset.upvoteHighlight = 'true';
+    window.setTimeout(() => {
+      delete root.dataset.upvoteHighlight;
+    }, 1800);
+  });
 }
 
 async function hydrate(root: HTMLElement) {
@@ -110,6 +139,8 @@ async function hydrate(root: HTMLElement) {
   const state = { voted: false, count: null as number | null, busy: false, error: undefined as string | undefined };
   root.hidden = false;
   render(button, countSlot, live, state);
+  highlightIfLinked(root, button);
+  window.addEventListener('hashchange', () => highlightIfLinked(root, button));
 
   const counts = await postJson<CountResponse>(`/api/v1/votes/counts?slugs=${encodeURIComponent(slug)}`);
   if (counts.status === 200 && counts.data?.counts) {
@@ -129,8 +160,7 @@ async function hydrate(root: HTMLElement) {
     if (identity.status !== 200 || !identity.data?.ok) throw new Error(identity.data?.error || 'identity_failed');
   }
 
-  async function sendVote(): Promise<VoteResponse> {
-    const action = state.voted ? 'uncast' : 'cast';
+  async function sendVote(action: 'cast' | 'uncast'): Promise<VoteResponse> {
     let vote = await postJson<VoteResponse>('/api/v1/votes', { slug, action });
     if (vote.status === 401) {
       await ensureIdentity();
@@ -142,14 +172,27 @@ async function hydrate(root: HTMLElement) {
 
   button.addEventListener('click', async () => {
     if (state.busy) return;
+    const action = state.voted ? 'uncast' : 'cast';
+    const previous = { voted: state.voted, count: state.count, error: state.error };
     state.busy = true;
     state.error = undefined;
+    if (action === 'cast') {
+      state.voted = true;
+      state.count = Math.max(1, (state.count ?? 0) + 1);
+    } else if (state.count != null) {
+      state.voted = false;
+      state.count = Math.max(0, state.count - 1);
+    } else {
+      state.voted = false;
+    }
     render(button, countSlot, live, state);
     try {
-      const data = await sendVote();
-      state.voted = Boolean(data.voted);
-      state.count = Number(data.visible_count ?? data.count ?? state.count ?? 0);
+      const data = await sendVote(action);
+      state.voted = Boolean(data.my_vote ?? data.voted);
+      state.count = Number(data.count ?? data.visible_count ?? state.count ?? 0);
     } catch {
+      state.voted = previous.voted;
+      state.count = previous.count;
       state.error = 'retry';
     } finally {
       state.busy = false;

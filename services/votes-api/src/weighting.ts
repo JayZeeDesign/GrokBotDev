@@ -25,7 +25,7 @@ const DATACENTER_ASNS = new Set<number>([
 
 export function decideWeight(input: WeightDecisionInput): WeightDecision {
   const flags: string[] = [];
-  if (input.firstVoteForIdentity && input.identityAgeSeconds < 60) flags.push('new_identity');
+  const youngIdentity = input.firstVoteForIdentity && input.identityAgeSeconds < 60;
   if (input.ip24SlugCastsBefore >= 2) flags.push('ip24_slug_cluster');
   const velocityFlagged =
     input.slugRecentCasts10mIncludingThis > 15 &&
@@ -38,6 +38,7 @@ export function decideWeight(input: WeightDecisionInput): WeightDecision {
     flags,
     signals: {
       flags,
+      young_identity: youngIdentity,
       identity_age_seconds: Math.max(0, Math.floor(input.identityAgeSeconds)),
       first_vote_for_identity: input.firstVoteForIdentity,
       ip24_slug_casts_before: input.ip24SlugCastsBefore,

@@ -48,7 +48,8 @@ One upvote per person per use case. Anonymous but hard to game. Fully audited.
   (401 otherwise → island then calls /identity first). Validates slug against the live use-case
   slug list (see "slug source" below). Appends to vote_events with computed weight + signals;
   upserts votes + vote_counts. Idempotent: repeat cast = no-op success. Toggle allowed.
-  Limits: 60/hr per ip_hash, 30/day per identity.
+  Response includes the authoritative post-write state `{slug, my_vote, count}` (plus diagnostic
+  compatibility fields). Limits: 60/hr per ip_hash, 30/day per identity.
 - `GET /api/v1/votes/counts?slugs=a,b,c` (≤50 slugs) — `{counts: {slug: n}}`. Cache-Control:
   public, max-age=60, stale-while-revalidate=300.
 - `GET /api/v1/votes/mine` — voter's own cast slugs (for island state). Private, no-store.
@@ -87,7 +88,7 @@ audit_log   (id bigserial, at timestamptz, actor text, action text, target text,
 
 ### Weighting (write-time signals → shadow-discount)
 Compute at cast; store in signals jsonb; weight ∈ {0, 1}:
-- identity younger than 60s at first vote → weight 0 (still accepted)
+- identity younger than 60s at first vote → **signal only** (`young_identity` in `signals`); weight remains 1
 - >2 casts on same slug from same ip24_hash → weight 0 for the 3rd+
 - per-slug velocity: if slug got >15 casts in 10 min AND that's >10x its trailing baseline →
   flag batch `velocity` (weight 0, reviewable via review-flags.ts bless)
@@ -96,16 +97,29 @@ Compute at cast; store in signals jsonb; weight ∈ {0, 1}:
 
 ### Astro island — `src/components/UpvoteButton.astro`
 - Placement: use-case detail page (`src/pages/use-cases/[slug].astro`), in the chip/action row
-  near the title. NOT on plugins, NOT on cards/hubs (v1).
+  near the title. NOT on plugins; voting happens only on the detail page.
 - Neutral bordered pill per site conventions (mono, lowercase, 44px target, tokens, both themes;
   respect one-accent rule — the amber stays on "install in grok bot"). States: idle
-  `▲ upvote` / `▲ upvote · N` (count hidden when N<3 → "be the first"), voted = filled/pressed
-  (still neutral, e.g. inverted border+bg), busy, error (quiet retry).
+  `▲ upvote` / `▲ upvote · N` (not-voted counts 1–2 stay hidden; not-voted count 0 =
+  `be the first`), voted = filled/pressed `▲ upvoted · N` using the POST response count
+  immediately. Never render `be the first` while voted; if an abuse-shadowed own vote has
+  visible count 0, show `▲ upvoted` without a count. Busy, error (quiet retry).
 - Bundled `<script>` (Astro-hoisted, keeps CSP gate at 0 inline). Flow: onload fetch counts
   (+ mine if cookie present); on click → if no cookie: load Turnstile invisibly
   (script from challenges.cloudflare.com, sitekey from PUBLIC_ env), get token,
-  POST /identity, then POST /votes. Progressive enhancement: no JS → no button.
+  POST /identity, then POST /votes. On card deep-links to `#upvote`, scroll/focus/highlight the
+  real button. Progressive enhancement: no JS → no button.
 - Also show count on the page statically? NO — counts are dynamic only (island), build stays static.
+
+### Use-case card vote counts — `src/components/EntryCard.astro` / `UseCaseCard.astro`
+- Use-case listing cards (home, hubs, related lists) show a compact Reddit-style vote block:
+  stacked `▲` over count, mono, neutral border, both themes, placed at the left/top-left edge
+  without competing with the awesome-score eyebrow.
+- This card block is a link, not a vote button: it points to the use-case detail page with
+  `#upvote`. Voting remains detail-page-only.
+- A bundled script collects visible card slugs from `data-vote-slug`, chunks requests to respect
+  the 50-slug cap, fetches `GET /api/v1/votes/counts`, and fills numbers. The placeholder is `0`
+  and stays harmless when the API is absent. Plugins do not render card vote counts.
 
 ### nginx (dev vhost only in this phase)
 `infra/nginx-grokbot-upvotes-dev.conf` (new file, applied to dev box nginx):
@@ -122,7 +136,9 @@ prod rollout steps (operator applies later).
   ledger hash chain verifies; rate limits fire (429); unknown slug 400; forged cookie 401;
   votes_app role genuinely cannot UPDATE/DELETE vote_events (test it).
 - E2E happy path via the running dev vhost (curl or playwright): fresh browser context →
-  button appears → vote → count increments → reload → state persists → unvote.
+  button appears → vote → POST response has `{slug, my_vote: true, count: 1}` in a clean run
+  → detail button shows `upvoted · 1` immediately → reload → state persists → unvote; use-case
+  hub cards hydrate vote counts from the counts endpoint.
 
 ### Runbook — `services/votes-api/RUNBOOK.md`
 Start/stop, migrate, backup (pg_dump nightly cron example), restore drill, recount,
@@ -134,12 +150,12 @@ flag review, key rotation (pepper), what to do on a surge alert.
   labeled/segmentable in counts; read endpoints stay public keyless forever; advanced ops
   (bot voting, favorites, submissions, higher limits) require the key. Your job in v1: the
   `kind` column, the `api_keys` table, and a clean auth middleware seam.
-- P2: counts on hub cards, sort-by-upvotes, nightly bake. P3: X-verify, favorites, accounts.
+- P2: sort-by-upvotes, nightly bake. P3: X-verify, favorites, accounts.
 
 ## Definition of done (P1)
 1. Full gate green on the branch (`npm run build` incl. audit-scripts).
 2. All tests green; E2E demo works at grokbot-upvotes.anacreon.ai (screenshot the states:
-   idle, voted, count, "be the first", mobile).
+   detail voted `upvoted · 1`, listing card vote blocks, mobile).
 3. Ledger verified: recount.ts output clean after the E2E session.
 4. RUNBOOK + prod rollout steps written. NOTHING deployed to staging/prod.
 5. Report back: what was built, test results, screenshots, the exact list of things the

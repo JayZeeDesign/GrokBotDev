@@ -320,9 +320,11 @@ export function createApp(deps: CreateAppDeps) {
     if ('unauthorized' in result) return jsonError(c, 401, 'unauthorized');
     return c.json({
       ok: true,
+      slug,
+      my_vote: result.voted,
+      count: result.counts.visible_count,
       voted: result.voted,
       no_op: result.noOp,
-      count: result.counts.visible_count,
       visible_count: result.counts.visible_count,
       raw_count: result.counts.raw_count,
       ...('weight' in result ? { weight: result.weight, shadowed: result.shadowed } : {}),

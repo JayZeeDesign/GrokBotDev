@@ -7,7 +7,7 @@ const { slug } = Astro.props;
 const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '1x00000000000000000000AA';
 ---
 
-<div class="upvoteButton" data-upvote-root data-slug={slug} data-sitekey={sitekey} hidden>
+<div id="upvote" class="upvoteButton" data-upvote-root data-slug={slug} data-sitekey={sitekey} hidden>
   <button
     type="button"
     class="upvoteButton__button btn-active"
@@ -69,6 +69,11 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '1x00000000000000000
     border-color: var(--color-text);
     background: var(--color-text);
     color: var(--color-bg);
+  }
+
+  .upvoteButton[data-upvote-highlight='true'] .upvoteButton__button {
+    outline: 2px solid var(--color-border-strong);
+    outline-offset: 4px;
   }
 
   .upvoteButton__turnstile {

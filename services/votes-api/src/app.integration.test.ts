@@ -86,8 +86,7 @@ beforeEach(async () => {
 describe('votes API integration', () => {
   it('issues identity, casts, dedupes, uncasts, recasts, and verifies counts + hash chain', async () => {
     const app = makeApp();
-    const { cookie, identityId } = await issueIdentity(app);
-    await ageIdentity(identityId);
+    const { cookie } = await issueIdentity(app);
 
     const cast = await app.request('/api/v1/votes', {
       method: 'POST',
@@ -95,7 +94,22 @@ describe('votes API integration', () => {
       body: JSON.stringify({ slug: 'test-use-case', action: 'cast' }),
     });
     expect(cast.status).toBe(200);
-    expect(await cast.json()).toMatchObject({ ok: true, voted: true, no_op: false, visible_count: 1, raw_count: 1, weight: 1 });
+    expect(await cast.json()).toMatchObject({
+      ok: true,
+      slug: 'test-use-case',
+      my_vote: true,
+      voted: true,
+      no_op: false,
+      count: 1,
+      visible_count: 1,
+      raw_count: 1,
+      weight: 1,
+    });
+    const [castEvent] = await adminDb<{ signals: { young_identity?: boolean; flags?: string[] } }[]>`
+      select signals from vote_events where slug = 'test-use-case' and action = 'cast' order by seq asc limit 1
+    `;
+    expect(castEvent.signals.young_identity).toBe(true);
+    expect(castEvent.signals.flags).toEqual([]);
 
     const duplicate = await app.request('/api/v1/votes', {
       method: 'POST',
@@ -103,7 +117,16 @@ describe('votes API integration', () => {
       body: JSON.stringify({ slug: 'test-use-case', action: 'cast' }),
     });
     expect(duplicate.status).toBe(200);
-    expect(await duplicate.json()).toMatchObject({ ok: true, voted: true, no_op: true, visible_count: 1, raw_count: 1 });
+    expect(await duplicate.json()).toMatchObject({
+      ok: true,
+      slug: 'test-use-case',
+      my_vote: true,
+      voted: true,
+      no_op: true,
+      count: 1,
+      visible_count: 1,
+      raw_count: 1,
+    });
 
     const uncast = await app.request('/api/v1/votes', {
       method: 'POST',
@@ -111,7 +134,16 @@ describe('votes API integration', () => {
       body: JSON.stringify({ slug: 'test-use-case', action: 'uncast' }),
     });
     expect(uncast.status).toBe(200);
-    expect(await uncast.json()).toMatchObject({ ok: true, voted: false, no_op: false, visible_count: 0, raw_count: 0 });
+    expect(await uncast.json()).toMatchObject({
+      ok: true,
+      slug: 'test-use-case',
+      my_vote: false,
+      voted: false,
+      no_op: false,
+      count: 0,
+      visible_count: 0,
+      raw_count: 0,
+    });
 
     const recast = await app.request('/api/v1/votes', {
       method: 'POST',
@@ -119,7 +151,15 @@ describe('votes API integration', () => {
       body: JSON.stringify({ slug: 'test-use-case', action: 'cast' }),
     });
     expect(recast.status).toBe(200);
-    expect(await recast.json()).toMatchObject({ ok: true, voted: true, visible_count: 1, raw_count: 1 });
+    expect(await recast.json()).toMatchObject({
+      ok: true,
+      slug: 'test-use-case',
+      my_vote: true,
+      voted: true,
+      count: 1,
+      visible_count: 1,
+      raw_count: 1,
+    });
 
     const counts = await app.request('/api/v1/votes/counts?slugs=test-use-case,second-use-case');
     expect(counts.status).toBe(200);

@@ -36,12 +36,26 @@ const platformMark = src?.platform === 'youtube' ? 'YouTube' : '𝕏';
   entry.status !== 'deprecated' && (
     <article
       class:list={[
-        'entry-card relative flex flex-col gap-2 rounded-sm border border-border bg-surface p-4 transition-[background-color,border-color] duration-150 hover:border-border-strong hover:bg-surface-raised',
+        'entry-card ucc-card relative flex flex-col gap-2 rounded-sm border border-border bg-surface p-4 transition-[background-color,border-color] duration-150 hover:border-border-strong hover:bg-surface-raised',
         entry.status === 'needs-update' && 'border-l-2 border-l-warn',
         className,
       ]}
       data-entry-type="use-case"
     >
+      {/* Reddit-style read-only vote affordance. The card itself does not cast votes:
+          it links to the real detail-page island and the bundled vote-count script fills
+          counts in batches (≤50 slugs/request) after hydration. */}
+      <a
+        href={`${href}#upvote`}
+        class="ucc-vote"
+        data-vote-slug={entry.slug}
+        data-vote-count-link
+        aria-label="0 upvotes — open use case to vote"
+      >
+        <span class="ucc-vote__arrow" aria-hidden="true">▲</span>
+        <span class="ucc-vote__count" data-vote-count>0</span>
+      </a>
+
       {/* 1 — score eyebrow */}
       <div class="ucc-eyebrow">
         {isGuide ? (
@@ -85,7 +99,44 @@ const platformMark = src?.platform === 'youtube' ? 'YouTube' : '𝕏';
   )
 }
 
+<script>
+  import { initVoteCountBlocks } from '../scripts/vote-counts';
+  initVoteCountBlocks();
+</script>
+
 <style>
+  .ucc-card { padding-inline-start: 3.85rem; }
+  .ucc-vote {
+    position: absolute;
+    z-index: 10;
+    inset-block-start: 0.875rem;
+    inset-inline-start: 0.75rem;
+    display: inline-flex;
+    min-inline-size: 2rem;
+    min-block-size: 2.75rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      border-color 150ms ease,
+      color 150ms ease,
+      background-color 150ms ease;
+  }
+  .ucc-vote:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+  }
+  .ucc-vote__arrow { font-size: var(--text-sm); }
+  .ucc-vote__count { font-size: var(--text-xs); font-weight: 500; }
   .ucc-eyebrow { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.02em; }
   .ucc-score { color: var(--color-accent-text); }
   .ucc-tier { font-weight: 400; color: var(--color-text-muted); text-transform: lowercase; }

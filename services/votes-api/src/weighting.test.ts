@@ -14,10 +14,11 @@ describe('shadow weighting', () => {
     expect(decideWeight(base).weight).toBe(1);
   });
 
-  it('discounts identities younger than 60 seconds on first vote', () => {
+  it('records young first-vote identities as a signal without discounting', () => {
     const d = decideWeight({ ...base, firstVoteForIdentity: true, identityAgeSeconds: 12 });
-    expect(d.weight).toBe(0);
-    expect(d.flags).toContain('new_identity');
+    expect(d.weight).toBe(1);
+    expect(d.flags).not.toContain('new_identity');
+    expect(d.signals.young_identity).toBe(true);
   });
 
   it('discounts the third cast on a slug from the same /24', () => {
