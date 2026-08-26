@@ -16,6 +16,7 @@ import SectionHeading from '../../components/SectionHeading.astro';
 import InstallModal from '../../components/InstallModal.astro';
 import ConnectCallout from '../../components/ConnectCallout.astro';
 import ShareBar from '../../components/ShareBar.astro';
+import UpvoteButton from '../../components/UpvoteButton.astro';
 import TweetEmbed from '../../components/TweetEmbed.astro';
 import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import PromptBlock from '../../components/PromptBlock.astro';
@@ -223,6 +224,7 @@ const graph = [
 
     <div class="flex flex-wrap items-center gap-4">
       <InstallModal id={d.slug} variant="entry" prompt={prompt ?? undefined} entryName={heroTitle} />
+      <UpvoteButton slug={d.slug} />
     </div>
 
     {/* Operator: share this use case on X (the intent credits @GrokBotDev via `via=`) + a

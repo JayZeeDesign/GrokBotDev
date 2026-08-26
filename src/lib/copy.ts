@@ -238,6 +238,33 @@ export const CP_133_CALLOUT_HUB =
   'The best Grok Bot use cases - and the prompts to build them - delivered to your Grok Bot.';
 export const CP_134_CALLOUT_CTA = 'connect the feed →';
 
+/**
+ * CP-137 … CP-139 — privacy copy for upvoting (2026-08-26, upvotes launch). These live on
+ * /privacy/ and are single-sourced here like the other privacy strings (CP-119/120/125).
+ * CP-139 carries the Cloudflare-REQUIRED reference to the Turnstile Privacy Addendum
+ * (a condition of running the widget in invisible mode); the markup wraps the
+ * CP_139_LINK_TOKEN phrase in the link, same split mechanism as CP-120's mono token.
+ * House rules: no em dashes — spaced hyphens only.
+ */
+export const CP_137_PRIVACY_UPVOTE_COOKIE =
+  'Upvoting works without an account. The first time you vote, this site sets one functional ' +
+  'cookie holding a random anonymous identifier - that is how one person stays one vote per ' +
+  'use case. It contains no name, no email, and nothing taken from your device, and it is ' +
+  'never used for advertising or cross-site tracking. Clear it whenever you like.';
+export const CP_138_PRIVACY_UPVOTE_LEDGER =
+  'To keep voting fair, every vote is written to an append-only ledger together with salted, ' +
+  'one-way hashes of your network address and browser signature - the raw values are never ' +
+  'stored. Those hashes exist only to catch ballot-stuffing, and the ledger cannot be ' +
+  'edited after the fact, by us included.';
+export const CP_139_PRIVACY_TURNSTILE =
+  'Voting is protected by Cloudflare Turnstile, an invisible check that tells humans from ' +
+  'bots without showing you a puzzle. When it runs, Cloudflare processes limited information ' +
+  'about your browser and network to make that call. How Cloudflare handles that data is ' +
+  "described in the Cloudflare Turnstile Privacy Addendum, which applies to this site's " +
+  'use of the widget.';
+export const CP_139_LINK_TOKEN = 'Cloudflare Turnstile Privacy Addendum';
+export const CP_139_TURNSTILE_URL = 'https://www.cloudflare.com/en-gb/turnstile-privacy-policy/';
+
 /** Interpolate `{token}` placeholders in a pack string without editorialising it. */
 export function fillCopy(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) =>

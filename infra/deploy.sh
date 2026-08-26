@@ -19,6 +19,15 @@ REPO="$BASE/repo"
 RELEASES="$BASE/releases"
 BRANCH=production
 KEEP=5
+# Optional static-build env (outside git). This provides PUBLIC_TURNSTILE_SITEKEY for the
+# P1 votes island without committing secrets; the file may also contain runtime-only secrets.
+BUILD_ENV_FILE="$BASE/secrets/votes-api.env"
+if [[ -r "$BUILD_ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$BUILD_ENV_FILE"
+  set +a
+fi
 
 echo "[deploy] $(date -u +%FT%TZ) — fetching origin/$BRANCH…"
 # The box was cloned --depth 1 (single-branch); widen the refspec so all branches fetch.

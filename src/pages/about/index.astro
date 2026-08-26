@@ -97,6 +97,16 @@ const [privacyYoutubeBefore, privacyYoutubeAfter] =
       <p class="text-base text-text-muted">
         {privacyYoutubeBefore}<span class="font-mono text-sm">{CP_125_MONO_TOKEN}</span>{privacyYoutubeAfter}
       </p>
+      {/* Upvotes launch (2026-08-26) — an ADDITION, not an amendment: the protected strings
+          above are byte-untouched. The full policy (incl. the Cloudflare-required Turnstile
+          Privacy Addendum reference, CP-139) lives on the dedicated /privacy/ route. */}
+      <p class="text-base text-text-muted">
+        The full policy - including how upvoting and its invisible Cloudflare Turnstile
+        bot-check handle your data - lives at <a
+          class="underline decoration-border underline-offset-4 transition-colors hover:text-text"
+          href="/privacy/">/privacy/</a
+        >.
+      </p>
     </section>
 
     <Callout variant="info" title="independence">{CP_110_DISCLAIMER}</Callout>

@@ -1,0 +1,101 @@
+---
+// /privacy/ — the full privacy policy (2026-08-26, upvotes launch). Cloudflare REQUIRES a
+// reference to the Turnstile Privacy Addendum in our own privacy policy as a condition of
+// running the widget in invisible mode — that is CP-139 below, and it is the reason this
+// page exists as a dedicated route rather than only the /about/#privacy section.
+//
+// Copy governance: CP-119 / CP-120 / CP-125 are §16 PROTECTED and rendered here VERBATIM
+// from lib/copy.ts via the same split-token mechanism /about/ uses — this page quotes the
+// single source, it does not fork the strings. The upvoting strings are CP-137…139.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import {
+  CP_119_ABOUT_PRIVACY_ANALYTICS,
+  CP_120_ABOUT_PRIVACY_EMBEDS,
+  CP_120_MONO_TOKEN,
+  CP_125_ABOUT_PRIVACY_YOUTUBE,
+  CP_125_MONO_TOKEN,
+  CP_137_PRIVACY_UPVOTE_COOKIE,
+  CP_138_PRIVACY_UPVOTE_LEDGER,
+  CP_139_PRIVACY_TURNSTILE,
+  CP_139_LINK_TOKEN,
+  CP_139_TURNSTILE_URL,
+} from '../../lib/copy';
+import { META, breadcrumbList, webPage } from '../../lib/seo';
+
+const crumbs = [{ label: 'home', href: '/' }, { label: 'privacy' }];
+const graph = [webPage('/privacy/', META.privacy.title, META.privacy.description), breadcrumbList(crumbs)];
+
+const [embedsBefore, embedsAfter] = CP_120_ABOUT_PRIVACY_EMBEDS.split(CP_120_MONO_TOKEN);
+const [youtubeBefore, youtubeAfter] = CP_125_ABOUT_PRIVACY_YOUTUBE.split(CP_125_MONO_TOKEN);
+const [turnstileBefore, turnstileAfter] = CP_139_PRIVACY_TURNSTILE.split(CP_139_LINK_TOKEN);
+---
+
+<BaseLayout title={META.privacy.title} description={META.privacy.description} graph={graph}>
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">Privacy</h1>
+      <p class="max-w-prose text-base text-text-muted">
+        The short version: no accounts, no ads, no cross-site tracking, and no data we don't
+        plainly need. Here is everything this site touches, in full.
+      </p>
+    </header>
+
+    <section class="flex max-w-prose flex-col gap-4">
+      <SectionHeading title="analytics and the waitlist" variant="sub" level={2} />
+      {/* CP-119 — §16 PROTECTED, quoted verbatim from lib/copy.ts. */}
+      <p class="text-base text-text-muted">{CP_119_ABOUT_PRIVACY_ANALYTICS}</p>
+    </section>
+
+    <section class="flex max-w-prose flex-col gap-4">
+      <SectionHeading title="upvoting" variant="sub" level={2} />
+      <p class="text-base text-text-muted">{CP_137_PRIVACY_UPVOTE_COOKIE}</p>
+      <p class="text-base text-text-muted">{CP_138_PRIVACY_UPVOTE_LEDGER}</p>
+      <p class="text-base text-text-muted">
+        {turnstileBefore}<a
+          class="underline decoration-border underline-offset-4 transition-colors hover:text-text"
+          href={CP_139_TURNSTILE_URL}
+          rel="noopener noreferrer"
+          target="_blank">{CP_139_LINK_TOKEN}</a
+        >{turnstileAfter}
+      </p>
+    </section>
+
+    <section class="flex max-w-prose flex-col gap-4">
+      <SectionHeading title="embedded posts and players" variant="sub" level={2} />
+      {/* CP-120 + CP-125 — §16 PROTECTED, quoted verbatim via the split-token mechanism. */}
+      <p class="text-base text-text-muted">
+        {embedsBefore}<span class="font-mono text-sm">{CP_120_MONO_TOKEN}</span>{embedsAfter}
+      </p>
+      <p class="text-base text-text-muted">
+        {youtubeBefore}<span class="font-mono text-sm">{CP_125_MONO_TOKEN}</span>{youtubeAfter}
+      </p>
+    </section>
+
+    <section class="flex max-w-prose flex-col gap-4">
+      <SectionHeading title="hosting" variant="sub" level={2} />
+      <p class="text-base text-text-muted">
+        The site is served through Cloudflare, which routes every request and therefore sees
+        the traffic any host would - handled under Cloudflare's own privacy policy. We keep
+        standard server logs briefly for security and debugging, and nothing longer.
+      </p>
+    </section>
+
+    <section class="flex max-w-prose flex-col gap-4">
+      <SectionHeading title="questions and deletion" variant="sub" level={2} />
+      <p class="text-base text-text-muted">
+        Want your waitlist email deleted, or have a question this page doesn't answer? Message
+        <a
+          class="underline decoration-border underline-offset-4 transition-colors hover:text-text"
+          href="https://x.com/GrokBotDev"
+          rel="noopener noreferrer"
+          target="_blank">@GrokBotDev</a
+        > and it gets handled. If this policy changes in a way that matters, the change lands
+        here first, with the date below updated.
+      </p>
+      <p class="font-mono text-xs text-text-muted">last updated: 2026-08-26</p>
+    </section>
+  </div>
+</BaseLayout>
