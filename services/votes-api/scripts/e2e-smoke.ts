@@ -11,6 +11,7 @@ const token = process.env.E2E_TURNSTILE_TOKEN ?? 'test-token';
 const requireEmptyStart = process.env.E2E_REQUIRE_EMPTY_START === '1';
 const execFileAsync = promisify(execFile);
 const browserSession = process.env.E2E_BROWSER_SESSION;
+const ipRunOctet = 20 + Math.floor(Math.random() * 180);
 
 async function json<T>(path: string, init: RequestInit = {}): Promise<{ status: number; data: T; headers: Headers }> {
   const res = await fetch(`${base}${path}`, init);
@@ -36,10 +37,14 @@ async function countsFor(slugs: string[]) {
   return countsBySlug;
 }
 
-async function issueIdentity() {
+function e2eIp(index: number) {
+  return `203.${ipRunOctet}.${20 + index}.10`;
+}
+
+async function issueIdentity(ip?: string) {
   const identity = await json<{ ok?: boolean }>('/api/v1/identity', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(ip ? { 'cf-connecting-ip': ip } : {}) },
     body: JSON.stringify({ turnstileToken: token }),
   });
   if (identity.status !== 200 || !identity.data.ok) throw new Error(`identity failed: ${identity.status}`);
@@ -50,10 +55,10 @@ async function issueIdentity() {
   return voter;
 }
 
-async function voteWithCookie(voter: string, voteSlug: string, action: 'cast' | 'uncast') {
+async function voteWithCookie(voter: string, voteSlug: string, action: 'cast' | 'uncast', ip?: string) {
   return json<{ ok?: boolean; slug?: string; my_vote?: boolean; count?: number; voted?: boolean; visible_count?: number }>('/api/v1/votes', {
     method: 'POST',
-    headers: { 'content-type': 'application/json', cookie: `voter=${voter}` },
+    headers: { 'content-type': 'application/json', cookie: `voter=${voter}`, ...(ip ? { 'cf-connecting-ip': ip } : {}) },
     body: JSON.stringify({ slug: voteSlug, action }),
   });
 }
@@ -108,19 +113,17 @@ function rank(order: string[], target: string) {
   return order.indexOf(target) + 1;
 }
 
-function chooseLowScoreSlugThatMoves(cards: UpvotedCard[], countsBySlug: Record<string, number>) {
-  const beforeOrder = orderByUpvotes(cards, countsBySlug);
-  const lowScoreFirst = [...cards].sort((a, b) => a.score - b.score || a.addedAt - b.addedAt || a.slug.localeCompare(b.slug));
-  for (const card of lowScoreFirst) {
-    const beforeRank = rank(beforeOrder, card.slug);
-    const simulated = { ...countsBySlug, [card.slug]: (countsBySlug[card.slug] ?? 0) + 1 };
-    const afterOrder = orderByUpvotes(cards, simulated);
-    const afterRank = rank(afterOrder, card.slug);
-    if (afterRank > 0 && afterRank < beforeRank) {
-      return { slug: card.slug, score: card.score, beforeRank, expectedAfterRank: afterRank };
-    }
-  }
-  throw new Error('could not find a low-score slug that moves after one API cast');
+function chooseLowScoreSlugForTop(cards: UpvotedCard[], countsBySlug: Record<string, number>) {
+  const lowScoreCandidates = [...cards]
+    .sort((a, b) => a.score - b.score || a.addedAt - b.addedAt || a.slug.localeCompare(b.slug))
+    .slice(0, Math.max(1, Math.ceil(cards.length * 0.2)));
+  return lowScoreCandidates.sort(
+    (a, b) =>
+      (countsBySlug[b.slug] ?? 0) - (countsBySlug[a.slug] ?? 0) ||
+      a.score - b.score ||
+      a.addedAt - b.addedAt ||
+      a.slug.localeCompare(b.slug)
+  )[0];
 }
 
 async function browser(args: string[]) {
@@ -134,15 +137,46 @@ async function browser(args: string[]) {
 
 function parseBrowserJson<T>(stdout: string): T {
   const parsed = JSON.parse(stdout);
-  return (typeof parsed === 'string' ? JSON.parse(parsed) : parsed) as T;
+  if (typeof parsed !== 'string') return parsed as T;
+  try {
+    return JSON.parse(parsed) as T;
+  } catch {
+    return parsed as T;
+  }
 }
 
-function rankScript(target: string) {
+async function delay(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForUpvotedState(expected: 'ordering' | 'ready' | 'fallback', timeoutMs = 6_000) {
+  const started = Date.now();
+  let last: string | null = null;
+  while (Date.now() - started < timeoutMs) {
+    last = parseBrowserJson<string | null>(
+      await browser(['eval', "document.querySelector('[data-upvoted-sort-root]')?.dataset.upvotedSortState ?? null"])
+    );
+    if (last === expected) return;
+    await delay(100);
+  }
+  throw new Error(`timed out waiting for upvoted sort state ${expected}; last=${last}`);
+}
+
+function upvotedStateScript(target: string) {
   return `(() => {
     const target = ${JSON.stringify(target)};
+    const root = document.querySelector('[data-upvoted-sort-root]');
+    const status = document.querySelector('[data-upvoted-sort-status]');
     const cards = [...document.querySelectorAll('[data-upvoted-sort-card]')];
+    const rootStyle = root ? getComputedStyle(root) : null;
+    const statusStyle = status ? getComputedStyle(status) : null;
     return JSON.stringify({
-      hydrated: document.querySelector('[data-upvoted-sort-root]')?.dataset.upvotedSortHydrated === 'true',
+      state: root?.dataset.upvotedSortState ?? null,
+      hydrated: root?.dataset.upvotedSortHydrated === 'true',
+      revealed: root?.dataset.upvotedSortRevealed === 'true',
+      rootVisibility: rootStyle?.visibility ?? null,
+      statusVisible: Boolean(status && !status.hidden && statusStyle?.display !== 'none' && statusStyle?.visibility !== 'hidden'),
+      statusText: status?.textContent?.trim() ?? null,
       total: cards.length,
       first: cards[0]?.dataset.upvotedSortSlug ?? null,
       targetRank: cards.findIndex((card) => card.dataset.upvotedSortSlug === target) + 1,
@@ -151,48 +185,94 @@ function rankScript(target: string) {
   })()`;
 }
 
-async function upvotedRouteReordersAfterApiCast() {
+async function upvotedRouteHidesUntilOrderedAfterApiCast() {
   const res = await fetch(`${base}/use-cases/upvoted/`);
   if (!res.ok) throw new Error(`/use-cases/upvoted/ failed: ${res.status}`);
   const html = await res.text();
   if (!html.includes('content="noindex,follow"')) throw new Error('/use-cases/upvoted/ is missing noindex,follow');
   if (!html.includes('/use-cases/upvoted/') || !html.includes('upvotes')) throw new Error('/use-cases/upvoted/ is missing the upvotes sort link');
+  if (!html.includes('sorting by upvotes…')) throw new Error('/use-cases/upvoted/ is missing the ordering placeholder');
+  if (!html.includes('<noscript>') || !html.includes('data-upvoted-sort-root') || !html.includes('visibility: visible')) {
+    throw new Error('/use-cases/upvoted/ is missing the no-JS reveal fallback');
+  }
 
   const cards = parseUpvotedCards(html);
   const countsBefore = await countsFor(cards.map((card) => card.slug));
-  const target = chooseLowScoreSlugThatMoves(cards, countsBefore);
+  const target = chooseLowScoreSlugForTop(cards, countsBefore);
+  if (!target) throw new Error('could not choose a low-score target for /use-cases/upvoted/');
+  const maxBefore = Math.max(0, ...Object.values(countsBefore).map((value) => Number(value) || 0));
+  const neededCasts = Math.max(1, maxBefore + 1 - (countsBefore[target.slug] ?? 0));
 
-  await browser(['open', `${base}/use-cases/upvoted/`]);
-  await browser(['wait', '--fn', "document.querySelector('[data-upvoted-sort-root]')?.dataset.upvotedSortHydrated === 'true'"]);
-  const browserBefore = parseBrowserJson<{ hydrated: boolean; total: number; first: string | null; targetRank: number; targetCount: number }>(
-    await browser(['eval', rankScript(target.slug)])
-  );
-  if (!browserBefore.hydrated || browserBefore.total !== cards.length) throw new Error('browser did not hydrate the upvoted route');
-
-  const voter = await issueIdentity();
-  const cast = await voteWithCookie(voter, target.slug, 'cast');
-  if (cast.status !== 200 || !cast.data.ok || cast.data.slug !== target.slug || !cast.data.my_vote) {
-    throw new Error(`upvoted-route cast failed: ${cast.status}`);
+  for (let index = 0; index < neededCasts; index += 1) {
+    const ip = e2eIp(index);
+    const voter = await issueIdentity(ip);
+    const cast = await voteWithCookie(voter, target.slug, 'cast', ip);
+    if (cast.status !== 200 || !cast.data.ok || cast.data.slug !== target.slug || !cast.data.my_vote) {
+      throw new Error(`upvoted-route cast failed: ${cast.status}`);
+    }
   }
 
   const countsAfter = await countsFor(cards.map((card) => card.slug));
   const expectedAfterRank = rank(orderByUpvotes(cards, countsAfter), target.slug);
-  if (expectedAfterRank <= 0 || expectedAfterRank >= browserBefore.targetRank) {
-    throw new Error(`expected ${target.slug} to move up; before=${browserBefore.targetRank} expectedAfter=${expectedAfterRank}`);
+  if (expectedAfterRank !== 1) {
+    throw new Error(`expected ${target.slug} to be rank 1 after seeding votes; got ${expectedAfterRank}`);
   }
 
-  await browser(['reload']);
-  await browser(['wait', '--fn', "document.querySelector('[data-upvoted-sort-root]')?.dataset.upvotedSortHydrated === 'true'"]);
-  const browserAfter = parseBrowserJson<{ hydrated: boolean; total: number; first: string | null; targetRank: number; targetCount: number }>(
-    await browser(['eval', rankScript(target.slug)])
+  await browser(['open', `${base}/use-cases/upvoted/?e2e_sort_delay_ms=1800`]);
+  const browserInitial = parseBrowserJson<{
+    state: string | null;
+    hydrated: boolean;
+    revealed: boolean;
+    rootVisibility: string | null;
+    statusVisible: boolean;
+    statusText: string | null;
+    total: number;
+    first: string | null;
+    targetRank: number;
+    targetCount: number;
+  }>(await browser(['eval', upvotedStateScript(target.slug)]));
+  if (browserInitial.total !== cards.length) throw new Error('browser did not render all upvoted route cards');
+
+  // agent-browser's `open` can return after the 1.8s QA delay on a loaded daemon. If we catch the
+  // pre-reveal state, assert placeholder + hidden grid; if it already revealed, assert that the
+  // first visible card is the seeded upvote winner. The static HTML checks above cover the
+  // no-JS/no-flicker default (`data-upvoted-sort-state="ordering"` + hidden grid).
+  if (browserInitial.state === 'ordering') {
+    if (browserInitial.rootVisibility !== 'hidden' || !browserInitial.statusVisible) {
+      throw new Error(
+        `upvoted route exposed fallback order before counts: state=${browserInitial.state} visibility=${browserInitial.rootVisibility} status=${browserInitial.statusVisible}`
+      );
+    }
+  } else if (browserInitial.state === 'ready') {
+    if (browserInitial.first !== target.slug || browserInitial.rootVisibility !== 'visible') {
+      throw new Error(`first visible upvoted state was not the seeded winner: ${JSON.stringify(browserInitial)}`);
+    }
+  } else {
+    throw new Error(
+      `unexpected initial upvoted state: state=${browserInitial.state} visibility=${browserInitial.rootVisibility} status=${browserInitial.statusVisible}`
+    );
+  }
+
+  if (browserInitial.state !== 'ready') await waitForUpvotedState('ready');
+  const browserAfter = parseBrowserJson<{
+    state: string | null;
+    hydrated: boolean;
+    revealed: boolean;
+    rootVisibility: string | null;
+    statusVisible: boolean;
+    statusText: string | null;
+    total: number;
+    first: string | null;
+    targetRank: number;
+    targetCount: number;
+  }>(
+    await browser(['eval', upvotedStateScript(target.slug)])
   );
-  if (!browserAfter.hydrated) throw new Error('browser lost hydrated state after upvoted route reload');
-  if (browserAfter.targetRank !== expectedAfterRank) {
-    throw new Error(`browser rank mismatch for ${target.slug}: expected ${expectedAfterRank}, got ${browserAfter.targetRank}`);
+  if (!browserAfter.hydrated || !browserAfter.revealed || browserAfter.rootVisibility !== 'visible') {
+    throw new Error(`browser did not reveal the ordered upvoted route: ${JSON.stringify(browserAfter)}`);
   }
-  if (browserAfter.targetRank >= browserBefore.targetRank) {
-    throw new Error(`browser did not move ${target.slug} up: before=${browserBefore.targetRank} after=${browserAfter.targetRank}`);
-  }
+  if (browserAfter.first !== target.slug) throw new Error(`first visible ordered card should be ${target.slug}; got ${browserAfter.first}`);
+  if (browserAfter.targetRank !== 1) throw new Error(`browser rank mismatch for ${target.slug}: expected 1, got ${browserAfter.targetRank}`);
   if (browserAfter.targetCount !== countsAfter[target.slug]) {
     throw new Error(`browser count mismatch for ${target.slug}: expected ${countsAfter[target.slug]}, got ${browserAfter.targetCount}`);
   }
@@ -201,7 +281,10 @@ async function upvotedRouteReordersAfterApiCast() {
     upvoted_route_cards: cards.length,
     upvoted_route_target: target.slug,
     upvoted_route_target_score: target.score,
-    upvoted_route_rank_before: browserBefore.targetRank,
+    upvoted_route_seeded_casts: neededCasts,
+    upvoted_route_initial_state: browserInitial.state,
+    upvoted_route_initial_visibility: browserInitial.rootVisibility,
+    upvoted_route_placeholder_visible: browserInitial.statusVisible,
     upvoted_route_rank_after: browserAfter.targetRank,
     upvoted_route_count_after: browserAfter.targetCount,
   };
@@ -211,9 +294,10 @@ const before = await counts();
 if (requireEmptyStart && before !== 0) {
   throw new Error(`expected ${slug} to start at 0 for E2E; got ${before}`);
 }
-const voter = await issueIdentity();
+const primaryIp = e2eIp(200);
+const voter = await issueIdentity(primaryIp);
 
-const cast = await voteWithCookie(voter, slug, 'cast');
+const cast = await voteWithCookie(voter, slug, 'cast', primaryIp);
 if (cast.status !== 200 || !cast.data.ok || !cast.data.my_vote || !cast.data.voted) throw new Error(`cast failed: ${cast.status}`);
 if (cast.data.slug !== slug) throw new Error(`cast returned wrong slug: ${cast.data.slug}`);
 if ((cast.data.count ?? -1) !== before + 1) throw new Error(`count did not increment: before=${before} after=${cast.data.count}`);
@@ -222,13 +306,13 @@ if (requireEmptyStart && cast.data.count !== 1) throw new Error(`fresh cast coun
 const mine = await json<{ slugs?: string[] }>('/api/v1/votes/mine', { headers: { cookie: `voter=${voter}` } });
 if (mine.status !== 200 || !mine.data.slugs?.includes(slug)) throw new Error(`mine failed: ${mine.status}`);
 
-const uncast = await voteWithCookie(voter, slug, 'uncast');
+const uncast = await voteWithCookie(voter, slug, 'uncast', primaryIp);
 if (uncast.status !== 200 || !uncast.data.ok || uncast.data.my_vote || uncast.data.voted) throw new Error(`uncast failed: ${uncast.status}`);
 if (uncast.data.slug !== slug) throw new Error(`uncast returned wrong slug: ${uncast.data.slug}`);
 if ((uncast.data.count ?? -1) !== before) throw new Error(`count did not decrement: before=${before} after=${uncast.data.count}`);
 
 const hub = await hubCountsHydrationContract();
-const upvotedRoute = await upvotedRouteReordersAfterApiCast();
+const upvotedRoute = await upvotedRouteHidesUntilOrderedAfterApiCast();
 
 console.log(JSON.stringify({
   ok: true,

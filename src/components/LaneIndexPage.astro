@@ -183,37 +183,47 @@ const upvoteSortEnabled = sort?.current === 'upvotes';
         </table>
       </div>
     ) : (
-      // §4.5 gives collections their OWN grid row (1 / 1 / 2 / 2 — "collections are wider
-      // cards", §4.3.6). Every other lane uses the standard EntryCard row (1 / 2 / 2 / 3).
-      // Fixed at M7.1 QA: all three lanes were rendering the standard grid.
-      <div
-        class:list={[
-          'grid grid-cols-1 gap-4 md:gap-6',
-          variant === 'collection' ? 'md:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3',
-        ]}
-        data-upvoted-sort-root={upvoteSortEnabled ? 'true' : undefined}
-      >
-        {entries.map((entry, index) => {
-          const score =
-            typeof (entry.data as { awesome_score?: number }).awesome_score === 'number'
-              ? (entry.data as { awesome_score: number }).awesome_score
-              : -1;
-          return (
-            <div
-              class="flex flex-col gap-2"
-              data-upvoted-sort-card={upvoteSortEnabled ? 'true' : undefined}
-              data-upvoted-sort-slug={upvoteSortEnabled ? entry.data.slug : undefined}
-              data-upvoted-sort-score={upvoteSortEnabled ? String(score) : undefined}
-              data-upvoted-sort-added-at={upvoteSortEnabled ? entry.data.added_at : undefined}
-            >
-              <span class="font-mono text-xs text-text-muted" data-upvoted-sort-index={upvoteSortEnabled ? 'true' : undefined}>
-                {String(offset + index + 1).padStart(2, '0')}
-              </span>
-              <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} headingLevel={2} />
-            </div>
-          );
-        })}
-      </div>
+      <>
+        {upvoteSortEnabled && (
+          <p class="upvotedSortStatus" data-upvoted-sort-status aria-live="polite">
+            sorting by upvotes…
+          </p>
+        )}
+        {/* §4.5 gives collections their OWN grid row (1 / 1 / 2 / 2 — "collections are wider
+            cards", §4.3.6). Every other lane uses the standard EntryCard row (1 / 2 / 2 / 3).
+            Fixed at M7.1 QA: all three lanes were rendering the standard grid. */}
+        <div
+          class:list={[
+            'grid grid-cols-1 gap-4 md:gap-6',
+            variant === 'collection' ? 'md:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3',
+            upvoteSortEnabled && 'upvotedSortGrid',
+          ]}
+          data-upvoted-sort-root={upvoteSortEnabled ? 'true' : undefined}
+          data-upvoted-sort-state={upvoteSortEnabled ? 'ordering' : undefined}
+          aria-busy={upvoteSortEnabled ? 'true' : undefined}
+        >
+          {entries.map((entry, index) => {
+            const score =
+              typeof (entry.data as { awesome_score?: number }).awesome_score === 'number'
+                ? (entry.data as { awesome_score: number }).awesome_score
+                : -1;
+            return (
+              <div
+                class="flex flex-col gap-2"
+                data-upvoted-sort-card={upvoteSortEnabled ? 'true' : undefined}
+                data-upvoted-sort-slug={upvoteSortEnabled ? entry.data.slug : undefined}
+                data-upvoted-sort-score={upvoteSortEnabled ? String(score) : undefined}
+                data-upvoted-sort-added-at={upvoteSortEnabled ? entry.data.added_at : undefined}
+              >
+                <span class="font-mono text-xs text-text-muted" data-upvoted-sort-index={upvoteSortEnabled ? 'true' : undefined}>
+                  {String(offset + index + 1).padStart(2, '0')}
+                </span>
+                <EntryCard entry={toCardEntry(entry)} variant={kindOf(entry)} headingLevel={2} />
+              </div>
+            );
+          })}
+        </div>
+      </>
     )
   }
 
@@ -268,6 +278,24 @@ const upvoteSortEnabled = sort?.current === 'upvotes';
   }
   .sortControl__sep {
     color: var(--color-border-interactive);
+  }
+
+  /* Upvoted sort is dynamic, so avoid flashing the static Awesome Score fallback order.
+     The grid is layout-stable but invisible until the bundled island has filled counts and
+     reordered; a route-local <noscript> override reveals this same grid for no-JS users. */
+  .upvotedSortStatus {
+    margin-block: -0.25rem 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-transform: lowercase;
+  }
+  .upvotedSortGrid {
+    visibility: hidden;
+  }
+  .upvotedSortGrid[data-upvoted-sort-state='ready'],
+  .upvotedSortGrid[data-upvoted-sort-state='fallback'] {
+    visibility: visible;
   }
 
   /* Operator: plugin listing = table. The wrapper is the ONLY thing that scrolls (C4 high-pri:

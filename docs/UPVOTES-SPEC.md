@@ -131,6 +131,15 @@ Compute at cast; store in signals jsonb; weight ∈ {0, 1}:
 - A bundled island on that route reads existing card vote blocks (`data-vote-slug`), batch-fetches
   counts in ≤50-slug chunks, fills the Reddit-style counts, then reorders the existing card DOM
   nodes by `visible_count desc`, `awesome_score desc`, `added_at desc`, then slug.
+- The static Awesome Score fallback order must not visibly flash before the dynamic order. The
+  upvoted route renders a layout-stable hidden grid plus a mono `sorting by upvotes…` status line;
+  the island's first synchronous DOM mutation marks the grid as ordering, fills counts, reorders,
+  then reveals. A route-local `<noscript>` style reveals the same score-order grid for no-JS users;
+  this is CSP-safe because §10.7 permits inline CSS in `style-src 'unsafe-inline'` while
+  `script-src` still forbids inline JS.
+- Hard timeout: if counts do not arrive within 2.5s, reveal the score-order fallback so the page is
+  never blank. If counts arrive within another 2s, the island may apply one late reorder; otherwise
+  leave the fallback visible until reload.
 - This is a dynamic view only; do not bake these counts into the static pages until the future
   nightly bake work exists.
 
@@ -151,8 +160,9 @@ prod rollout steps (operator applies later).
 - E2E happy path via the running dev vhost (curl or playwright): fresh browser context →
   button appears → vote → POST response has `{slug, my_vote: true, count: 1}` in a clean run
   → detail button shows `upvoted · 1` immediately → reload → state persists → unvote; use-case
-  hub cards hydrate vote counts from the counts endpoint; `/use-cases/upvoted/` fetches all card
-  counts and reorders globally after an API cast on a low-score slug.
+  hub cards hydrate vote counts from the counts endpoint; `/use-cases/upvoted/` hides the fallback
+  score grid, shows the `sorting by upvotes…` placeholder under throttled counts, fetches all card
+  counts, and reveals the globally reordered grid after an API cast on a low-score slug.
 
 ### Runbook — `services/votes-api/RUNBOOK.md`
 Start/stop, migrate, backup (pg_dump nightly cron example), restore drill, recount,

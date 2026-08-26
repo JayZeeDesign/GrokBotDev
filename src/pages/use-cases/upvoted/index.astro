@@ -43,6 +43,19 @@ const page = { currentPage: 1, lastPage: 1, url: {} };
     showSponsorSlot={true}
     sort={{ current: 'upvotes', newestUrl: '/use-cases/', scoreUrl: '/use-cases/top/', upvotesUrl: '/use-cases/upvoted/' }}
   />
+
+  <noscript>
+    <!-- §10.7 CSP permits inline CSS via style-src 'unsafe-inline' while still forbidding
+         inline JS. This reveal keeps the score-order fallback usable for no-JS visitors. -->
+    <style>
+      [data-upvoted-sort-root='true'] {
+        visibility: visible !important;
+      }
+      [data-upvoted-sort-status] {
+        display: none !important;
+      }
+    </style>
+  </noscript>
 </BaseLayout>
 
 <script>
