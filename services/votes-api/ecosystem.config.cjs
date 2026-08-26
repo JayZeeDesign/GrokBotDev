@@ -4,7 +4,7 @@ module.exports = {
     {
       name: 'grokbot-votes-api',
       cwd: __dirname,
-      script: 'dist/index.js',
+      script: 'dist/src/index.js',
       interpreter: 'node',
       env: {
         NODE_ENV: 'production',

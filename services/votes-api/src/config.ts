@@ -1,11 +1,32 @@
-import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { config as dotenv } from 'dotenv';
-
-const here = new URL('..', import.meta.url).pathname;
-dotenv({ path: resolve(here, '.env'), quiet: true });
 
 export const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
 export const TURNSTILE_TEST_SITEKEY = '1x00000000000000000000AA';
+
+function findServiceRoot(start: string): string {
+  let dir = start;
+  for (;;) {
+    const pkg = resolve(dir, 'package.json');
+    if (existsSync(pkg)) {
+      try {
+        const parsed = JSON.parse(readFileSync(pkg, 'utf8')) as { name?: string };
+        if (parsed.name === 'grokbot-votes-api') return dir;
+      } catch {
+        // keep walking
+      }
+    }
+    const parent = dirname(dir);
+    if (parent === dir) return start;
+    dir = parent;
+  }
+}
+
+const moduleDir = dirname(fileURLToPath(import.meta.url));
+const serviceRoot = findServiceRoot(moduleDir);
+dotenv({ path: resolve(serviceRoot, '.env'), quiet: true });
 
 function required(name: string, fallback?: string): string {
   const value = process.env[name] ?? fallback;
@@ -39,7 +60,6 @@ export interface VotesConfig {
 }
 
 export function loadConfig(overrides: Partial<VotesConfig> = {}): VotesConfig {
-  const serviceRoot = resolve(here);
   const cfg: VotesConfig = {
     host: process.env.VOTES_HOST ?? '127.0.0.1',
     port: numberEnv('VOTES_PORT', 4390),

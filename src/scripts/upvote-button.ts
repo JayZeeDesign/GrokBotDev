@@ -69,6 +69,7 @@ async function turnstileToken(root: HTMLElement, sitekey: string): Promise<strin
 
 async function postJson<T>(url: string, body?: unknown): Promise<{ status: number; data: T | null }> {
   const res = await fetch(url, {
+    cache: 'no-store',
     method: body ? 'POST' : 'GET',
     credentials: 'same-origin',
     headers: body ? { 'content-type': 'application/json' } : undefined,
