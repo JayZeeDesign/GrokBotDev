@@ -1,0 +1,60 @@
+import { resolve } from 'node:path';
+import { config as dotenv } from 'dotenv';
+
+const here = new URL('..', import.meta.url).pathname;
+dotenv({ path: resolve(here, '.env') });
+
+export const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
+export const TURNSTILE_TEST_SITEKEY = '1x00000000000000000000AA';
+
+function required(name: string, fallback?: string): string {
+  const value = process.env[name] ?? fallback;
+  if (!value) throw new Error(`missing required env ${name}`);
+  return value;
+}
+
+function numberEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) throw new Error(`invalid number env ${name}`);
+  return n;
+}
+
+export interface VotesConfig {
+  host: string;
+  port: number;
+  databaseUrl: string;
+  adminDatabaseUrl: string;
+  migrateDatabaseUrl: string;
+  appRolePassword: string;
+  adminRolePassword: string;
+  pepper: string;
+  turnstileSecret: string;
+  useCaseContentDir: string;
+  slugsFile?: string;
+  slugsUrl?: string;
+  slugRefreshMs: number;
+  logLevel: string;
+}
+
+export function loadConfig(overrides: Partial<VotesConfig> = {}): VotesConfig {
+  const serviceRoot = resolve(here);
+  const cfg: VotesConfig = {
+    host: process.env.VOTES_HOST ?? '127.0.0.1',
+    port: numberEnv('VOTES_PORT', 4390),
+    databaseUrl: required('DATABASE_URL', 'postgres://votes_app:local_votes_app_password@127.0.0.1:54390/grokbot_votes'),
+    adminDatabaseUrl: required('ADMIN_DATABASE_URL', 'postgres://votes_admin:local_votes_admin_password@127.0.0.1:54390/grokbot_votes'),
+    migrateDatabaseUrl: required('MIGRATE_DATABASE_URL', 'postgres://postgres:local_postgres_password@127.0.0.1:54390/grokbot_votes'),
+    appRolePassword: required('VOTES_APP_PASSWORD', 'local_votes_app_password'),
+    adminRolePassword: required('VOTES_ADMIN_PASSWORD', 'local_votes_admin_password'),
+    pepper: required('VOTES_HMAC_PEPPER', 'local-dev-only-replace-me'),
+    turnstileSecret: required('TURNSTILE_SECRET_KEY', TURNSTILE_TEST_SECRET),
+    useCaseContentDir: resolve(serviceRoot, process.env.USE_CASE_CONTENT_DIR ?? '../../content/use-cases'),
+    slugsFile: process.env.SLUGS_FILE ? resolve(serviceRoot, process.env.SLUGS_FILE) : resolve(serviceRoot, '../../dist/api-meta/use-case-slugs.json'),
+    slugsUrl: process.env.SLUGS_URL,
+    slugRefreshMs: numberEnv('SLUG_REFRESH_MS', 10 * 60_000),
+    logLevel: process.env.LOG_LEVEL ?? 'info',
+  };
+  return { ...cfg, ...overrides };
+}
