@@ -1,6 +1,6 @@
 import { Hono, type Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { getCookie, setCookie } from 'hono/cookie';
+import { getCookie } from 'hono/cookie';
 import { v7 as uuidv7 } from 'uuid';
 import { z } from 'zod';
 import type { Db } from './db/client.js';
@@ -206,14 +206,14 @@ export function createApp(deps: CreateAppDeps) {
       insert into identities (id, kind, created_at, turnstile_passed_at)
       values (${id}, 'human', now(), now())
     `;
-    setCookie(c, 'voter', makeVoterCookie(id, deps.pepper), {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'Lax',
-      path: '/api',
-      maxAge: 60 * 60 * 24 * 365 * 2,
-    });
-    return c.json({ ok: true });
+    const response = c.json({ ok: true });
+    // Spec requires a 2-year Max-Age; Hono's helper enforces the browser 400-day recommendation,
+    // so this cookie is serialized explicitly.
+    response.headers.append(
+      'Set-Cookie',
+      `voter=${makeVoterCookie(id, deps.pepper)}; HttpOnly; Secure; SameSite=Lax; Path=/api; Max-Age=${60 * 60 * 24 * 365 * 2}`
+    );
+    return response;
   });
 
   app.post('/api/v1/votes', async (c) => {

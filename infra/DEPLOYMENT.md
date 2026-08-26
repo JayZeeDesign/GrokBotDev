@@ -47,3 +47,19 @@ Points `current` at the previous release.
 ## Waitlist service
 `grokbot-services` (pm2, user `agent`, `:4390`) is the newsletter POST endpoint. DB at
 `/opt/data/grokbot/waitlist.sqlite`. Independent of the static site — the site works if it's down.
+
+
+## Upvotes P1 rollout (operator action; not applied by `feat/upvotes`)
+
+The `feat/upvotes` branch adds a same-origin votes API and keeps the static build invariant. Production rollout is manual and review-gated:
+
+1. Review and merge/promote only after `npm run build`, `services/votes-api npm test`, E2E, and `npm run recount` are green.
+2. Provision Postgres 16 on crhq-products with an external data volume equivalent to `/opt/projects/grokbot-votes-data`; create a `grokbot_votes` database.
+3. Create production secrets outside git: `VOTES_HMAC_PEPPER` (`openssl rand -hex 32`), Postgres passwords/URLs for `votes_app`, `votes_admin`, and migration superuser, and Cloudflare Turnstile production `TURNSTILE_SECRET_KEY`. The browser gets only `PUBLIC_TURNSTILE_SITEKEY`.
+4. Install and migrate on the production checkout: `cd services/votes-api && npm ci && npm run db:migrate && npm run build`.
+5. Start `pm2` app `grokbot-votes-api` bound to `127.0.0.1:4390` with the production `.env`.
+6. Apply the nginx changes from `infra/nginx-grokbot.dev.votes.snippet.conf` (http-level `limit_req_zone` once, then server-level exact `/api/v1/identity`, `/api/v1/votes`, `/api/v1/votes/*`, and `/api/v1/health` proxy locations). Keep existing static `.json` handling untouched.
+7. Copy the updated `infra/security-headers.conf` into `/etc/nginx/snippets/grokbot-security-headers.conf`; this consciously adds `https://challenges.cloudflare.com` for Turnstile script/frame/connect. Confirm `nginx -t` before reload.
+8. Reconcile the existing waitlist service port before enabling votes: the P1 spec binds votes-api to `:4390`, while the current waitlist runbook also documents `grokbot-services` on `:4390`. Move the waitlist service to a different loopback port and keep `/api/waitlist` pointed at it, or fold/proxy that endpoint deliberately. Do not let `/api/waitlist` silently 404.
+9. No DNS change is expected for `grokbot.dev`; Cloudflare already fronts the origin. Do not change Cloudflare except to create/provision Turnstile production keys.
+10. After reload, smoke-test: `/api/v1/health`, `/api/v1/votes/counts?slugs=<known>`, one Turnstile-backed vote, `npm run recount`, then monitor `pm2 logs grokbot-votes-api` and nginx 429s.

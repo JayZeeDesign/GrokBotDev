@@ -1,0 +1,94 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '1x00000000000000000000AA';
+---
+
+<div class="upvoteButton" data-upvote-root data-slug={slug} data-sitekey={sitekey} hidden>
+  <button
+    type="button"
+    class="upvoteButton__button btn-active"
+    data-upvote-button
+    aria-pressed="false"
+    aria-label="upvote this use case"
+  >
+    ▲ upvote
+  </button>
+  <span class="sr-only" data-upvote-count></span>
+  <span class="sr-only" aria-live="polite" data-upvote-live></span>
+  <span class="upvoteButton__turnstile" data-upvote-turnstile aria-hidden="true"></span>
+</div>
+
+<script>
+  import { initUpvoteButtons } from '../scripts/upvote-button';
+  initUpvoteButtons();
+</script>
+
+<style>
+  .upvoteButton[hidden] {
+    display: none;
+  }
+
+  .upvoteButton {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+  }
+
+  .upvoteButton__button {
+    min-block-size: 44px;
+    border: var(--border-width) solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text);
+    padding: 0.625rem 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    text-transform: lowercase;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      opacity 150ms ease;
+  }
+
+  .upvoteButton__button:hover {
+    border-color: var(--color-text);
+  }
+
+  .upvoteButton__button:disabled {
+    cursor: wait;
+    opacity: 0.72;
+  }
+
+  .upvoteButton__button[data-voted='true'] {
+    border-color: var(--color-text);
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  .upvoteButton__turnstile {
+    position: fixed;
+    inset-inline-start: -9999px;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+  }
+
+  .sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

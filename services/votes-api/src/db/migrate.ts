@@ -28,7 +28,7 @@ async function ensureRoles(sql: ReturnType<typeof postgres>, appPassword: string
 
 export async function migrate() {
   const cfg = loadConfig();
-  const sql = postgres(cfg.migrateDatabaseUrl, { max: 1, idle_timeout: 5, connect_timeout: 5 });
+  const sql = postgres(cfg.migrateDatabaseUrl, { max: 1, idle_timeout: 5, connect_timeout: 5, onnotice: () => {} });
   try {
     await ensureRoles(sql, cfg.appRolePassword, cfg.adminRolePassword);
     const migrationsDir = join(new URL('.', import.meta.url).pathname, '../../migrations');

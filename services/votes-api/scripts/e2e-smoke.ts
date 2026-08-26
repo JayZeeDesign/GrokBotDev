@@ -1,0 +1,62 @@
+#!/usr/bin/env tsx
+import { loadConfig } from '../src/config.js';
+import { connect } from '../src/db/client.js';
+import { verifyVoterCookie } from '../src/security/cookies.js';
+
+const cfg = loadConfig();
+const base = (process.env.E2E_BASE_URL ?? 'https://grokbot-upvotes.anacreon.ai').replace(/\/$/, '');
+const slug = process.env.E2E_SLUG ?? 'account-expert';
+const ip = process.env.E2E_IP ?? '198.51.100.77';
+const token = process.env.E2E_TURNSTILE_TOKEN ?? 'test-token';
+
+async function json<T>(path: string, init: RequestInit = {}): Promise<{ status: number; data: T; headers: Headers }> {
+  const res = await fetch(`${base}${path}`, init);
+  const data = (await res.json().catch(() => ({}))) as T;
+  return { status: res.status, data, headers: res.headers };
+}
+
+async function counts() {
+  const res = await json<{ counts: Record<string, number> }>(`/api/v1/votes/counts?slugs=${encodeURIComponent(slug)}`);
+  if (res.status !== 200) throw new Error(`counts failed: ${res.status}`);
+  return res.data.counts[slug] ?? 0;
+}
+
+const before = await counts();
+const identity = await json<{ ok?: boolean }>('/api/v1/identity', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({ turnstileToken: token }),
+});
+if (identity.status !== 200 || !identity.data.ok) throw new Error(`identity failed: ${identity.status}`);
+const voter = /voter=([^;]+)/.exec(identity.headers.get('set-cookie') ?? '')?.[1];
+if (!voter) throw new Error('identity did not set voter cookie');
+const identityId = verifyVoterCookie(voter, cfg.pepper);
+if (!identityId) throw new Error('identity cookie did not verify locally');
+
+const admin = connect(cfg.adminDatabaseUrl, 1);
+try {
+  await admin`update identities set created_at = now() - interval '2 minutes' where id = ${identityId}`;
+} finally {
+  await admin.end({ timeout: 5 });
+}
+
+const cast = await json<{ ok?: boolean; voted?: boolean; visible_count?: number }>('/api/v1/votes', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', cookie: `voter=${voter}` },
+  body: JSON.stringify({ slug, action: 'cast' }),
+});
+if (cast.status !== 200 || !cast.data.ok || !cast.data.voted) throw new Error(`cast failed: ${cast.status}`);
+if ((cast.data.visible_count ?? -1) !== before + 1) throw new Error(`count did not increment: before=${before} after=${cast.data.visible_count}`);
+
+const mine = await json<{ slugs?: string[] }>('/api/v1/votes/mine', { headers: { cookie: `voter=${voter}` } });
+if (mine.status !== 200 || !mine.data.slugs?.includes(slug)) throw new Error(`mine failed: ${mine.status}`);
+
+const uncast = await json<{ ok?: boolean; voted?: boolean; visible_count?: number }>('/api/v1/votes', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', cookie: `voter=${voter}` },
+  body: JSON.stringify({ slug, action: 'uncast' }),
+});
+if (uncast.status !== 200 || !uncast.data.ok || uncast.data.voted) throw new Error(`uncast failed: ${uncast.status}`);
+if ((uncast.data.visible_count ?? -1) !== before) throw new Error(`count did not decrement: before=${before} after=${uncast.data.visible_count}`);
+
+console.log(JSON.stringify({ ok: true, base, slug, count_before: before, count_after_cast: cast.data.visible_count, count_after_uncast: uncast.data.visible_count }, null, 2));

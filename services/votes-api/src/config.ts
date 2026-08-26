@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { config as dotenv } from 'dotenv';
 
 const here = new URL('..', import.meta.url).pathname;
-dotenv({ path: resolve(here, '.env') });
+dotenv({ path: resolve(here, '.env'), quiet: true });
 
 export const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
 export const TURNSTILE_TEST_SITEKEY = '1x00000000000000000000AA';
