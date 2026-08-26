@@ -37,6 +37,18 @@ cd /opt/projects/grokbotdev-upvotes/services/votes-api
 npm run db:migrate
 ```
 
+## Production slug registry
+
+Production must not load voteable slugs from the votes-api service checkout, because that checkout can lag behind newly promoted content. The production env file (outside git) must force the registry to fall back to the deployed site's manifest:
+
+```dotenv
+# Slug registry sync: force fallback to the deployed site manifest so new content publishes need no votes-api redeploy.
+USE_CASE_CONTENT_DIR=/nonexistent-force-fallback
+SLUGS_FILE=/opt/projects/user/grokbot/current/api-meta/use-case-slugs.json
+```
+
+`current/api-meta/use-case-slugs.json` is updated atomically with each site promote. The API refreshes its slug registry on the default `SLUG_REFRESH_MS` cadence (10 minutes), so content publishes do not require a votes-api redeploy.
+
 ## Backups
 
 Nightly cron example (operator adjusts retention/storage):
