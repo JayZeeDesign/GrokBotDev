@@ -20,10 +20,19 @@ author:
   url: https://x.com/theplgeek
   platform: x
 prompt_provenance: author
+awesome_score: 71
+score_breakdown:
+  reproducibility: 17
+  ambition: 14
+  concreteness: 16
+  novelty: 13
+  evidence: 3
+  craft: 8
 replicability: "Point it at your own DevTune project. Search Console and GA4 come through that project, not as separate connections. Tell it which story to tell about the product and how drafts should be handed over."
 added_at: "2026-08-27T07:20:00Z"
 updated_at: "2026-08-27T07:20:00Z"
-status: proposed
+verified_at: "2026-08-27T17:20:00Z"
+status: live
 ---
 
 ## How it's set up
