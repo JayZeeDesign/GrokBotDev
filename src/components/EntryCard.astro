@@ -23,6 +23,8 @@ interface Props {
   memberCounts?: { plugins: number; useCases: number };
   /** Category hubs render a type chip on every card (§4.3.12 region 5). */
   showType?: boolean;
+  /** Use-case variant only: passthrough to UseCaseCard's vote-block override. */
+  showVote?: boolean;
   class?: string;
 }
 
@@ -33,6 +35,7 @@ const {
   headingLevel = 3,
   memberCounts,
   showType = false,
+  showVote,
   class: className = '',
 } = Astro.props;
 
@@ -55,7 +58,7 @@ const typeLabel = entry.type === 'use-case' ? 'use case' : entry.type;
 
 {/* FINAL model: use cases render the dedicated UseCaseCard; plugins/collections keep this card. */}
 {variant === 'use-case' && entry.status !== 'deprecated' && (
-  <UseCaseCard entry={entry as UseCaseEntry} headingLevel={headingLevel} class={className} />
+  <UseCaseCard entry={entry as UseCaseEntry} headingLevel={headingLevel} showVote={showVote} class={className} />
 )}
 
 {

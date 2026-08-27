@@ -5,6 +5,7 @@
 // Falls back to the old fields (tagline / what_it_does / category) for any entry not yet
 // backfilled, so it can never render blank during rollout.
 import { entryUrl } from '../lib/format';
+import { SHOW_CARD_VOTES } from '../lib/flags';
 import type { UseCaseEntry } from '../lib/types';
 import categories from '../data/categories.json';
 
@@ -12,8 +13,11 @@ interface Props {
   entry: UseCaseEntry;
   headingLevel?: 2 | 3;
   class?: string;
+  /** Override the SHOW_CARD_VOTES flag per placement — /use-cases/upvoted/ passes true. */
+  showVote?: boolean;
 }
-const { entry, headingLevel = 3, class: className = '' } = Astro.props;
+const { entry, headingLevel = 3, class: className = '', showVote } = Astro.props;
+const voteVisible = showVote ?? SHOW_CARD_VOTES;
 const Heading = headingLevel === 2 ? 'h2' : 'h3';
 
 const href = entryUrl('use-case', entry.slug);
@@ -37,6 +41,7 @@ const platformMark = src?.platform === 'youtube' ? 'YouTube' : '𝕏';
     <article
       class:list={[
         'entry-card ucc-card relative flex flex-col gap-2 rounded-sm border border-border bg-surface p-4 transition-[background-color,border-color] duration-150 hover:border-border-strong hover:bg-surface-raised',
+        voteVisible && 'ucc-card--vote',
         entry.status === 'needs-update' && 'border-l-2 border-l-warn',
         className,
       ]}
@@ -44,17 +49,22 @@ const platformMark = src?.platform === 'youtube' ? 'YouTube' : '𝕏';
     >
       {/* Reddit-style read-only vote affordance. The card itself does not cast votes:
           it links to the real detail-page island and the bundled vote-count script fills
-          counts in batches (≤50 slugs/request) after hydration. */}
-      <a
-        href={`${href}#upvote`}
-        class="ucc-vote"
-        data-vote-slug={entry.slug}
-        data-vote-count-link
-        aria-label="0 upvotes — open use case to vote"
-      >
-        <span class="ucc-vote__arrow" aria-hidden="true">▲</span>
-        <span class="ucc-vote__count" data-vote-count>0</span>
-      </a>
+          counts in batches (≤50 slugs/request) after hydration. Gated by SHOW_CARD_VOTES
+          (operator 2026-08-27: hidden on listings until vote counts read as social proof);
+          /use-cases/upvoted/ opts back in via showVote. No blocks on a page → the count
+          script finds zero slugs and makes zero API calls. */}
+      {voteVisible && (
+        <a
+          href={`${href}#upvote`}
+          class="ucc-vote"
+          data-vote-slug={entry.slug}
+          data-vote-count-link
+          aria-label="0 upvotes — open use case to vote"
+        >
+          <span class="ucc-vote__arrow" aria-hidden="true">▲</span>
+          <span class="ucc-vote__count" data-vote-count>0</span>
+        </a>
+      )}
 
       {/* 1 — score eyebrow */}
       <div class="ucc-eyebrow">
@@ -105,7 +115,8 @@ const platformMark = src?.platform === 'youtube' ? 'YouTube' : '𝕏';
 </script>
 
 <style>
-  .ucc-card { padding-inline-start: 3.85rem; }
+  /* The vote gutter exists only when the vote block renders (SHOW_CARD_VOTES / showVote). */
+  .ucc-card--vote { padding-inline-start: 3.85rem; }
   .ucc-vote {
     position: absolute;
     z-index: 10;
