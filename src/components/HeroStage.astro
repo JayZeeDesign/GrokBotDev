@@ -92,8 +92,12 @@ const SUBLINE =
 .stage.dragging{cursor:grabbing}
 /* Direct round: on phones the sky was mostly empty — shorter stage so the listing
    peeks above the fold. Bot count is already 6 under 720px, so the pile still fits. */
+/* Operator (2026-08-27): the bookmark pill made the mobile hero read busy — the pile's
+   top crowded the sponsor bar. ~40px taller on phones; #content is bottom-anchored, so
+   every extra pixel becomes sky ABOVE the pile. The physics re-measures on build/resize,
+   so the sim follows this value with no JS change. */
 @media(max-width:719px){
-  .stage{height:clamp(420px, 56vh, 500px)}
+  .stage{height:clamp(460px, 62vh, 540px)}
 }
 /* Direct round, operator: the mobile hero read a touch crammed at the top. #content is
    BOTTOM-anchored, so dropping its `bottom` slides the whole block (h1 → CTA) ~20px lower,
