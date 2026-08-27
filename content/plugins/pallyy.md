@@ -25,7 +25,8 @@ pricing_note: "Free plan available; the API is included on every paid plan, each
 setup_minutes: 5
 added_at: "2026-08-27T00:00:00Z"
 updated_at: "2026-08-27T00:00:00Z"
-status: proposed
+verified_at: "2026-08-27T07:40:00Z"
+status: live
 ---
 
 ## What it does

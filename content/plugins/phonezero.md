@@ -22,7 +22,8 @@ pricing_note: "Plug-in Free (MIT). Pay usage via Telnyx and xAI directly."
 setup_minutes: 30
 added_at: "2026-08-26T16:07:16Z"
 updated_at: "2026-08-26T16:07:16Z"
-status: proposed
+verified_at: "2026-08-27T07:40:00Z"
+status: live
 ---
 
 ## What it does
