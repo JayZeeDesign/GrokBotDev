@@ -1,0 +1,93 @@
+---
+// Read-only ▲ + count for a template listing row.
+//
+// It emits the EXISTING vote contract — `[data-vote-slug][data-vote-count-link]` wrapping a
+// `[data-vote-count]` slot — so `src/scripts/vote-counts.ts` hydrates it with no special case.
+// The block never casts a vote: it links to the detail page's real island at `#upvote`.
+//
+// `data-vote-kind="template"` is NEW and load-bearing. `/api/v1/votes/counts` rejects the
+// WHOLE batch with 400 if any single slug is unknown to the registry, and the count script
+// batches every vote block on the page together. The kind attribute lets the script request
+// templates and use cases SEPARATELY, so a template slug the registry has not learned yet can
+// never zero out the use-case counts sitting beside it. See the note in vote-counts.ts.
+//
+// Unlike use-case cards (SHOW_CARD_VOTES = false), template rows ALWAYS show votes: the
+// marketplace ships upvotes as its ranking signal from day one, because a marketplace with no
+// signal is just a list.
+import { CP_169_TEMPLATE_VOTE_ARIA, fillCopy } from '../lib/copy';
+
+interface Props {
+  slug: string;
+  /** The entry name. Part of the accessible name, so each row's vote link is distinguishable. */
+  name: string;
+  href: string;
+  class?: string;
+}
+
+const { slug, name, href, class: className = '' } = Astro.props;
+---
+
+<a
+  href={`${href}#upvote`}
+  class:list={['tplVote', className]}
+  data-vote-slug={slug}
+  data-vote-kind="template"
+  data-vote-count-link
+  data-vote-name={name}
+  aria-label={fillCopy(CP_169_TEMPLATE_VOTE_ARIA, { count: '0', name })}
+>
+  <span class="tplVote__arrow" aria-hidden="true">▲</span>
+  <span class="tplVote__count" data-vote-count>0</span>
+</a>
+
+<script>
+  // THIS IMPORT IS LOAD-BEARING, and its absence was invisible.
+  //
+  // The block only emits markup; `vote-counts.ts` is what fills the count. Until now nothing on
+  // a marketplace page imported it — the comments above said "hydrated by the bundled script"
+  // and that was simply not true. It looked fine because the preview has no votes backend, so
+  // the counts read 0 for an unrelated reason, and on the old home page UseCaseCard happened to
+  // pull the module in. Once use cases left the home page, NOTHING did.
+  //
+  // In production, with a working votes API, every ▲ would have sat at 0 forever. Astro hoists
+  // and dedupes this module, so importing it here and in UseCaseCard costs one bundle.
+  import { initVoteCountBlocks } from '../scripts/vote-counts';
+  initVoteCountBlocks();
+</script>
+
+<style>
+  /* A row is not a card, so this is a grid CELL rather than UseCaseCard's absolutely
+     positioned gutter — on a 360px phone, 62px of stolen inline padding is not affordable. */
+  .tplVote {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-inline-size: 2.25rem;
+    min-block-size: 2.5rem;
+    padding-inline: 0.25rem;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    line-height: 1;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition:
+      border-color 150ms ease,
+      color 150ms ease,
+      background-color 150ms ease;
+  }
+  .tplVote:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+  }
+  .tplVote__arrow {
+    font-size: var(--text-sm);
+  }
+  .tplVote__count {
+    font-size: var(--text-xs);
+    font-weight: 500;
+  }
+</style>

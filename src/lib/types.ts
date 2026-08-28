@@ -178,4 +178,6 @@ export type WaitlistSource =
   | 'use-case-detail'
   | 'collection-detail'
   | 'hub'
-  | 'contribute';
+  | 'contribute'
+  | 'marketplace-index'
+  | 'template-detail';

@@ -45,6 +45,7 @@ const HUBS = [
   { name: 'plugins',     h1: 'Grok&nbsp;Bot plugins',           sub: 'Agentic tools your Grok&nbsp;Bot can actually plug into and use.', eyebrow: 'plugins', h1size: 84 },
   { name: 'news',        h1: 'Grok&nbsp;Bot news',              sub: 'Releases, deals, and opportunities worth surfacing to your Grok&nbsp;Bot.', eyebrow: 'news', h1size: 96 },
   { name: 'collections', h1: 'Grok&nbsp;Bot collections',       sub: 'Whole setups that work as one, put together for you.', eyebrow: 'collections', h1size: 82 },
+  { name: 'marketplace', h1: 'Shareable Grok&nbsp;Bots',    sub: 'Whole Grok&nbsp;Bot setups people shared on X. One link adds one to your own Bot.', eyebrow: 'shareable bots', h1size: 74 },
   { name: 'wall',        h1: 'The wall',                        sub: 'Everything people are building with Grok&nbsp;Bot, as it lands.', eyebrow: 'the wall', h1size: 96 },
 ];
 

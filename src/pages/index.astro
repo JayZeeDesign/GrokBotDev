@@ -16,16 +16,23 @@ import HeroStage from '../components/HeroStage.astro';
 import HomeDirectory from '../components/HomeDirectory.astro';
 import NewsletterRow from '../components/NewsletterRow.astro';
 import { allPlugins, allUseCases, sortForIndex, urlOf } from '../lib/entries';
+import { allTemplates, templateUrlOf } from '../lib/templates';
 import { META, collectionPage, itemList } from '../lib/seo';
 
 const plugins = sortForIndex(await allPlugins());
 const useCases = sortForIndex(await allUseCases());
+// Operator (2026-08-28): the FULL shareable-bot list lives on home too, uncapped.
+const templates = await allTemplates();
 
 // The ItemList now describes what the page actually lists — the whole directory — rather
 // than the featured/latest slices that no longer exist.
 const graph = [
   collectionPage('/', META.home.title, META.home.description),
-  itemList([...useCases, ...plugins].map((e) => ({ url: urlOf(e), name: e.data.name }))),
+  itemList([
+    ...useCases.map((e) => ({ url: urlOf(e), name: e.data.name })),
+    ...plugins.map((e) => ({ url: urlOf(e), name: e.data.name })),
+    ...templates.map((t) => ({ url: templateUrlOf(t), name: t.data.name })),
+  ]),
 ];
 ---
 
@@ -34,7 +41,7 @@ const graph = [
 
   {/* Direct round: StatBar (counts row) REMOVED from home + dead space tightened —
       the directory itself is the proof of size now. */}
-  <HomeDirectory plugins={plugins} useCases={useCases} />
+  <HomeDirectory plugins={plugins} templates={templates} />
 
   <div class="container-page pb-12 md:pb-16">
     <NewsletterRow source="home" />

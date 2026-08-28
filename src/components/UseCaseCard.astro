@@ -59,7 +59,8 @@ const platformMark = src?.platform === 'youtube' ? 'YouTube' : '𝕏';
           class="ucc-vote"
           data-vote-slug={entry.slug}
           data-vote-count-link
-          aria-label="0 upvotes — open use case to vote"
+          data-vote-name={headline}
+          aria-label={`0 upvotes — open ${headline} to vote`}
         >
           <span class="ucc-vote__arrow" aria-hidden="true">▲</span>
           <span class="ucc-vote__count" data-vote-count>0</span>

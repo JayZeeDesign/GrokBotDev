@@ -25,11 +25,12 @@ import {
   CP_132_CALLOUT_PLUGIN,
   CP_133_CALLOUT_HUB,
   CP_134_CALLOUT_CTA,
+  CP_163_CALLOUT_TEMPLATE,
 } from '../lib/copy';
 
 interface Props {
   /** Which line to render. The CTA and the destination never vary. */
-  context: 'use-case' | 'plugin' | 'hub';
+  context: 'use-case' | 'plugin' | 'hub' | 'template';
   class?: string;
 }
 
@@ -39,6 +40,8 @@ const LINES = {
   'use-case': CP_131_CALLOUT_USE_CASE,
   plugin: CP_132_CALLOUT_PLUGIN,
   hub: CP_133_CALLOUT_HUB,
+  // Same wording as CP-131/132 by design: the callout says one thing everywhere (operator).
+  template: CP_163_CALLOUT_TEMPLATE,
 } as const;
 ---
 

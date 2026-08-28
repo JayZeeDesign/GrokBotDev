@@ -142,7 +142,13 @@ function write(path, buffer) {
   writeFileSync(path, buffer);
 }
 
-const DIRS = { plugins: 'PLUGIN', 'use-cases': 'USE CASE', collections: 'COLLECTION', news: 'NEWS' };
+const DIRS = { plugins: 'PLUGIN', 'use-cases': 'USE CASE', collections: 'COLLECTION', news: 'NEWS', templates: 'SHAREABLE BOT' };
+// Tag slugs are not what a reader recognises on a social card, so the chips carry LABELS.
+const TEMPLATE_TAG_LABEL = new Map(
+  JSON.parse(readFileSync('src/data/template-tags.json', 'utf8')).flatMap((facet) =>
+    facet.tags.map((tag) => [tag.slug, tag.label])
+  )
+);
 const frontmatter = (file) => {
   const raw = readFileSync(file, 'utf8');
   return parseYaml(raw.slice(3, raw.indexOf('\n---', 3))) ?? {};
@@ -155,6 +161,8 @@ for (const [dir, label] of Object.entries(DIRS)) {
   for (const name of readdirSync(source).filter((f) => f.endsWith('.md'))) {
     const d = frontmatter(join(source, name));
     if (dir === 'news' && d.status === 'draft') continue;
+    // A card for an entry no list surface shows is a card nothing can ever link to.
+    if (dir === 'templates' && d.status !== 'live' && d.status !== 'needs-update') continue;
     const newsStamp = dir === 'news' && d.published_at ? String(d.published_at).slice(0, 10) : null;
     const verified = d.status === 'live' && d.verified_at ? String(d.verified_at).slice(0, 10) : null;
     const isGuide = d.format === 'guide';
@@ -162,10 +170,17 @@ for (const [dir, label] of Object.entries(DIRS)) {
       typeLabel: isGuide ? 'GUIDE' : label,
       name: d.title ?? d.headline ?? d.name,
       summary: d.summary ?? d.tagline ?? d.what_it_does ?? null,
-      stamp: newsStamp ?? (verified ? `verified ${verified}` : null),
+      // The template card's stamp is the CREDIT - the whole premise of the section, so it is
+      // what the social card should say rather than a verification date.
+      stamp:
+        dir === 'templates'
+          ? `shared by @${d.sharer?.handle ?? ''}`
+          : (newsStamp ?? (verified ? `verified ${verified}` : null)),
       categories: dir === 'news'
         ? [d.kind, d.important ? 'important' : null].filter(Boolean)
-        : (d.categories && d.categories.length ? d.categories : [d.category]),
+        : dir === 'templates'
+          ? (d.tags ?? []).map((tag) => TEMPLATE_TAG_LABEL.get(tag) ?? tag)
+          : (d.categories && d.categories.length ? d.categories : [d.category]),
       score: isGuide ? null : (d.awesome_score ?? null),
       guide: isGuide,
     })));

@@ -274,6 +274,76 @@ export const CP_143_NEWS_IMPORTANT_LABEL = 'important';
 export const CP_144_NEWS_EMPTY = 'no news yet - check back soon.';
 export const CP_145_NEWS_OPEN_LABEL = 'open';
 
+/**
+ * CP-146 … CP-172 — the "Shareable Bots" marketplace (2026-08-28).
+ *
+ * The section indexes Grok Bot TEMPLATES people share on X: a packaged bot (instructions,
+ * memories, workflow, personal data stripped) behind one "Add to Grok Bot" install link.
+ *
+ * TWO NAMES, ON PURPOSE. Every string below says "shareable bot"; the route is `/marketplace/`
+ * and the machine layer says `template`. Same split as CP-032 (the field stays `replicability`,
+ * the label reads "what you need"). Reword HERE, and do not rename the field to match.
+ *
+ * House rules applied: no em dashes anywhere - spaced hyphens only; chrome is lowercase mono;
+ * the product noun is "Grok Bot". §16 protected copy is untouched by this block.
+ */
+export const CP_146_MARKETPLACE_H1 = 'Shareable Bots';
+export const CP_147_MARKETPLACE_INTRO =
+  'ready-made Grok Bot setups people have shared on X. one link installs the whole thing - instructions, memories and workflow - into your own Bot.';
+export const CP_148_MARKETPLACE_NAV = 'shareable bots';
+export const CP_149_TEMPLATE_ADD_LABEL = 'add to grok bot';
+export const CP_150_TEMPLATE_SOURCE_LABEL = 'source';
+export const CP_151_TEMPLATE_SHARED_BY = 'shared by @{handle}';
+export const CP_152_TEMPLATE_NO_LINK = 'no install link yet - open the post';
+export const CP_153_TEMPLATE_FILTER_HEADING = 'filter';
+export const CP_154_TEMPLATE_FILTER_PLACEHOLDER = 'search shareable bots…';
+export const CP_155_TEMPLATE_FILTER_CLEAR = 'clear filters';
+export const CP_156_TEMPLATE_FILTER_COUNT = '{shown} of {total} shareable bots';
+export const CP_157_TEMPLATE_EMPTY_FILTER = 'nothing matches those filters - clear one and try again.';
+export const CP_158_MARKETPLACE_EMPTY =
+  'no shareable bots yet - the Scouts are on it. share yours on X and tag @grokbotdev.';
+export const CP_159_TEMPLATE_INCLUDES_HEADING = 'what it includes';
+// CP-160 was the newest/featured sort control. Both are RETIRED (operator, 2026-08-28): there
+// is no featured view any more, and with one ordering there is nothing to choose between. Kept
+// so the pack keys still resolve; nothing renders them.
+export const CP_160_TEMPLATE_SORT_NEWEST = 'newest';
+export const CP_161_TEMPLATE_SORT_FEATURED = 'featured';
+/**
+ * CP-162 — the safety line. OPERATOR-CONFIRMED AND REQUIRED (2026-08-28): ship it verbatim.
+ *
+ * xAI's own documentation tells the SHARER to "strip secrets and anything confidential before
+ * you share". This is the mirror of that sentence, addressed to the INSTALLER, and a
+ * marketplace that omits it is not doing its job. If the install flow ever changes, this line
+ * changes WITH it - same asymmetric rule CP-119/CP-120 established.
+ */
+export const CP_162_TEMPLATE_SAFETY_NOTE =
+  "a shared bot carries somebody else's instructions. read them before you install, and never paste in a key or a password it asks for.";
+/** Same wording as CP-131/CP-132: the callout says one thing on every placement (operator). */
+export const CP_163_CALLOUT_TEMPLATE =
+  'Your Grok Bot subscribes to a curated feed of the best Grok Bot use cases - and the exact prompts to build them - delivered on your schedule.';
+export const CP_164_HOME_SHAREABLE_HEADING = 'Shareable Bots';
+export const CP_165_HOME_SHAREABLE_ALL = 'filter and search them all →';
+export const CP_166_TEMPLATE_SEE_USE_CASE = 'read the full write-up →';
+export const CP_167_USE_CASE_SEE_TEMPLATE = 'get it as a shareable bot →';
+export const CP_168_TEMPLATE_VIEW_DETAILS = 'view details →';
+/**
+ * CP-169 — the row vote block's accessible name. It carries BOTH the count and the entry name
+ * because the block is repeated once per row: "open the shareable bot to vote" was identical
+ * across all 77 and, worse, described the wrong destination (the link goes to the detail page's
+ * #upvote anchor, not to the install). Rewritten after the e2e a11y pass.
+ */
+export const CP_169_TEMPLATE_VOTE_ARIA = '{count} upvotes - open {name} to vote';
+export const CP_170_TEMPLATE_UPVOTE_ARIA = 'upvote this shareable bot';
+export const CP_171_HOME_SHAREABLE_COUNT = '{n} shareable bots, all of them';
+export const CP_172_TEMPLATE_ADD_ARIA = 'add {name} to your grok bot';
+/** CP-173 … CP-175 — the sectioned skim (operator, 2026-08-28). */
+export const CP_173_SECTION_JUMP_LABEL = 'jump to';
+export const CP_174_SECTION_TOP = 'top ↑';
+export const CP_175_HOME_TAB_TEMPLATES = 'shareable bots';
+/** CP-176 — the row source link. Per-row, because 77 links named "source ↗" is 77 identical
+ *  accessible names in the tab order. */
+export const CP_176_TEMPLATE_SOURCE_ARIA = 'source post for {name}';
+
 /** Interpolate `{token}` placeholders in a pack string without editorialising it. */
 export function fillCopy(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) =>

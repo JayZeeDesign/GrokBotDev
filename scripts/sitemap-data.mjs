@@ -4,8 +4,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
-const DIRS = { plugin: 'content/plugins', 'use-case': 'content/use-cases', collection: 'content/collections', news: 'content/news' };
-const LANE = { plugin: 'plugins', 'use-case': 'use-cases', collection: 'collections', news: 'news' };
+const DIRS = { plugin: 'content/plugins', 'use-case': 'content/use-cases', collection: 'content/collections', news: 'content/news', template: 'content/templates' };
+const LANE = { plugin: 'plugins', 'use-case': 'use-cases', collection: 'collections', news: 'news', template: 'marketplace' };
 
 function read(dir) {
   if (!existsSync(dir)) return [];
@@ -32,6 +32,18 @@ export function sitemapData() {
     lastmod.set(url, entry.updated_at ?? entry.published_at);
     // Deprecated + demo entries are noindex (§5.6 rule 8, Addendum B4).
     if (entry.status === 'deprecated' || entry.status === 'demo' || entry.status === 'draft') noindex.add(url);
+  }
+
+  // `proposed` templates keep their own page but must not be indexed - the same posture demo
+  // and deprecated entries already get.
+  for (const entry of entries.filter((e) => e.type === 'template' && e.status === 'proposed')) {
+    noindex.add(`/marketplace/${entry.slug}/`);
+  }
+  const liveTemplates = entries.filter(
+    (e) => e.type === 'template' && (e.status === 'live' || e.status === 'needs-update')
+  );
+  if (liveTemplates.length) {
+    lastmod.set('/marketplace/', liveTemplates.map((e) => e.updated_at).sort().at(-1));
   }
 
   const liveNews = entries.filter((e) => e.type === 'news' && e.status === 'live');

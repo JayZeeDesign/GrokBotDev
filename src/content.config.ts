@@ -6,6 +6,7 @@ import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 import categories from './data/categories.json';
 import integrations from './data/integrations.json';
+import templateTagFacets from './data/template-tags.json';
 import { TIMESTAMP_RE, X_STATUS_RE, YOUTUBE_URL_RE } from './lib/sources';
 
 // ---------- shared primitives ----------
@@ -401,9 +402,170 @@ const collectionEntries = defineCollection({
     .superRefine(verifiedWhenLive),
 });
 
+// ---------- TEMPLATE (the "Shareable Bots" marketplace) ----------
+//
+// A template is a packaged Grok Bot somebody shared on X: instructions + memories + workflow,
+// personal data stripped, behind one "Add to Grok Bot" install link. xAI has not shipped a
+// public marketplace, so this is the aggregator.
+//
+// WHY THIS IS SHAPED LIKE `news` AND NOT LIKE `plugins`. `AnyDoc` (plugin | use-case |
+// collection) is welded to `category` / `subcategory` and is consumed by LaneIndexPage,
+// toApiItem, relatedTo, toCardEntry and sitemap-data. Templates have no category taxonomy —
+// they have their own faceted TAG vocabulary. Joining AnyDoc would mean either a fake
+// category on every template or making the field optional on all three existing lanes, and
+// the second one weakens three shipped lanes to serve a fourth. `news` already solved exactly
+// this by living in its own lib and joining only at feed.json. Templates do the same.
+//
+// NAMING: the machine layer says `template`; the human layer says "Shareable Bots". That split
+// is deliberate and precedented (CP-032: the field is `replicability`, the label is "what you
+// need"). Do not "fix" one to match the other.
+
+const TEMPLATE_TAGS = new Set(templateTagFacets.flatMap((facet) => facet.tags.map((t) => t.slug)));
+
+const templateTag = z.string().refine(
+  (v) => TEMPLATE_TAGS.has(v),
+  (v) => ({
+    message: `Unknown template tag "${v}" — must be a slug in src/data/template-tags.json`,
+  })
+);
+
+/** Who shared it. REQUIRED on every template: the credit IS the section's premise. */
+const sharer = z
+  .object({
+    handle: z.string().min(1).max(15), // no leading @
+    name: z.string().min(1).max(60).optional(),
+    url: httpsUrl, // profile, or the post itself
+    platform: z.enum(['x', 'github', 'web']).default('x'),
+  })
+  .strict();
+
+/**
+ * The post the template was shared in.
+ *
+ * `excerpt` is REQUIRED, not optional, for the same reason F17 made a YouTube source's title
+ * and channel required: TweetEmbed's quote card is also its PERMANENT failure state, and a
+ * failure state that cannot quote the post is not attribution.
+ */
+const templateSource = z
+  .object({
+    url: z.string().regex(X_STATUS_RE),
+    excerpt: z.string().min(20).max(280), // partial quote, NEVER the full post (§10.6)
+    posted_at: isoDate.optional(),
+  })
+  .strict();
+
+/**
+ * The "Add to Grok Bot" install link.
+ *
+ * CONFIRMED GRAMMAR (2026-08-28, from resolving real t.co share links): every share link is
+ * `https://x.ai/bot/<id>` where the id is exactly 21 URL-safe base64 characters. `grok.com/bot`
+ * does not exist and is NOT accepted — an earlier draft allowed it while the shape was unknown.
+ *
+ * The regex is deliberately EXACT rather than "any x.ai path": a share link is the one field on
+ * this entry that sends a reader off-site to install somebody else's instructions, so a typo, a
+ * truncated id, or a marketing URL that merely lives on x.ai must fail the build rather than
+ * render a button that goes somewhere unexpected.
+ *
+ * Each share page also serves OpenGraph tags — `og:title` is "<Bot Name> by <Author>" and
+ * `og:description` is the bot's own instruction summary. Those are the canonical source for
+ * `name` and `description`, NOT the marketing tweet. That is a content rule (CONTRIBUTING §5b),
+ * not a schema one, because only a human or a scout can read the share page.
+ *
+ * The twin of this pattern lives in scripts/validate.mjs. Change both together.
+ */
+const SHARE_URL_RE = /^https:\/\/x\.ai\/bot\/[A-Za-z0-9_-]{21}$/;
+
+/** What a shared bot actually carries. Enum, so it renders as chips and cannot drift. */
+const TEMPLATE_PARTS = [
+  'instructions',
+  'memories',
+  'workflow',
+  'schedule',
+  'skills',
+  'connectors',
+  'agent-team',
+  'files',
+] as const;
+
+// `primary_category` must be one of the entry's OWN tags. Without this a template could lead
+// with a facet the page never claims, and the row's lead chip would disagree with the filter.
+function primaryTagIsTagged(
+  data: { tags: string[]; primary_category: string },
+  ctx: z.RefinementCtx
+) {
+  if (!data.tags.includes(data.primary_category)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['primary_category'],
+      message: `primary_category "${data.primary_category}" is not in tags[] — it must be one of them`,
+    });
+  }
+}
+
+// A PUBLISHED template must name the post it was shared in. `proposed` / `demo` / `deprecated`
+// are exempt, exactly like verified_at — nothing publishes without a traceable sharer (§10.1).
+function templateSourceWhenLive(
+  data: { status: string; source?: unknown },
+  ctx: z.RefinementCtx
+) {
+  if ((data.status === 'live' || data.status === 'needs-update') && !data.source) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['source'],
+      message:
+        'a live template must carry `source` — the X post it was shared in. Nothing publishes without a traceable sharer (§10.1)',
+    });
+  }
+}
+
+const templates = defineCollection({
+  loader: glob({ pattern: '*.md', base: './content/templates' }),
+  schema: z
+    .object({
+      type: z.literal('template').default('template'),
+      name: z.string().min(3).max(60), // the bold row title
+      slug, // MUST equal filename (§5.6 #1)
+      tagline, // 10–90, the skim-list one-liner
+      description: z.string().min(80).max(320), // detail lead + meta-description base
+      sharer, // REQUIRED
+      source: templateSource.optional(), // required when live — see templateSourceWhenLive
+      // OPTIONAL even when live (operator): a template may list with its source only. When it
+      // is absent NO install button renders — "View details" is always the working primary,
+      // so a missing link can never become a dead control.
+      share_url: z
+        .string()
+        .regex(
+          SHARE_URL_RE,
+          'must be an "Add to Grok Bot" share link: https://x.ai/bot/<id>, where <id> is 21 URL-safe base64 characters'
+        )
+        .optional(),
+      tags: z.array(templateTag).min(1).max(8), // MULTI-TAG, faceted
+      primary_category: templateTag, // must be one of `tags`
+      includes: z.array(z.enum(TEMPLATE_PARTS)).max(8).default([]),
+      includes_note: z.string().max(200).optional(),
+      integrations: z.array(integrationName).default([]), // reuses the §5.5 vocabulary
+      // Cross-link to the long-form write-up when one exists. Resolved cross-file by
+      // validate.mjs against the use-case corpus (the same check collections get for members).
+      // The REVERSE link is derived (lib/templates.ts `templatesReferencing`), so a use case
+      // never has to know about a template and no existing content file is edited.
+      related_use_cases: z.array(slug).max(3).default([]),
+      featured: z.boolean().default(false),
+      added_at: isoDate,
+      updated_at: isoDate,
+      verified_at: isoDate.optional(), // MAINTAINER-SET ONLY (§8.5 check 9)
+      status,
+    })
+    .strict()
+    .superRefine(datesSane)
+    .superRefine(verifiedWhenLive)
+    .superRefine(primaryTagIsTagged)
+    .superRefine(templateSourceWhenLive),
+});
+
 export const collections = {
   plugins,
   'use-cases': useCases,
   collections: collectionEntries,
   news: newsEntries,
+  templates,
 };

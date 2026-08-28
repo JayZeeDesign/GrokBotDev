@@ -39,7 +39,7 @@ import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
 import Button from './Button.astro';
 import ThemeToggle from './ThemeToggle.astro';
-import { CP_126_CONNECT_HEADER, CP_127_CONNECT_SHORT } from '../lib/copy';
+import { CP_126_CONNECT_HEADER, CP_127_CONNECT_SHORT, CP_148_MARKETPLACE_NAV } from '../lib/copy';
 
 interface Props {
   currentPath: string;
@@ -56,7 +56,13 @@ const isCurrent = (href: string) =>
 // breadcrumbs link `/plugins/`, `/use-cases/` and `/collections/` (F14), the footer's browse
 // column links all of them plus `/categories/` and `/integrations/`, and the home table's
 // category chips link the category hubs. Nothing is orphaned.
+// Operator (2026-08-28): Shareable Bots joins the nav. One array feeds BOTH the >=md row and
+// the mobile drawer, so a third item cannot arrive in one and not the other.
+// Operator (2026-08-28): `use cases` joins the nav because the home page no longer carries an
+// Awesome Use Cases tab. /use-cases/ is untouched; only its route INTO the site moved.
 const nav = [
+  { href: '/marketplace/', label: CP_148_MARKETPLACE_NAV },
+  { href: '/use-cases/', label: 'use cases' },
   { href: '/wall/', label: 'wall' },
   { href: '/news/', label: 'news' },
 ];

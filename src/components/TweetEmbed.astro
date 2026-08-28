@@ -25,10 +25,28 @@ interface Props {
   /** `source_tweets[].excerpt` (§05) — ≤280 chars, NEVER the full post (§10.6). */
   excerpt: string;
   postedAt?: string;
+  /**
+   * WHOSE WORDS THE FALLBACK CONTAINS. Default `quote` — an actual partial quote of the post,
+   * which is what plugins, use cases and news all carry.
+   *
+   * `summary` exists because the Shareable Bots lane is different: its excerpts are OUR
+   * paraphrase of what somebody shared, written that way deliberately so the site never
+   * reproduces tweet copy. Rendering a paraphrase inside a blockquote under "@handle on x"
+   * would attribute our sentence to them, which is precisely the quiet attribution drift §10.1
+   * exists to prevent. In `summary` mode the text renders as a LABELLED summary, not a quote.
+   */
+  excerptKind?: 'quote' | 'summary';
   class?: string;
 }
 
-const { tweetUrl, authorHandle, excerpt, postedAt, class: className = '' } = Astro.props;
+const {
+  tweetUrl,
+  authorHandle,
+  excerpt,
+  postedAt,
+  excerptKind = 'quote',
+  class: className = '',
+} = Astro.props;
 
 // Resolved at BUILD time, not in the island: a malformed URL should surface as one card
 // keeping its fallback, never as a runtime parse error that kills the page's whole island.
@@ -50,12 +68,21 @@ const tweetId = tweetUrl.match(/status\/(\d+)/)?.[1] ?? '';
   <div class="tweet-embed__mount" data-tweet-mount></div>
 
   {/* Loading state AND permanent failure state. Never removed from the DOM — only hidden. */}
-  <blockquote
-    class="tweet-embed__fallback border-l-2 border-l-border-strong pl-4 text-base text-text"
-    data-tweet-fallback
-  >
-    <p>{excerpt}</p>
-  </blockquote>
+  {
+    excerptKind === 'summary' ? (
+      <div class="tweet-embed__fallback tweet-embed__summary" data-tweet-fallback>
+        <p class="tweet-embed__summaryLabel">grokbot.dev summary</p>
+        <p class="text-base text-text">{excerpt}</p>
+      </div>
+    ) : (
+      <blockquote
+        class="tweet-embed__fallback border-l-2 border-l-border-strong pl-4 text-base text-text"
+        data-tweet-fallback
+      >
+        <p>{excerpt}</p>
+      </blockquote>
+    )
+  }
 
   <figcaption class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-text-muted">
     <a href={tweetUrl} target="_blank" rel="noopener" class="hover:text-accent-text">
@@ -75,6 +102,19 @@ const tweetId = tweetUrl.match(/status\/(\d+)/)?.[1] ?? '';
   .tweet-embed__mount :global(.twitter-tweet) {
     max-inline-size: 100% !important;
     margin-block: 0 !important;
+  }
+
+  /* A summary is ours, so it does not wear the quote rule that a real excerpt does. */
+  .tweet-embed__summary {
+    border-inline-start: 2px dashed var(--color-border);
+    padding-inline-start: 1rem;
+  }
+  .tweet-embed__summaryLabel {
+    margin-block-end: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
   }
 
   /* Once the real post is on screen the excerpt is a duplicate of it. */

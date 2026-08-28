@@ -186,6 +186,75 @@ Body: `## What it does` then `## Use it in Grok Bot` (≥400 chars total).
 
 ---
 
+## 5b. Submitting a SHAREABLE BOT (template)
+
+A shareable bot is a whole Grok Bot somebody packaged and posted: instructions, memories and its
+workflow, behind one "Add to Grok Bot" link. One file in `content/templates/<slug>.md`.
+
+**Before anything else:** never submit a share link you have not checked, and never submit one that
+carries somebody's keys, internal URLs or customer data. xAI tells the sharer to strip those before
+they publish; if a link still has them, report it rather than index it.
+
+### 5b.1 Fields you write
+
+| field | rule |
+|---|---|
+| `name` | 3–60 chars. Take it from the share page's own `og:title` (`"<Bot Name> by <Author>"` — use the bot name part), NOT from the tweet that announced it. |
+| `slug` | kebab-case, MUST equal the filename. `featured`, `index` and `rss` are reserved. |
+| `tagline` | 10–90 chars. The one line that appears in the list. |
+| `description` | 80–320 chars. Base it on the share page's `og:description` (the bot's own instruction summary), not on marketing copy. |
+| `sharer` | `handle` (no leading `@`), optional `name`, `url`, `platform`. REQUIRED — the credit is the point. |
+| `source` | The X post it was shared in: `url`, `excerpt` (20–280 chars, a partial quote — never the whole post), optional `posted_at`. Required once it goes live. |
+| `share_url` | Optional. The "Add to Grok Bot" link, always `https://x.ai/bot/<id>` with a 21-character id. Leave it out if there is not one yet; the page just links the post instead. |
+| `tags` | 1–8 slugs from `src/data/template-tags.json`, faceted: audience / value / domain / structure. Use more than one facet. |
+| `primary_category` | One of your own `tags`. It leads the row and titles the social card. |
+| `includes` | Any of `instructions, memories, workflow, schedule, skills, connectors, agent-team, files`. |
+| `includes_note` | Optional, ≤200 chars, for anything that list cannot say. |
+| `integrations` | Optional, from the same controlled vocabulary plugins use (§6). |
+| `related_use_cases` | Optional, ≤3 use-case slugs. Cross-links both ways automatically. |
+| `added_at` / `updated_at` | ISO 8601 UTC, **quoted**. |
+| `status` | Leave it `proposed`. A reviewer sets `verified_at` and flips it to `live`. |
+
+### 5b.2 The body
+
+```
+## What it does        # what it watches, writes, and where it stops. ≥200 chars
+## What you get        # optional — the concrete outcome
+## Before you install  # optional — what it needs, and what it will never do unasked
+```
+
+### 5b.3 Template
+
+```markdown
+---
+type: template
+name: Receipt Vault
+slug: receipt-vault
+tagline: "Pulls every receipt out of your inbox and totals them by month"
+description: "A single-purpose bot that watches your mail for receipts, files each one under the month it belongs to, and hands you a running total whenever you ask. It never deletes and never sends."
+sharer:
+  handle: someone
+  url: https://x.com/someone
+  platform: x
+source:
+  url: https://x.com/someone/status/1234567890
+  excerpt: "A short quote from the post where they shared it."
+  posted_at: "2026-08-01T12:00:00Z"
+share_url: https://x.ai/bot/Xk7mQ2pR9vT4nB6cL1sD8
+tags: [personal, back-office, email, scheduled]
+primary_category: back-office
+includes: [instructions, memories, workflow]
+added_at: "2026-08-01T12:00:00Z"
+updated_at: "2026-08-01T12:00:00Z"
+status: proposed
+---
+
+## What it does
+
+At least two hundred characters describing what the bot actually does, specifically enough that a
+reader can decide whether they want it without opening the share link.
+```
+
 ## 6. Controlled vocabularies
 
 Use values from these lists only — it's what keeps the directory filterable.

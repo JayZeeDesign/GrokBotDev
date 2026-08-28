@@ -6,15 +6,17 @@
 import type { APIRoute } from 'astro';
 import { allCollections, allPlugins, allUseCases, sortForIndex } from '../lib/entries';
 import { allNews } from '../lib/news';
+import { allTemplates, includedTemplates } from '../lib/templates';
 
 const SITE = 'https://grokbot.dev';
 
 export const GET: APIRoute = async () => {
-  const [plugins, useCases, collections, news] = await Promise.all([
+  const [plugins, useCases, collections, news, templates] = await Promise.all([
     allPlugins(),
     allUseCases(),
     allCollections(),
     allNews(),
+    allTemplates(),
   ]);
 
   const list = (docs: Awaited<ReturnType<typeof allPlugins>>, dir: string, limit?: number) =>
@@ -22,6 +24,10 @@ export const GET: APIRoute = async () => {
       .slice(0, limit ?? docs.length)
       .map((doc) => `- [${doc.data.name}](${SITE}/${dir}/${doc.data.slug}/): ${doc.data.tagline}`)
       .join('\n');
+  const templateList = includedTemplates(templates)
+    .slice(0, 20)
+    .map((doc) => `- [${doc.data.name}](${SITE}/marketplace/${doc.data.slug}/): ${doc.data.tagline} (shared by @${doc.data.sharer.handle}${doc.data.share_url ? `, install: ${doc.data.share_url}` : ''})`)
+    .join('\n');
   const newsList = news
     .slice(0, 20)
     .map((doc) => `- [${doc.data.title}](${SITE}/news/${doc.data.slug}/): ${doc.data.summary}`)
@@ -36,6 +42,7 @@ export const GET: APIRoute = async () => {
 ## Start here
 - [Agent contract](${SITE}/agent/): copy-paste instructions for a Grok Bot to connect and sync
 - [Feed JSON](${SITE}/api/v1/feed.json): RECOMMENDED - the complete lean list (plugins, use cases, collections, and news), newest first. News items have type "news" plus kind, important, and external_url.
+- [Templates JSON](${SITE}/api/v1/templates.json): Shareable Bots - Grok Bot templates people shared on X. Each carries share_url, the "Add to Grok Bot" install link, plus tags and the sharer credit. Full item at /api/v1/templates/<slug>.json.
 - [News JSON](${SITE}/api/v1/news.json): releases, deals, updates, and announcements. Full item at /api/v1/news/<slug>.json.
 - [Status JSON](${SITE}/api/v1/status.json): API version, capabilities, notices, deprecations, changelog. Poll it to learn if the API changed; v1 is additive-only and every response carries a schema_revision.
 - [Per-entry detail](${SITE}/api/v1/use-cases/<slug>.json): full record for one entry (also /api/v1/plugins/<slug>.json)
@@ -47,6 +54,9 @@ ${list(plugins, 'plugins', 20)}
 
 ## Use cases
 ${list(useCases as never, 'use-cases', 20)}
+
+## Shareable bots
+${templateList}
 
 ## News
 ${newsList}

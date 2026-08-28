@@ -1,0 +1,91 @@
+---
+// The "Add to Grok Bot" action — the one control that takes a reader off-site to install.
+//
+// ── IT RENDERS NOTHING WHEN THERE IS NOTHING TO INSTALL ─────────────────────────────────
+// `share_url` is optional even on a live template (operator, Q1): a template may be indexed
+// from its post before a share link exists. When it is absent this component returns NOTHING
+// on a row, and on a detail page it degrades to a bordered "open the post" link. It never
+// renders a disabled or dead button — §4.4 rule 7, "a dead control is worse than no control".
+//
+// ── DETAIL PAGES ONLY ───────────────────────────────────────────────────────────────────
+// There was a `row` variant. It is gone: the e2e pass found it reading as WEAKER than "view
+// details" beside it, and under the "pure skim list" direction a row should help you decide to
+// open something, not install it sight-unseen. So this is the detail page's hero action and the
+// single amber on that plane (§A1) — the slot `install in grok bot` occupies on a plugin page.
+import GrokBotGlyph from './GrokBotGlyph.astro';
+import { CP_149_TEMPLATE_ADD_LABEL, CP_152_TEMPLATE_NO_LINK, CP_172_TEMPLATE_ADD_ARIA, fillCopy } from '../lib/copy';
+
+interface Props {
+  /** The https://x.ai/bot/<id> install link. Absent = no install action exists yet. */
+  shareUrl?: string;
+  /** The source post, used for the detail-page fallback when there is no share link. */
+  sourceUrl?: string;
+  name: string;
+  class?: string;
+}
+
+const { shareUrl, sourceUrl, name, class: className = '' } = Astro.props;
+
+// FIX #5 CONFIRMED HERE: with no `share_url` the button does NOT render an install action. It
+// degrades to the source post, and if there is no source either, `href` is undefined and the
+// whole control renders nothing at all. There is no path that produces a dead button.
+const href = shareUrl ?? sourceUrl;
+const isInstall = Boolean(shareUrl);
+---
+
+{
+  href && (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener"
+      class:list={['tplInstall', !isInstall && 'tplInstall--fallback', className]}
+      aria-label={isInstall ? fillCopy(CP_172_TEMPLATE_ADD_ARIA, { name }) : undefined}
+    >
+      {isInstall && <GrokBotGlyph size={20} />}
+      <span>{isInstall ? CP_149_TEMPLATE_ADD_LABEL : CP_152_TEMPLATE_NO_LINK}</span>
+      <span aria-hidden="true">↗</span>
+    </a>
+  )
+}
+
+<style>
+  /* THE accent on the detail plane. */
+  .tplInstall {
+    --grokbot-eye: var(--color-accent-strong);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: 44px;
+    padding-inline: 1.25rem;
+    border: 1px solid var(--color-accent-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-accent-strong);
+    color: var(--color-accent-contrast);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    white-space: nowrap;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background-color 0.15s;
+  }
+  .tplInstall:hover {
+    filter: brightness(0.9);
+  }
+
+  /* No share link: still offer the post, but quietly — an entry with nothing to install must
+     not spend the page's one accent on a link to somebody's tweet. */
+  .tplInstall--fallback {
+    --grokbot-eye: var(--color-surface);
+    border-color: var(--color-border-interactive);
+    background: transparent;
+    color: var(--color-text);
+  }
+  .tplInstall--fallback:hover {
+    filter: none;
+    border-color: var(--color-text);
+    color: var(--color-accent-text);
+  }
+</style>

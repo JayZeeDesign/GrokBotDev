@@ -1,0 +1,83 @@
+---
+// `/marketplace/` — the Shareable Bots hub, presented as the SECTIONED skim.
+//
+// Same presentation as the home tab, one component (TemplateSections). The hub adds the two
+// things a workbench needs and a home page should not: the tag filter island, and a PINNED
+// quick-nav, because this is the surface a reader stays on and scrolls.
+//
+// No pagination and no sort control. There is one ordering now (newest within each section),
+// and the filter is what narrows the set — a sort control with a single option is chrome that
+// does nothing.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import TemplateFilterBar from '../../components/TemplateFilterBar.astro';
+import TemplateSections from '../../components/TemplateSections.astro';
+import ConnectCallout from '../../components/ConnectCallout.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import { CP_146_MARKETPLACE_H1, CP_157_TEMPLATE_EMPTY_FILTER, CP_158_MARKETPLACE_EMPTY } from '../../lib/copy';
+import { allTemplates, tagCounts, templateUrlOf } from '../../lib/templates';
+import { hubIntro } from '../../lib/hubIntros';
+import { META, breadcrumbList, collectionPage, itemList } from '../../lib/seo';
+
+const templates = await allTemplates();
+const intro = hubIntro('marketplace');
+const counts = tagCounts(templates);
+const crumbs = [{ label: 'home', href: '/' }, { label: 'shareable bots' }];
+const graph = [
+  collectionPage('/marketplace/', META.marketplace.title, META.marketplace.description),
+  breadcrumbList(crumbs),
+  itemList(templates.map((doc) => ({ url: templateUrlOf(doc), name: doc.data.name }))),
+];
+---
+
+<BaseLayout
+  title={META.marketplace.title}
+  description={META.marketplace.description}
+  graph={graph}
+  ogImage="/og/hubs/marketplace.png"
+>
+  <div class="container-page flex flex-col gap-8 py-12 md:py-16" id="top">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">{CP_146_MARKETPLACE_H1}</h1>
+      {intro && <div class="tplIntro max-w-prose text-base text-text-muted" set:html={intro} />}
+    </header>
+
+    <ConnectCallout context="template" />
+
+    {
+      templates.length === 0 ? (
+        <EmptyState variant="generic" heading="nothing here yet" body={CP_158_MARKETPLACE_EMPTY} action={{ label: 'submit one', href: '/submit/' }} />
+      ) : (
+        <div class="flex flex-col gap-6" data-template-filter-root>
+          <TemplateFilterBar counts={counts} />
+          <TemplateSections templates={templates} headingLevel={2} idPrefix="s" />
+          <p class="tplEmpty" data-template-empty hidden>{CP_157_TEMPLATE_EMPTY_FILTER}</p>
+        </div>
+      )
+    }
+
+    <NewsletterRow source="marketplace-index" />
+  </div>
+</BaseLayout>
+
+<style>
+  .tplIntro :global(p + p) {
+    margin-block-start: 0.75rem;
+  }
+
+  .tplEmpty {
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+  }
+  .tplEmpty[hidden] {
+    display: none;
+  }
+</style>

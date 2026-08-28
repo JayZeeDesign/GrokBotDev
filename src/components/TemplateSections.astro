@@ -1,0 +1,280 @@
+---
+// The sectioned skim — the marketplace's primary presentation on BOTH the home page and the
+// /marketplace/ hub (operator, 2026-08-28).
+//
+// ── THE SCROLL PROBLEM, AND WHY THE ANSWER IS ANCHORS ───────────────────────────────────
+// At 77 rows the list is already long; the target is 300. The reader needs to skim section
+// headers, jump to one, and scan its rows. That is exactly what a plain in-page anchor does,
+// so the quick-nav is `<a href="#money">` and nothing else — no scrollspy, no smooth-scroll
+// script, no observer. It costs ZERO JavaScript, it works with JS off, it is keyboard- and
+// screen-reader-native, the browser handles focus for us, and every jump target is a real URL
+// somebody can share or bookmark.
+//
+// Two CSS details do the work an island would otherwise be written for:
+//   · `position: sticky` keeps the nav reachable without scrolling back up.
+//   · `scroll-margin-block-start` on each section stops the sticky bar covering the heading
+//     you just jumped to — the classic anchor-under-sticky-header bug.
+//
+// THE NAV IS PINNED ON BOTH SURFACES, and it took a report to work out why that matters.
+// The home page rendered this nav and all seven anchors from the start, and every link
+// resolved correctly — but it was not sticky there, so it scrolled out of view with the first
+// section. You could jump ONCE and then had to scroll back to the top to jump again, which
+// is not "jump between sections" in any useful sense. The markup was never the gap; staying
+// reachable was. Both surfaces pin it now, which is also why the measured scroll-margin values
+// below apply to both.
+//
+// ── HEADING LEVELS ──────────────────────────────────────────────────────────────────────
+// `headingLevel` is the level of the SECTION headings. The rows sit one below that. On the
+// hub the page h1 is "Shareable Bots" so sections are h2 and rows h3; inside the home tab
+// panel the section headings are h3 and rows h4 — passed through rather than assumed, so the
+// document outline never skips a level (§4.6).
+import TemplateRow from './TemplateRow.astro';
+import { CP_173_SECTION_JUMP_LABEL, CP_174_SECTION_TOP } from '../lib/copy';
+import { groupBySection, type TemplateDoc } from '../lib/templates';
+
+interface Props {
+  templates: TemplateDoc[];
+  /** Level of the SECTION heading. Rows render one level down. */
+  headingLevel?: 2 | 3;
+  /** Anchor ids are page-global, so the two surfaces cannot share a namespace. */
+  idPrefix?: string;
+  class?: string;
+}
+
+const {
+  templates,
+  headingLevel = 2,
+  idPrefix = 'section',
+  class: className = '',
+} = Astro.props;
+
+const groups = groupBySection(templates);
+const SectionHeading = headingLevel === 2 ? 'h2' : 'h3';
+const rowHeadingLevel = headingLevel === 2 ? 3 : 3;
+const anchor = (id: string) => `${idPrefix}-${id}`;
+---
+
+<div class:list={['tplSections', className]} data-template-sections>
+  {
+    groups.length > 1 && (
+      <nav
+        class="tplJump tplJump--sticky"
+        aria-label={CP_173_SECTION_JUMP_LABEL}
+        id={`${idPrefix}-jump`}
+        data-template-jump
+        data-pagefind-ignore
+      >
+        <span class="tplJump__label">{CP_173_SECTION_JUMP_LABEL}</span>
+        <ul class="tplJump__list">
+          {groups.map(({ section, items }) => (
+            <li data-template-jump-item={section.id}>
+              <a href={`#${anchor(section.id)}`} class="tplJump__link">
+                {section.label}
+                <span class="tplJump__n" data-template-jump-count>{items.length}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+
+  {
+    groups.map(({ section, items }) => (
+      <section
+        class="tplSection"
+        id={anchor(section.id)}
+        data-template-section={section.id}
+        aria-labelledby={`${anchor(section.id)}-h`}
+      >
+        <header class="tplSection__head">
+          <SectionHeading class="tplSection__title" id={`${anchor(section.id)}-h`}>
+            {section.label}
+          </SectionHeading>
+          <span class="tplSection__count" data-template-section-count>{items.length}</span>
+          {/* A pure anchor back to THIS component's own quick-nav — not a page-level `#top`,
+              which only the hub provides and which would therefore dangle on the home page.
+              Hidden from assistive tech: the nav landmark is already reachable, and one of
+              these per section would be a pile of redundant announcements. */}
+          <a href={`#${idPrefix}-jump`} class="tplSection__top" aria-hidden="true" tabindex="-1">
+            {CP_174_SECTION_TOP}
+          </a>
+        </header>
+
+        <div class="tplSection__list">
+          {items.map((doc) => (
+            <TemplateRow doc={doc} headingLevel={rowHeadingLevel} />
+          ))}
+        </div>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .tplSections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  /* ---------- quick-nav ---------- */
+  .tplJump {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+  }
+  /* `z-index` keeps it above the rows it scrolls over; the solid surface background is what
+     stops row text showing through. */
+  .tplJump--sticky {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 20;
+  }
+  .tplJump {
+    scroll-margin-block-start: 1rem;
+  }
+
+  /* ── MOBILE: ONE SWIPEABLE ROW, NOT A WRAPPED BLOCK ────────────────────────────────────
+     Measured: wrapping seven chips at 390px makes this bar 284px tall. Pinned, that is a
+     third of a phone viewport spent on navigation, and unpinned it pushes the first section
+     below the fold — either way it defeats the point. So below md the chips are a single
+     non-wrapping row that scrolls horizontally inside its own box.
+     This does NOT violate F6 ("no page ever scrolls sideways"): the CONTAINER scrolls, the
+     page does not, which is exactly what `.hubTableWrap` already does for the plugin table. */
+  .tplJump__list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.375rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    /* Stops a chip being clipped mid-glyph at the scroll edge. */
+    padding-block-end: 2px;
+    /* BOTH of these are load-bearing for the swipe row, and the first one is the subtle one:
+       a flex item defaults to min-width:auto, so without this the list refuses to shrink below
+       its content, `overflow-x` never engages, and the bar just grows. */
+    min-inline-size: 0;
+    flex: 1 1 auto;
+  }
+  .tplJump__label {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+  }
+  @media (min-width: 768px) {
+    .tplJump {
+      flex-wrap: wrap;
+      padding: 0.75rem 1rem;
+    }
+    .tplJump__list {
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+  }
+  .tplJump__link {
+    flex-shrink: 0;
+    /* Without this each chip wraps its own label once the row is squeezed, which turned the
+       bar into a 498px wall at 390px. Measured, not guessed. */
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-block-size: 1.75rem;
+    padding-inline: 0.625rem;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background-color 0.15s;
+  }
+  .tplJump__link:hover {
+    border-color: var(--color-text);
+    color: var(--color-text);
+  }
+  /* The jumped-to section's own chip. `:target` is free state — no island needed to show
+     the reader where they are. */
+  .tplJump__n {
+    font-size: 10px;
+    opacity: 0.75;
+  }
+  .tplJump__list li[hidden] {
+    display: none;
+  }
+
+  /* ---------- sections ---------- */
+  /* THE ANCHOR-UNDER-STICKY-BAR FIX, and the value has to be MEASURED, not guessed.
+     The first cut used 4.5rem (72px) against a bar that is 114px tall at desktop, so every
+     jump landed the heading behind the nav — caught by measuring headingTop vs navBottom
+     after a real click rather than by looking at it.
+     Measured bar heights: 1024px+ = 114 · 768px = 148 · below md = one swipeable row ~56.
+     Each value below clears its own breakpoint with a little air. */
+  .tplSection {
+    scroll-margin-block-start: 5rem;
+  }
+  @media (min-width: 768px) {
+    .tplSection {
+      scroll-margin-block-start: 10.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .tplSection {
+      scroll-margin-block-start: 8.5rem;
+    }
+  }
+  .tplSection[hidden] {
+    display: none;
+  }
+  .tplSection__head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    padding-block-end: 0.5rem;
+    border-block-end: 2px solid var(--color-text);
+  }
+  .tplSection__title {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+  .tplSection__count {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+  .tplSection__top {
+    margin-inline-start: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .tplSection__top:hover {
+    color: var(--color-accent-text);
+  }
+
+  /* The /news/ hairline list treatment, per section. */
+  .tplSection__list > :global(.tplRow) {
+    border-block-end: 1px solid var(--color-border);
+  }
+  .tplSection__list > :global(.tplRow:last-child) {
+    border-block-end: 0;
+  }
+</style>

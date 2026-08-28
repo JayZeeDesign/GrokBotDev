@@ -14,7 +14,7 @@ export const SITE_X_URL = `https://x.com/${SITE_X}`;
 // OG image cache-buster. Appended as `?v=` to every og:image so X/LinkedIn/etc. re-fetch a
 // changed card instead of serving a stale copy from their scrape cache. BUMP THIS whenever an
 // OG image is regenerated (default.png, hub cards, or the entry-card renderer).
-export const OG_VERSION = '20260826';
+export const OG_VERSION = '20260828';
 
 /** §6.3: descriptions are ≤155 by construction; truncate at a word boundary if not. */
 export function clampDescription(value: string, max = 155): string {
@@ -103,6 +103,11 @@ export const META = {
     title: 'Subscribed | grokbot.dev',
     description: "You're on the list. We'll email you when there's something worth your inbox.",
   },
+  marketplace: {
+    title: 'Shareable Bots — ready-made Grok Bot templates | grokbot.dev',
+    description:
+      'Grok Bot setups people shared on X, each credited and one link away from your own Bot. Browse, filter, install.',
+  },
 } as const;
 
 export const entryTitle = (name: string, kind: 'plugin' | 'use-case' | 'collection') =>
@@ -120,6 +125,10 @@ export const entryDescription = (tagline: string, kind: 'plugin' | 'use-case' | 
         ? `${tagline} Copy the prompt and paste it into Grok.`
         : `${tagline} Everything you need for it, in one setup.`
   );
+
+/** Shareable Bots. "Grok Bot template" is the SERP phrase people actually search for. */
+export const templateTitle = (name: string) => `${name} — Grok Bot template | grokbot.dev`;
+export const templateDescription = (description: string) => clampDescription(description);
 
 export const newsEntryTitle = (title: string) => `${title} | News | grokbot.dev`;
 export const newsEntryDescription = (summary: string) => clampDescription(summary);

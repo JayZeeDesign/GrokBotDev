@@ -74,3 +74,50 @@ The upvotes stack adds a same-origin votes API and keeps the static build invari
 7. Copy the updated `infra/security-headers.conf` into `/etc/nginx/snippets/grokbot-security-headers.conf`; this consciously adds `https://challenges.cloudflare.com` for Turnstile script/frame/connect. Confirm `nginx -t` before reload.
 8. No DNS change is expected for `grokbot.dev`; Cloudflare already fronts the origin. Do not change Cloudflare except to create/provision Turnstile production keys.
 9. After reload, smoke-test: `/api/v1/health`, `/api/v1/votes/counts?slugs=<known>`, one Turnstile-backed vote, `npm run recount`, then monitor `pm2 logs grokbot-votes-api` and nginx 429s.
+
+## REQUIRED at the Shareable Bots release — repoint the votes-api slug registry
+
+**One line of env, and it is a hard prerequisite for template upvotes.**
+
+The votes-api validates every slug against a registry loaded from a manifest. Until that manifest
+includes template slugs, `/api/v1/votes/counts` rejects them — and it rejects them
+**per request, not per slug**: one unknown slug returns `400 unknown_slug` for the WHOLE batch.
+The site now emits a combined manifest for exactly this reason:
+
+| path (in `current/`) | contents |
+|---|---|
+| `api-meta/use-case-slugs.json` | use-case slugs only — **unchanged**, byte for byte |
+| `api-meta/template-slugs.json` | template slugs only |
+| `api-meta/votable-slugs.json` | **the union — point production at this one** |
+
+In the external votes-api env file (`secrets/votes-api.env`), change the one line:
+
+```dotenv
+USE_CASE_CONTENT_DIR=/nonexistent-force-fallback                              # unchanged
+-SLUGS_FILE=/opt/projects/user/grokbot/current/api-meta/use-case-slugs.json
++SLUGS_FILE=/opt/projects/user/grokbot/current/api-meta/votable-slugs.json
+```
+
+No votes-api code change, no rebuild, and no restart: the registry re-reads on the default
+`SLUG_REFRESH_MS` (10 minutes) and `current/` is swapped atomically by the promote.
+
+**ORDER MATTERS — promote the site FIRST, then repoint.** Repointing first aims the registry at a
+path that does not exist yet, and `SlugRegistry.loadFallbacks()` would silently fall through to the
+service checkout's own `content/use-cases` — i.e. quietly back to use-cases only, with no error.
+
+**Getting the order wrong is survivable.** `src/scripts/vote-counts.ts` requests each kind in its
+own batch (`data-vote-kind`) and bisects any chunk the service rejects, so unknown template slugs
+read `0` instead of zeroing out the use-case counts sitting beside them on the same page. The
+feature is simply not live until the repoint lands.
+
+**Smoke test after the repoint:**
+
+```bash
+curl -s 'https://grokbot.dev/api/v1/votes/counts?slugs=<a-template-slug>' | jq
+# expect {"counts":{"<a-template-slug>":0}}, NOT {"error":"unknown_slug"}
+```
+
+**Local/dev note:** `SlugRegistry.load()` tries `loadFromContentDir()` FIRST and only falls back to
+`SLUGS_FILE` when that yields nothing. Any dev votes-api must therefore set **both**
+`USE_CASE_CONTENT_DIR=/nonexistent-force-fallback` **and** `SLUGS_FILE`, or it will silently know
+use-case slugs only no matter what the manifest says.

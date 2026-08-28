@@ -1,0 +1,85 @@
+---
+// The Shareable Bots mark — a small bot face for the "Add to Grok Bot" button.
+//
+// Inline SVG, so it is CSP-safe by construction (markup, never a script, never an external
+// image) and ships inside the same HTML as the button it labels.
+//
+// ── WHY currentColor AND NOT THE FAMILY-V2 PALETTE ──────────────────────────────────────
+// `src/scripts/botFamilyV2.js` holds six FIXED hexes that are identical in light and dark —
+// they are hero paint, and that file's own note says v2 "leaves amber entirely to the CTA".
+// A fixed blue bot sitting inside the amber install button would spend colour Addendum A1 has
+// already allocated, and would be wrong in one of the two themes. `currentColor` instead: the
+// glyph is ink on the bordered row button and accent-contrast on the amber detail button, from
+// ONE definition, in both themes, with ZERO new tokens — so `check-contrast` is untouched.
+//
+// ── WHY THE EYES ARE A CUSTOM PROPERTY AND NOT A <mask> ─────────────────────────────────
+// The obvious way to knock the eyes out of the head is an SVG mask, and it is wrong here: this
+// glyph renders once per listing row, so a mask would put the SAME `id` in the document up to
+// fifty times. Duplicate ids are invalid and referencing them is undefined. `--grokbot-eye`
+// instead — each button sets it to its OWN background, so the eyes read as knocked out on the
+// amber fill and on the bordered row button alike, with no id in the markup at all.
+//
+// ── THE GEOMETRY, AND WHAT IT BORROWS ───────────────────────────────────────────────────
+// Not a copy of either house mark, but built from both so it reads as family:
+//   · a soft SQUIRCLE head — the family-v2 silhouette read (soft, solid, no stroke);
+//   · two SLASH EYES at rotate(38), MarkGlyph's exact signature tilt (A3: the tilt IS the logo);
+//   · an ANTENNA — stalk + dot. This is the part that does the work: without it the shape reads
+//     as "rounded square with two marks" at 16px, and with it, it reads as a bot.
+interface Props {
+  /** Rendered px. 16 in a listing row, 20 on the detail button. */
+  size?: number;
+  class?: string;
+}
+
+const { size = 16, class: className = '' } = Astro.props;
+---
+
+<svg
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  class:list={['grokBotGlyph', className]}
+  aria-hidden="true"
+  focusable="false"
+  role="presentation"
+>
+  {/* Antenna — stalk + dot. The bot-ness lives here. */}
+  <rect x="11.1" y="1.4" width="1.8" height="4" rx="0.9" fill="currentColor" />
+  <circle cx="12" cy="2.1" r="1.9" fill="currentColor" />
+
+  {/* Head */}
+  <rect x="2" y="5.5" width="20" height="16" rx="6.2" fill="currentColor" />
+
+  {/* Slash eyes, painted in the host surface colour so they read as knocked out. */}
+  <rect
+    x="7.15"
+    y="9.6"
+    width="2.5"
+    height="6.2"
+    rx="1.25"
+    transform="rotate(38 8.4 12.7)"
+    class="grokBotGlyph__eye"
+  />
+  <rect
+    x="14.35"
+    y="9.6"
+    width="2.5"
+    height="6.2"
+    rx="1.25"
+    transform="rotate(38 15.6 12.7)"
+    class="grokBotGlyph__eye"
+  />
+</svg>
+
+<style>
+  .grokBotGlyph {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: -0.15em;
+  }
+  /* Each host button sets --grokbot-eye to its own background; the page background is the
+     correct default because that is what an unstyled placement sits on. */
+  .grokBotGlyph__eye {
+    fill: var(--grokbot-eye, var(--color-bg));
+  }
+</style>

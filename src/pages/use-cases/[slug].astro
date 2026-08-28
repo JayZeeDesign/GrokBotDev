@@ -17,6 +17,8 @@ import InstallModal from '../../components/InstallModal.astro';
 import ConnectCallout from '../../components/ConnectCallout.astro';
 import ShareBar from '../../components/ShareBar.astro';
 import UpvoteButton from '../../components/UpvoteButton.astro';
+import { allTemplates, templateUrlOf, templatesReferencing } from '../../lib/templates';
+import { CP_167_USE_CASE_SEE_TEMPLATE } from '../../lib/copy';
 import TweetEmbed from '../../components/TweetEmbed.astro';
 import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import PromptBlock from '../../components/PromptBlock.astro';
@@ -59,6 +61,12 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const d = entry.data;
+
+// The REVERSE cross-link. A template names its use case in `related_use_cases`; this looks the
+// relationship up from the other side, so the 135 existing use-case files needed no edit at
+// all and a use case never has to know a template exists. Renders nothing when there is no
+// match, which is the case for almost every page.
+const asTemplates = templatesReferencing(d.slug, await allTemplates());
 
 const [pool, collections] = await Promise.all([allUseCases(), allCollections()]);
 const related = relatedTo(entry as never, pool as never);
@@ -226,6 +234,16 @@ const graph = [
       <InstallModal id={d.slug} variant="entry" prompt={prompt ?? undefined} entryName={heroTitle} />
       <UpvoteButton slug={d.slug} />
     </div>
+
+    {
+      asTemplates.length > 0 && (
+        <p class="ucTemplateLink">
+          {asTemplates.map((doc) => (
+            <a href={templateUrlOf(doc)}>{CP_167_USE_CASE_SEE_TEMPLATE}</a>
+          ))}
+        </p>
+      )
+    }
 
     {/* Operator: share this use case on X (the intent credits @GrokBotDev via `via=`) + a
         persistent follow affordance on every use-case page. Neutral, secondary to the amber. */}

@@ -1,0 +1,311 @@
+---
+// `/marketplace/<slug>/` — one shareable bot.
+//
+// Region order mirrors the plugin and news detail pages so the site reads as one site:
+// breadcrumbs · status callouts · header + chips · shared-by · THE install button (the one
+// amber on this plane) · safety note · what it includes · body · share bar · connect callout ·
+// related · newsletter, with the source post embedded in the sticky rail.
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Callout from '../../components/Callout.astro';
+import Chip from '../../components/Chip.astro';
+import ConnectCallout from '../../components/ConnectCallout.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import PagefindMeta from '../../components/PagefindMeta.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import ShareBar from '../../components/ShareBar.astro';
+import TemplateInstallButton from '../../components/TemplateInstallButton.astro';
+import TemplateRow from '../../components/TemplateRow.astro';
+import TweetEmbed from '../../components/TweetEmbed.astro';
+import UpvoteButton from '../../components/UpvoteButton.astro';
+import {
+  CP_026_RELATED_HEADING,
+  CP_067_CALLOUT_NEEDS_UPDATE,
+  CP_068_CALLOUT_DEPRECATED,
+  CP_151_TEMPLATE_SHARED_BY,
+  CP_159_TEMPLATE_INCLUDES_HEADING,
+  CP_162_TEMPLATE_SAFETY_NOTE,
+  CP_166_TEMPLATE_SEE_USE_CASE,
+  fillCopy,
+} from '../../lib/copy';
+import { isoToDate } from '../../lib/format';
+import {
+  allTemplates,
+  isListableTemplate,
+  relatedTemplates,
+  tagLabel,
+  templateUrlOf,
+} from '../../lib/templates';
+import { SITE, breadcrumbList, templateDescription, templateTitle } from '../../lib/seo';
+
+export async function getStaticPaths() {
+  // `proposed` and `demo` keep their own page (so a reviewer and a linker can reach it) but are
+  // absent from every list — the same contract plugins and use cases already honour.
+  const templates = (await getCollection('templates')).filter((e) => e.data.status !== 'proposed');
+  return templates.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const url = templateUrlOf(entry);
+
+const pool = await allTemplates();
+const related = isListableTemplate(entry) ? relatedTemplates(entry, pool) : [];
+
+const isDeprecated = d.status === 'deprecated';
+const votable = d.status === 'live' || d.status === 'needs-update';
+const orderedTags = [d.primary_category, ...d.tags.filter((t) => t !== d.primary_category)];
+
+// §5.6 rule 8 — dofollow is a reward for verification. `editorialRel` takes an AnyDoc, so this
+// is the same three-line rule applied to a type that is deliberately not one.
+const rel = isDeprecated
+  ? 'nofollow noopener'
+  : d.status !== 'demo' && d.verified_at
+    ? 'noopener'
+    : 'nofollow noopener';
+
+const crumbs = [{ label: 'shareable bots', href: '/marketplace/' }, { label: d.name }];
+
+const graph = [
+  {
+    '@type': 'SoftwareApplication',
+    name: d.name,
+    description: d.description,
+    url: `${SITE}${url}`,
+    applicationCategory: tagLabel(d.primary_category),
+    softwareRequirements: 'Grok Bot',
+    operatingSystem: 'Grok Bot',
+    keywords: d.tags.map(tagLabel).join(', '),
+    author: { '@type': 'Person', name: `@${d.sharer.handle}`, url: d.sharer.url },
+    ...(d.share_url ? { installUrl: d.share_url, downloadUrl: d.share_url } : {}),
+    ...(d.source ? { citation: [d.source.url] } : {}),
+    datePublished: d.added_at,
+    dateModified: d.updated_at,
+    isAccessibleForFree: true,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+    },
+  },
+  breadcrumbList(crumbs),
+];
+---
+
+<BaseLayout
+  title={templateTitle(d.name)}
+  description={templateDescription(d.description)}
+  robots={isDeprecated || d.status === 'demo' ? 'noindex,follow' : undefined}
+  ogImage={`${SITE}/og/templates/${d.slug}.png`}
+  graph={graph}
+>
+  <article class="container-page flex flex-col gap-10 py-12 md:py-16" data-pagefind-body>
+    <Breadcrumbs items={crumbs} />
+
+    {
+      d.status === 'needs-update' && (
+        <Callout variant="warn" title="needs update">
+          {fillCopy(CP_067_CALLOUT_NEEDS_UPDATE, { verified_at: d.verified_at ? isoToDate(d.verified_at) : '—' })}
+        </Callout>
+      )
+    }
+    {isDeprecated && <Callout variant="danger" title="deprecated">{CP_068_CALLOUT_DEPRECATED}</Callout>}
+
+    <PagefindMeta type="template" status={d.status} verifiedAt={d.verified_at ?? null} url={url} />
+
+    <div class="entryGrid">
+      <div class="entryGrid__main flex flex-col gap-10">
+        <header class="flex flex-col gap-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <h1
+              class="display-track font-display text-3xl text-text md:text-4xl"
+              data-pagefind-weight="10"
+              data-pagefind-meta="name"
+            >
+              {d.name}
+            </h1>
+          </div>
+
+          <p class="max-w-prose text-lg text-text-muted" data-pagefind-meta="tagline">{d.description}</p>
+
+          <div class="flex flex-wrap items-center gap-2">
+            {orderedTags.map((tag) => (
+              <span data-pagefind-filter="tag">
+                <Chip variant="tag" label={tagLabel(tag)} href={`/marketplace/?tags=${tag}`} />
+              </span>
+            ))}
+          </div>
+
+          <p class="tplSharedBy">
+            <a href={d.sharer.url} target="_blank" rel={rel}>
+              {fillCopy(CP_151_TEMPLATE_SHARED_BY, { handle: d.sharer.handle })}
+              {d.sharer.name && <span class="tplSharedBy__name"> · {d.sharer.name}</span>}
+              <span aria-hidden="true"> ↗</span>
+            </a>
+          </p>
+
+          {/* THE action. Amber when there is a link to install; a quiet bordered "open the
+              post" when there is not. It is never a dead control either way. */}
+          <div class="flex flex-wrap items-center gap-3">
+            <TemplateInstallButton shareUrl={d.share_url} sourceUrl={d.source?.url} name={d.name} />
+            {votable && <UpvoteButton slug={d.slug} kind="shareable bot" />}
+          </div>
+        </header>
+
+        {/* xAI tells the SHARER to strip their secrets. This is the same sentence pointed at
+            the installer, and the operator has confirmed it ships. */}
+        <Callout variant="info" title="before you install">{CP_162_TEMPLATE_SAFETY_NOTE}</Callout>
+
+        {
+          (d.includes.length > 0 || d.includes_note) && (
+            <section class="flex flex-col gap-3">
+              <SectionHeading title={CP_159_TEMPLATE_INCLUDES_HEADING} variant="sub" level={2} />
+              {d.includes.length > 0 && (
+                <div class="flex flex-wrap items-center gap-2">
+                  {d.includes.map((part) => (
+                    <Chip variant="integration" label={part.replace(/-/g, ' ')} />
+                  ))}
+                </div>
+              )}
+              {d.includes_note && <p class="max-w-prose text-base text-text-muted">{d.includes_note}</p>}
+            </section>
+          )
+        }
+
+        <div class="prose-body flex max-w-prose flex-col gap-4 text-base text-text">
+          <Content />
+        </div>
+
+        {
+          d.integrations.length > 0 && (
+            <section class="flex flex-col gap-3">
+              <SectionHeading title="works with:" variant="sub" level={2} />
+              <div class="flex flex-wrap items-center gap-2">
+                {d.integrations.map((tool) => (
+                  <span data-pagefind-filter="integration">
+                    <Chip
+                      variant="integration"
+                      label={tool}
+                      href={`/integrations/${tool.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}/`}
+                    />
+                  </span>
+                ))}
+              </div>
+            </section>
+          )
+        }
+
+        {
+          d.related_use_cases.length > 0 && (
+            <section class="flex flex-col gap-2">
+              {d.related_use_cases.map((refSlug) => (
+                <a href={`/use-cases/${refSlug}/`} class="tplCrossLink">
+                  {CP_166_TEMPLATE_SEE_USE_CASE}
+                </a>
+              ))}
+            </section>
+          )
+        }
+
+        <ShareBar title={d.name} path={url} kind="shareable bot" />
+
+        <ConnectCallout context="template" />
+
+        {
+          related.length > 0 && (
+            <section class="flex flex-col gap-3">
+              <SectionHeading title={CP_026_RELATED_HEADING} variant="sub" level={2} />
+              <div class="tplRelated">
+                {related.map((doc) => <TemplateRow doc={doc} headingLevel={3} />)}
+              </div>
+            </section>
+          )
+        }
+
+        <NewsletterRow source="template-detail" />
+      </div>
+
+      {
+        d.source && (
+          <aside class="entryGrid__rail flex flex-col gap-4" aria-label="source post">
+            <SectionHeading title="source" variant="sub" level={2} />
+            {/* `summary`, not `quote`: a template's excerpt is OUR paraphrase of the share
+                post (kept that way so the site never reproduces tweet copy), so it must not
+                render as a blockquote attributed to the sharer. */}
+            <TweetEmbed
+              tweetUrl={d.source.url}
+              authorHandle={d.sharer.handle}
+              excerpt={d.source.excerpt}
+              postedAt={d.source.posted_at}
+              excerptKind="summary"
+            />
+          </aside>
+        )
+      }
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  /* NO text-transform here, deliberately. §4.1.3's rule is that data-driven labels are
+     lowercased in-component at build, never with CSS — and an X handle is the strongest case
+     for it: @BrianDEvans is a person's identity, and rendering it "@briandevans" mangles the
+     one thing this whole section exists to get right. The chrome around it stays mono; the
+     handle keeps the case its owner chose. */
+  .tplSharedBy {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .tplSharedBy a:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .tplCrossLink {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .tplCrossLink:hover {
+    color: var(--color-text);
+  }
+
+  .tplRelated {
+    border-block: 1px solid var(--color-border);
+  }
+  .tplRelated > :global(.tplRow:not(:last-child)) {
+    border-block-end: 1px solid var(--color-border);
+  }
+
+  /* The news/plugin detail rail, unchanged: sticky at lg, static under reduced motion. */
+  .entryGrid {
+    display: grid;
+    gap: 3rem;
+  }
+  @media (min-width: 1024px) {
+    .entryGrid {
+      grid-template-columns: minmax(0, 1fr) 22rem;
+      align-items: start;
+    }
+    .entryGrid__rail {
+      position: sticky;
+      inset-block-start: 1.5rem;
+      max-block-size: calc(100vh - 3rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .entryGrid__rail {
+      position: static;
+    }
+  }
+</style>

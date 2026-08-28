@@ -34,18 +34,25 @@ function previewOnlyDebugDelayMs() {
   return isPreviewHost ? Math.min(Math.round(value), ORDER_TIMEOUT_MS + LATE_REORDER_GRACE_MS + 500) : 0;
 }
 
-async function fetchCounts(slugs: string[]) {
+/**
+ * Mirrors `vote-counts.ts`: an UNAVAILABLE endpoint (404 / 5xx / network) is not the same as a
+ * REJECTED batch (400). This page chunks 135 slugs into three requests, so without the
+ * distinction a dead endpoint gets asked three times for nothing. `null` means "stop asking".
+ */
+async function fetchCounts(slugs: string[]): Promise<Record<string, number> | null> {
   const params = new URLSearchParams({ slugs: slugs.join(',') });
   try {
     const res = await fetch(`/api/v1/votes/counts?${params.toString()}`, {
       cache: 'no-store',
       credentials: 'same-origin',
     });
-    if (!res.ok) return {};
+    // 400 = this batch has an unknown slug; the next chunk may still be fine, so keep going.
+    if (res.status === 400) return {};
+    if (!res.ok) return null;
     const data = (await res.json().catch(() => ({}))) as CountResponse;
     return data.counts ?? {};
   } catch {
-    return {};
+    return null;
   }
 }
 
@@ -55,7 +62,11 @@ async function fetchAllCounts(slugs: string[]) {
 
   const counts: Record<string, number> = {};
   for (let index = 0; index < slugs.length; index += MAX_SLUGS_PER_REQUEST) {
-    Object.assign(counts, await fetchCounts(slugs.slice(index, index + MAX_SLUGS_PER_REQUEST)));
+    const chunk = await fetchCounts(slugs.slice(index, index + MAX_SLUGS_PER_REQUEST));
+    // Endpoint is down — the remaining chunks would fail identically. Fall back to the
+    // server-rendered order with whatever we have rather than hammering it.
+    if (chunk === null) break;
+    Object.assign(counts, chunk);
   }
   return counts;
 }
@@ -90,7 +101,10 @@ function applyCardCounts(root: HTMLElement, counts: Record<string, number>) {
     const count = countOf(counts, slug);
     const countSlot = block.querySelector<HTMLElement>('[data-vote-count]');
     if (countSlot) countSlot.textContent = String(count);
-    block.setAttribute('aria-label', `${count} ${count === 1 ? "upvote" : "upvotes"} — open use case to vote`);
+    // Per-card name, matching vote-counts.ts. A page of cards that all announce "open use case
+    // to vote" gives a screen-reader user no way to tell one vote link from another.
+    const target = block.dataset.voteName || 'use case';
+    block.setAttribute('aria-label', `${count} ${count === 1 ? 'upvote' : 'upvotes'} — open ${target} to vote`);
     block.dataset.voteHydrated = 'true';
   }
 }

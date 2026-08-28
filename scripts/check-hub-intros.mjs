@@ -10,7 +10,12 @@ const categories = JSON.parse(readFileSync('src/data/categories.json', 'utf8'));
 const integrations = JSON.parse(readFileSync('src/data/integrations.json', 'utf8'));
 const slugify = (v) => v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
+// Non-taxonomy hubs that still owe a hand-written intro. Adding `marketplace` here is the
+// point: without it the file would exist but nothing would ever check its length.
+const EXTRA_HUBS = ['marketplace'];
+
 const expected = [
+  ...EXTRA_HUBS,
   ...categories.map((c) => `categories/${c.slug}`),
   ...categories.flatMap((c) => c.subcategories.map((s) => `categories/${c.slug}--${s.slug}`)),
   ...integrations.map((i) => `integrations/${slugify(i.canonical_name)}`),

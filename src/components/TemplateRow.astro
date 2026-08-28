@@ -1,0 +1,256 @@
+---
+// ONE skim-list row. THE row component — used by /marketplace/, /marketplace/featured/ and the
+// home page section. Three surfaces, one definition (§CLAUDE.md: componentize, no duplicate
+// front-end).
+//
+// ── WHY A ROW AND NOT A CARD ────────────────────────────────────────────────────────────
+// The operator asked for a dense skim list: one template per row, stacked, scannable. The
+// proven precedent is already in this repo — `/news/`'s `.newsList` (divide-y, and a
+// `grid-template-columns` that only applies from `md` up). It is the one list pattern here
+// already verified never to take the page sideways (F6), so this reuses its structure.
+//
+// ── THERE IS NO INSTALL BUTTON ON A ROW, AND THAT IS THE POINT ──────────────────────────
+// It used to carry one. The e2e pass found it rendering as a muted outline LIGHTER than "view
+// details", so the two read as near-identical and the install — the consequential, off-site,
+// irreversible-ish action — looked like the weaker of the pair.
+//
+// The fix is not to restyle it. Under the "pure skim list + upvoting" direction the row has one
+// job: help you decide whether to open this thing. So the row is now vote · name · one-liner ·
+// tags · sharer · view details · source, and "add to grok bot" lives ONLY on the detail page as
+// the hero amber CTA. That is also exactly the rationale already agreed for the hierarchy:
+// nobody should install somebody else's instructions straight off a one-line row.
+// Bonus: it removes a link from every row (77 fewer in the home tab order).
+//
+// ── LINK BUDGET ─────────────────────────────────────────────────────────────────────────
+// A row carries: vote, title, view-details, source, sharer. Fifty-plus rows is real tab-order
+// fatigue, so the TAG CHIPS HERE ARE INERT SPANS, not links — on the hub the filter island owns
+// them, on home they are labels, and they are links only on the detail page. Every remaining
+// repeated control carries a per-row accessible name; "source ↗" alone was 77 identical names.
+// No stretched-link overlay either, the same call `/news/`'s newsRow already made.
+import Chip from './Chip.astro';
+import TemplateVoteBlock from './TemplateVoteBlock.astro';
+import {
+  CP_150_TEMPLATE_SOURCE_LABEL,
+  CP_151_TEMPLATE_SHARED_BY,
+  CP_168_TEMPLATE_VIEW_DETAILS,
+  CP_176_TEMPLATE_SOURCE_ARIA,
+  fillCopy,
+} from '../lib/copy';
+import { searchTextOf, tagLabel, templateUrlOf, type TemplateDoc } from '../lib/templates';
+
+interface Props {
+  doc: TemplateDoc;
+  /** h2 under a page h1 (the hub), h3 under a section h2 (home). §4.6 outline. */
+  headingLevel?: 2 | 3;
+  class?: string;
+}
+
+const { doc, headingLevel = 2, class: className = '' } = Astro.props;
+const d = doc.data;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+const href = templateUrlOf(doc);
+
+// Lead with the primary tag, then the rest; cap the visible chips so a heavily-tagged
+// template cannot make its row twice as tall as its neighbours.
+const orderedTags = [d.primary_category, ...d.tags.filter((t) => t !== d.primary_category)];
+const shownTags = orderedTags.slice(0, 4);
+const overflow = orderedTags.length - shownTags.length;
+
+// Votes need a slug the registry knows, and the manifests are built from `included()` — so a
+// demo or proposed template must not show a vote block it could never hydrate.
+const votable = d.status === 'live' || d.status === 'needs-update';
+---
+
+<article
+  class:list={['tplRow', className]}
+  data-template-row
+  data-template-tags={d.tags.join(' ')}
+  data-template-text={searchTextOf(doc)}
+>
+  {votable && (
+    <div class="tplRow__vote">
+      <TemplateVoteBlock slug={d.slug} name={d.name} href={href} />
+    </div>
+  )}
+
+  <div class="tplRow__main">
+    <Heading class="tplRow__name">
+      <a href={href}>{d.name}</a>
+    </Heading>
+    <p class="tplRow__line">{d.tagline}</p>
+
+    <div class="tplRow__meta">
+      {shownTags.map((tag) => <Chip variant="tag" label={tagLabel(tag)} />)}
+      {overflow > 0 && <span class="tplRow__more">+{overflow}</span>}
+      <a href={d.sharer.url} target="_blank" rel="noopener" class="tplRow__sharer">
+        {fillCopy(CP_151_TEMPLATE_SHARED_BY, { handle: d.sharer.handle })}
+      </a>
+    </div>
+  </div>
+
+  {/* One group per row, named by the template, so a screen reader hears "view details" and
+      "add to grok bot" as this row's actions rather than as forty identical links. */}
+  <div class="tplRow__actions" role="group" aria-label={d.name}>
+    <a href={href} class="tplRow__primary" aria-label={`view details: ${d.name}`}>
+      {CP_168_TEMPLATE_VIEW_DETAILS}
+    </a>
+    {d.source && (
+      <a
+        href={d.source.url}
+        target="_blank"
+        rel="noopener"
+        class="tplRow__source"
+        aria-label={fillCopy(CP_176_TEMPLATE_SOURCE_ARIA, { name: d.name })}
+      >
+        {CP_150_TEMPLATE_SOURCE_LABEL} <span aria-hidden="true">↗</span>
+      </a>
+    )}
+  </div>
+</article>
+
+<style>
+  .tplRow {
+    display: grid;
+    gap: 0.625rem 1rem;
+    padding-block: 1.125rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'vote main'
+      'actions actions';
+    align-items: start;
+  }
+  /* No vote block (demo / proposed): the main column takes the whole width rather than
+     leaving a ghost gutter where the block would have been. */
+  .tplRow:not(:has(.tplRow__vote)) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'main'
+      'actions';
+  }
+
+  .tplRow__vote {
+    grid-area: vote;
+    display: flex;
+    padding-block-start: 0.125rem;
+  }
+  /* min-inline-size:0 is what actually stops a long unbroken tagline widening the grid track
+     past the viewport. Without it this row takes the whole page sideways at 360px (F6). */
+  .tplRow__main {
+    grid-area: main;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .tplRow__actions {
+    grid-area: actions;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .tplRow {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'vote main actions';
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .tplRow:not(:has(.tplRow__vote)) {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: 'main actions';
+    }
+    .tplRow__actions {
+      justify-content: flex-end;
+    }
+  }
+
+  .tplRow__name {
+    font-family: var(--font-sans);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-text);
+  }
+  .tplRow__name a:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .tplRow__line {
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--color-text-muted);
+  }
+
+  .tplRow__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem 0.5rem;
+    margin-block-start: 0.125rem;
+  }
+  .tplRow__more {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+  }
+  /* NO text-transform here, deliberately. §4.1.3's rule is that data-driven labels are
+     lowercased in-component at build, never with CSS — and an X handle is the strongest case
+     for it: @BrianDEvans is a person's identity, and rendering it "@briandevans" mangles the
+     one thing this whole section exists to get right. The chrome around it stays mono; the
+     handle keeps the case its owner chose. */
+  .tplRow__sharer {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+  .tplRow__sharer:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* PRIMARY of the two row actions (operator): ink border and a heavier label, so it wins
+     against the install button without either of them spending the page's one accent. */
+  .tplRow__primary {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 36px;
+    padding-inline: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--color-text);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    white-space: nowrap;
+    color: var(--color-text);
+    transition:
+      border-color 0.15s,
+      color 0.15s;
+  }
+  .tplRow__primary:hover {
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  .tplRow__source {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 36px;
+    padding-inline: 0.375rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    white-space: nowrap;
+    color: var(--color-text-muted);
+  }
+  .tplRow__source:hover {
+    color: var(--color-accent-text);
+  }
+</style>

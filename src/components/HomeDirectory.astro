@@ -1,40 +1,46 @@
 ---
-// HOME = THE DIRECTORY, featured-first (operator). The home now shows only FEATURED entries
-// with a "N featured · M total · view all →" line above each panel; "view all" links to the
-// full, filterable hub (/plugins/, /use-cases/). Keeps the tab toggle (Awesome Use Cases |
-// Plugins) and the plugin table/cards switch — radio + :has(), zero islands. The category
-// filters moved to the hubs, where the complete listing lives.
+// HOME = THE DIRECTORY. Two tabs (operator, 2026-08-28): SHAREABLE BOTS (default) and PLUGINS.
+//
+// Awesome Use Cases has LEFT this page — /use-cases/ is fully intact and now reachable from the
+// header nav instead. The operator's call: the sectioned shareable-bots skim is the thing worth
+// landing on, and three tabs would have buried it.
+//
+// The shareable-bots panel is the SECTIONED skim (TemplateSections), complete and uncapped —
+// not a featured slice. Plugins keeps its featured-first table/cards switch unchanged.
+// Still radio + :has(), still zero islands for the tab machinery itself.
 import EntryCard from './EntryCard.astro';
 import Chip from './Chip.astro';
 import PluginIcon from './PluginIcon.astro';
+import TemplateSections from './TemplateSections.astro';
 import { toCardEntry, kindOf, sortSponsorsFirst } from '../lib/entries';
 import PluginSubmitCTA from './PluginSubmitCTA.astro';
 import type { AnyDoc } from '../lib/entries';
+import type { TemplateDoc } from '../lib/templates';
+import { CP_147_MARKETPLACE_INTRO, CP_165_HOME_SHAREABLE_ALL, CP_175_HOME_TAB_TEMPLATES } from '../lib/copy';
 import categories from '../data/categories.json';
 
 interface Props {
   plugins: AnyDoc[];
-  useCases: AnyDoc[];
+  templates: TemplateDoc[];
 }
 
-const { plugins, useCases } = Astro.props;
+const { plugins, templates } = Astro.props;
 const labelOf = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
 
 const isFeatured = (d: AnyDoc) => Boolean(d.data.featured);
 // Operator: sponsors on top (client-shuffled per load), rest alphabetical.
 const featuredPlugins = sortSponsorsFirst(plugins.filter(isFeatured));
-const featuredUseCases = useCases.filter(isFeatured);
 ---
 
 <section class="homeDirectory container-page flex flex-col gap-6 pt-6 pb-12 md:pt-8 md:pb-16" aria-label="directory">
   {/* ── TAB SWITCHER — segmented control (base A) + count boxes (from C) ───────────────── */}
-  <input type="radio" name="home-tab" id="home-tab-use-cases" class="sr-only" checked />
+  <input type="radio" name="home-tab" id="home-tab-templates" class="sr-only" checked />
   <input type="radio" name="home-tab" id="home-tab-plugins" class="sr-only" />
 
   <div class="flex justify-center" role="presentation">
     <div class="homeTabs">
-      <label for="home-tab-use-cases" data-home-tab="use-cases" class="homeTab">
-        awesome use cases <span class="homeTab__n">{useCases.length}</span>
+      <label for="home-tab-templates" data-home-tab="templates" class="homeTab">
+        {CP_175_HOME_TAB_TEMPLATES} <span class="homeTab__n">{templates.length}</span>
       </label>
       <label for="home-tab-plugins" data-home-tab="plugins" class="homeTab">
         plugins <span class="homeTab__n">{plugins.length}</span>
@@ -132,27 +138,28 @@ const featuredUseCases = useCases.filter(isFeatured);
     <PluginSubmitCTA class="mt-2" />
   </div>
 
-  {/* ── USE CASES ───────────────────────────────────────────────────────────────────── */}
-  <div data-home-panel="use-cases" class="flex flex-col gap-4">
+  {/* ── SHAREABLE BOTS (default tab) ──────────────────────────────────────────────────── */}
+  <div data-home-panel="templates" class="flex flex-col gap-4">
     <div class="homeMeta flex flex-wrap items-center gap-x-3 gap-y-2">
       <span class="homeMeta__count">
-        <strong>{featuredUseCases.length}</strong> featured
+        <strong>{templates.length}</strong>
+        <span>shareable bots, grouped by what they do</span>
         <span aria-hidden="true">·</span>
-        <span class="homeMeta__total">{useCases.length} total</span>
-        <span aria-hidden="true">·</span>
-        <a href="/use-cases/" class="homeMeta__all">view all {useCases.length} →</a>
+        <a href="/marketplace/" class="homeMeta__all">{CP_165_HOME_SHAREABLE_ALL}</a>
       </span>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
-      {featuredUseCases.map((doc) => <EntryCard entry={toCardEntry(doc)} variant={kindOf(doc)} headingLevel={3} />)}
-    </div>
+    <p class="homeShareIntro max-w-prose text-base text-text-muted">{CP_147_MARKETPLACE_INTRO}</p>
 
-    {/* Operator: a prominent way off the featured set into the full, filterable hub. */}
+    {/* Section headings are h3 here: they sit under the page h1 and this panel's own meta row,
+        and the hub renders the identical component at h2. Rows follow one level down. */}
+    <TemplateSections templates={templates} headingLevel={3} idPrefix="home" />
+
     <div class="homeAllRow">
-      <a href="/use-cases/" class="homeAllBtn">all awesome use cases ({useCases.length}) →</a>
+      <a href="/marketplace/" class="homeAllBtn">filter and search all {templates.length} →</a>
     </div>
   </div>
+
 </section>
 
 <style>
@@ -197,12 +204,12 @@ const featuredUseCases = useCases.filter(isFeatured);
     padding-inline: 0.375rem;
   }
   /* Active segment: ink fill, and the count box inverts to stay legible on it. */
-  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'],
+  .homeDirectory:has(#home-tab-templates:checked) [data-home-tab='templates'],
   .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'] {
     background: var(--color-text);
     color: var(--color-bg);
   }
-  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-tab='use-cases'] .homeTab__n,
+  .homeDirectory:has(#home-tab-templates:checked) [data-home-tab='templates'] .homeTab__n,
   .homeDirectory:has(#home-tab-plugins:checked) [data-home-tab='plugins'] .homeTab__n {
     color: var(--color-bg);
     border-color: currentColor;
@@ -308,7 +315,7 @@ const featuredUseCases = useCases.filter(isFeatured);
   .homeDirectory [data-home-panel] {
     display: none;
   }
-  .homeDirectory:has(#home-tab-use-cases:checked) [data-home-panel='use-cases'],
+  .homeDirectory:has(#home-tab-templates:checked) [data-home-panel='templates'],
   .homeDirectory:has(#home-tab-plugins:checked) [data-home-panel='plugins'] {
     display: flex;
   }

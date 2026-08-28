@@ -1,0 +1,78 @@
+---
+// The skim-list shell. ONE row component, three surfaces: /marketplace/,
+// /marketplace/featured/, and the home page section.
+//
+// `context` changes exactly two things and nothing else:
+//   · `hub`  — renders the filter bar and the empty-filter state; rows are <h2> under the page <h1>.
+//   · `home` — no filter (home keeps ONE interactive system; the hub is the workbench), and rows
+//              are <h3> under the section's <h2>, so the document outline never skips a level.
+import TemplateRow from './TemplateRow.astro';
+import TemplateFilterBar from './TemplateFilterBar.astro';
+import { CP_157_TEMPLATE_EMPTY_FILTER } from '../lib/copy';
+import { tagCounts, type TemplateDoc } from '../lib/templates';
+
+interface Props {
+  templates: TemplateDoc[];
+  context: 'hub' | 'home';
+  class?: string;
+}
+
+const { templates, context, class: className = '' } = Astro.props;
+const showFilter = context === 'hub';
+const headingLevel = context === 'hub' ? 2 : 3;
+const counts = tagCounts(templates);
+---
+
+<div class:list={['tplWrap', className]} data-template-filter-root>
+  {showFilter && <TemplateFilterBar counts={counts} />}
+
+  <div class="tplList" data-template-list>
+    {templates.map((doc) => <TemplateRow doc={doc} headingLevel={headingLevel} />)}
+  </div>
+
+  {
+    showFilter && (
+      <p class="tplEmpty" data-template-empty hidden>
+        {CP_157_TEMPLATE_EMPTY_FILTER}
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .tplWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  /* The /news/ list treatment: hairline rules between rows, rules top and bottom, nothing
+     else. It is the densest legible list pattern already proven on this site. */
+  .tplList > :global(.tplRow) {
+    border-block-end: 1px solid var(--color-border);
+  }
+  .tplList {
+    border-block: 1px solid var(--color-border);
+  }
+  /* :last-child would be wrong once the filter hides rows — the last VISIBLE row is what
+     should lose its rule, and `:not([hidden]) ~ ...` cannot express that. Dropping the rule on
+     the final child and letting the container's bottom border close the list is stable either
+     way, because a hidden row contributes no border. */
+  .tplList > :global(.tplRow:last-child) {
+    border-block-end: 0;
+  }
+
+  .tplEmpty {
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+  }
+  .tplEmpty[hidden] {
+    display: none;
+  }
+</style>

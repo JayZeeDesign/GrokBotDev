@@ -1,0 +1,222 @@
+[
+  {
+    "facet": "audience",
+    "label": "Who it's for",
+    "tags": [
+      {
+        "slug": "personal",
+        "label": "Personal"
+      },
+      {
+        "slug": "business",
+        "label": "Business"
+      },
+      {
+        "slug": "developer",
+        "label": "Developer"
+      },
+      {
+        "slug": "creator",
+        "label": "Creator"
+      },
+      {
+        "slug": "investor",
+        "label": "Investor"
+      },
+      {
+        "slug": "marketer",
+        "label": "Marketer"
+      },
+      {
+        "slug": "sales",
+        "label": "Sales"
+      },
+      {
+        "slug": "ops",
+        "label": "Ops"
+      },
+      {
+        "slug": "student",
+        "label": "Student"
+      }
+    ]
+  },
+  {
+    "facet": "value",
+    "label": "What it gets you",
+    "tags": [
+      {
+        "slug": "saving-money",
+        "label": "Saving money"
+      },
+      {
+        "slug": "life-hacks",
+        "label": "Life hacks"
+      },
+      {
+        "slug": "productivity",
+        "label": "Productivity"
+      },
+      {
+        "slug": "automation",
+        "label": "Automation"
+      },
+      {
+        "slug": "research",
+        "label": "Research"
+      },
+      {
+        "slug": "monitoring",
+        "label": "Monitoring"
+      },
+      {
+        "slug": "back-office",
+        "label": "Back office"
+      },
+      {
+        "slug": "growth",
+        "label": "Growth"
+      },
+      {
+        "slug": "learning",
+        "label": "Learning"
+      },
+      {
+        "slug": "decision-support",
+        "label": "Decision support"
+      },
+      {
+        "slug": "wellbeing",
+        "label": "Wellbeing"
+      },
+      {
+        "slug": "analytics",
+        "label": "Analytics"
+      }
+    ]
+  },
+  {
+    "facet": "domain",
+    "label": "Domain",
+    "tags": [
+      {
+        "slug": "finance",
+        "label": "Finance"
+      },
+      {
+        "slug": "shopping",
+        "label": "Shopping"
+      },
+      {
+        "slug": "email",
+        "label": "Email"
+      },
+      {
+        "slug": "social-media",
+        "label": "Social media"
+      },
+      {
+        "slug": "youtube",
+        "label": "YouTube"
+      },
+      {
+        "slug": "content",
+        "label": "Content"
+      },
+      {
+        "slug": "travel",
+        "label": "Travel"
+      },
+      {
+        "slug": "home",
+        "label": "Home"
+      },
+      {
+        "slug": "health",
+        "label": "Health"
+      },
+      {
+        "slug": "crypto",
+        "label": "Crypto"
+      },
+      {
+        "slug": "real-estate",
+        "label": "Real estate"
+      },
+      {
+        "slug": "recruiting",
+        "label": "Recruiting"
+      },
+      {
+        "slug": "support",
+        "label": "Support"
+      },
+      {
+        "slug": "design",
+        "label": "Design"
+      },
+      {
+        "slug": "data",
+        "label": "Data"
+      },
+      {
+        "slug": "engineering",
+        "label": "Engineering"
+      },
+      {
+        "slug": "calendar",
+        "label": "Calendar"
+      },
+      {
+        "slug": "meetings",
+        "label": "Meetings"
+      },
+      {
+        "slug": "seo",
+        "label": "SEO"
+      },
+      {
+        "slug": "news",
+        "label": "News"
+      },
+      {
+        "slug": "video",
+        "label": "Video"
+      },
+      {
+        "slug": "knowledge-base",
+        "label": "Knowledge base"
+      },
+      {
+        "slug": "family",
+        "label": "Family"
+      },
+      {
+        "slug": "events",
+        "label": "Events"
+      }
+    ]
+  },
+  {
+    "facet": "structure",
+    "label": "Shape",
+    "tags": [
+      {
+        "slug": "agent-team",
+        "label": "Agent team"
+      },
+      {
+        "slug": "scheduled",
+        "label": "Scheduled"
+      },
+      {
+        "slug": "on-demand",
+        "label": "On demand"
+      },
+      {
+        "slug": "meta-bot",
+        "label": "Meta bot"
+      }
+    ]
+  }
+]

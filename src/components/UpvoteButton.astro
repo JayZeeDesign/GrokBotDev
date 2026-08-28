@@ -1,9 +1,11 @@
 ---
 interface Props {
   slug: string;
+  /** The noun in the accessible name. Templates reuse this island verbatim. */
+  kind?: 'use case' | 'shareable bot';
 }
 
-const { slug } = Astro.props;
+const { slug, kind = 'use case' } = Astro.props;
 const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '1x00000000000000000000AA';
 ---
 
@@ -13,7 +15,7 @@ const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '1x00000000000000000
     class="upvoteButton__button btn-active"
     data-upvote-button
     aria-pressed="false"
-    aria-label="upvote this use case"
+    aria-label={`upvote this ${kind}`}
   >
     ▲ upvote
   </button>

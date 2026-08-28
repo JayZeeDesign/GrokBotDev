@@ -29,10 +29,30 @@ const CONTENT_DIRS = {
   'use-case': `${ROOT}/use-cases`,
   collection: `${ROOT}/collections`,
   news: `${ROOT}/news`,
+  template: `${ROOT}/templates`,
 };
 
 const categories = JSON.parse(readFileSync('src/data/categories.json', 'utf8'));
 const integrations = JSON.parse(readFileSync('src/data/integrations.json', 'utf8'));
+const templateTagFacets = JSON.parse(readFileSync('src/data/template-tags.json', 'utf8'));
+const TEMPLATE_TAGS = templateTagFacets.flatMap((facet) => facet.tags.map((t) => t.slug));
+const TEMPLATE_PARTS = [
+  'instructions',
+  'memories',
+  'workflow',
+  'schedule',
+  'skills',
+  'connectors',
+  'agent-team',
+  'files',
+];
+// The twin of content.config.ts's SHARE_URL_RE. CONFIRMED grammar (2026-08-28): a share link
+// is always https://x.ai/bot/<21 url-safe base64 chars>. grok.com/bot does not exist.
+// Change BOTH copies together.
+const SHARE_URL_RE = /^https:\/\/x\.ai\/bot\/[A-Za-z0-9_-]{21}$/;
+// `/marketplace/featured/` is a real route, so a template slugged `featured` would shadow it.
+// `index` and `rss` are reserved for the same class of reason.
+const RESERVED_TEMPLATE_SLUGS = new Set(['featured', 'index', 'rss']);
 
 const errors = [];
 const fail = (file, rule, message) => errors.push(`${file}\n    [${rule}] ${message}`);
@@ -142,6 +162,8 @@ const projectUrls = new Map();
 const repoUrls = new Map();
 const sourceUrls = new Map();
 const tweetUrls = new Map();
+// Two templates pointing at the same install link are the same shared bot filed twice.
+const shareUrls = new Map();
 // F17 — keyed on VIDEO ID, deliberately not on URL. See the note on `youtubeVideoId`:
 // `normalizeUrl()` strips the query string, and a watch URL keeps its id there, so URL
 // dedupe would collapse every youtube.com/watch?v=… in the corpus into one key and report
@@ -183,7 +205,9 @@ for (const entry of entries) {
       ? ['name', 'tagline', 'category', 'subcategory', 'added_at', 'updated_at']
       : type === 'news'
         ? ['title', 'summary', 'kind', 'published_at', 'updated_at']
-        : ['added_at', 'updated_at'];
+        : type === 'template'
+          ? ['name', 'tagline', 'description', 'sharer', 'tags', 'primary_category', 'added_at', 'updated_at']
+          : ['added_at', 'updated_at'];
   for (const field of requiredCommon) {
     if (!d[field]) fail(file, '§5.2', `missing required field \`${field}\``);
   }
@@ -489,6 +513,140 @@ for (const entry of entries) {
     }
   }
 
+  // ---------- TEMPLATE (Shareable Bots) ----------
+  // TPL-numbered rules. This branch exists because the status/required-field logic above is
+  // "plugin / news / everything else", and letting templates fall through the `else` would
+  // silently apply use-case-shaped assumptions to a type that shares none of them.
+  if (type === 'template') {
+    if (RESERVED_TEMPLATE_SLUGS.has(d.slug)) {
+      fail(
+        file,
+        'TPL-9',
+        `slug "${d.slug}" is reserved — it would shadow the /marketplace/${d.slug}/ route`
+      );
+    }
+    if (typeof d.name !== 'string' || d.name.length < 3 || d.name.length > 60) {
+      fail(file, 'TPL-1', 'name is required, 3–60 chars');
+    }
+    if (
+      typeof d.description !== 'string' ||
+      d.description.length < 80 ||
+      d.description.length > 320
+    ) {
+      fail(file, 'TPL-2', 'description is required, 80–320 chars');
+    }
+
+    // TPL-3 — the sharer. Credit is the whole premise of the section, so it is never optional.
+    const s = d.sharer;
+    if (!s || typeof s.handle !== 'string' || typeof s.url !== 'string') {
+      fail(file, 'TPL-3', 'sharer is required with `handle` and `url`');
+    } else {
+      if (String(s.handle).startsWith('@')) {
+        fail(file, 'TPL-3', `sharer.handle "${s.handle}" must not include the leading @`);
+      }
+      if (!String(s.url).startsWith('https://')) {
+        fail(file, 'TPL-3', `sharer.url must be https:// (got "${s.url}")`);
+      }
+    }
+
+    // TPL-4 — tags against the controlled vocabulary, with a "did you mean".
+    const tags = Array.isArray(d.tags) ? d.tags : [];
+    if (!tags.length || tags.length > 8) {
+      fail(file, 'TPL-4', 'tags is required — 1–8 slugs from src/data/template-tags.json');
+    }
+    for (const tag of tags) {
+      if (!TEMPLATE_TAGS.includes(tag)) {
+        let best = null;
+        let bestScore = Infinity;
+        for (const known of TEMPLATE_TAGS) {
+          const score = levenshtein(String(tag).toLowerCase(), known);
+          if (score < bestScore) {
+            bestScore = score;
+            best = known;
+          }
+        }
+        const hint = bestScore <= Math.max(2, Math.round(String(tag).length / 3)) ? best : null;
+        fail(
+          file,
+          'TPL-4',
+          `unknown tag "${tag}"${hint ? ` — did you mean \`${hint}\`?` : ''} (see src/data/template-tags.json)`
+        );
+      }
+    }
+    if (d.primary_category && !tags.includes(d.primary_category)) {
+      fail(
+        file,
+        'TPL-5',
+        `primary_category "${d.primary_category}" is not in tags[] — it must be one of them`
+      );
+    }
+
+    // TPL-6 — a live template must name the post it was shared in.
+    const src = d.source;
+    if ((status === 'live' || status === 'needs-update') && !src) {
+      fail(file, 'TPL-6', 'a live template must carry `source` — the X post it was shared in (§10.1)');
+    }
+    if (src) {
+      if (!TWEET_RE.test(src.url ?? '')) {
+        fail(file, 'TPL-6', `source.url "${src.url}" is not an x.com/<handle>/status/<id> URL`);
+      }
+      if (
+        typeof src.excerpt !== 'string' ||
+        src.excerpt.length < 20 ||
+        src.excerpt.length > 280
+      ) {
+        fail(
+          file,
+          '§5.6 #10',
+          'source.excerpt must be a partial quote of 20–280 chars — the embed fallback is also its permanent failure state'
+        );
+      }
+      // NOT deduped on source.url, deliberately. A single post routinely announces several
+      // bots at once (three pairs in the launch corpus do), so "one post, one template" is a
+      // false assumption — the same one F17 rejected for compilation videos, where the key had
+      // to become video id + timestamp. A template's identity is its INSTALL LINK, which is
+      // deduped below: two entries sharing a share_url are the same bot filed twice, whereas two
+      // entries sharing a post are two bots announced together.
+    }
+
+    // TPL-7 — the install link. Optional, but when present it must be a real share host.
+    if (d.share_url !== undefined) {
+      if (!SHARE_URL_RE.test(String(d.share_url))) {
+        fail(
+          file,
+          'TPL-7',
+          `share_url "${d.share_url}" must be an "Add to Grok Bot" link: https://x.ai/bot/<id> with a 21-character id`
+        );
+      }
+      track(shareUrls, d.share_url, 'share_url');
+    }
+
+    // TPL-8 — `includes` vocabulary + the free-text escape hatch.
+    for (const part of Array.isArray(d.includes) ? d.includes : []) {
+      if (!TEMPLATE_PARTS.includes(part)) {
+        fail(file, 'TPL-8', `unknown includes value "${part}" — valid: ${TEMPLATE_PARTS.join(', ')}`);
+      }
+    }
+    if (d.includes_note !== undefined && (typeof d.includes_note !== 'string' || d.includes_note.length > 200)) {
+      fail(file, 'TPL-8', 'includes_note must be a string ≤200 chars when present');
+    }
+
+    // TPL-10 — body contract.
+    if (body.trim().length < 300) {
+      fail(file, 'TPL-10', `template body must be ≥300 chars (is ${body.trim().length})`);
+    }
+    const whatIndex = body.indexOf('## What it does');
+    if (whatIndex === -1) {
+      fail(file, 'TPL-10', 'missing required body section `## What it does`');
+    } else {
+      const nextHeading = body.indexOf('\n## ', whatIndex + 1);
+      const section = body.slice(whatIndex + '## What it does'.length, nextHeading === -1 ? body.length : nextHeading).trim();
+      if (section.length < 200) {
+        fail(file, 'TPL-10', `"## What it does" must be ≥200 chars (is ${section.length})`);
+      }
+    }
+  }
+
   if (type === 'collection') {
     const members = Array.isArray(d.members) ? d.members : [];
     if (members.length < 2) fail(file, '§5.6 #9', 'collections need at least 2 members');
@@ -525,17 +683,33 @@ for (const entry of entries.filter((e) => e.type === 'collection')) {
   }
 }
 
+// ---------- cross-file: TPL-11, related_use_cases resolution ----------
+// Same shape as the collection member check above, and for the same reason: a cross-link that
+// names a slug nothing owns renders as a link to a 404, and check-links only catches that once
+// the page is built. Catching it here names the file and the field instead.
+for (const entry of entries.filter((e) => e.type === 'template')) {
+  for (const ref of entry.data?.related_use_cases ?? []) {
+    const refType = byType.get(ref);
+    if (!refType) {
+      fail(entry.file, 'TPL-11', `dangling related_use_cases slug "${ref}" — no entry has that slug`);
+    } else if (refType !== 'use-case') {
+      fail(entry.file, 'TPL-11', `related_use_cases "${ref}" is a ${refType} — it must be a use case`);
+    }
+  }
+}
+
 // ---------- report ----------
 const counts = {
   plugins: entries.filter((e) => e.type === 'plugin').length,
   'use-cases': entries.filter((e) => e.type === 'use-case').length,
   collections: entries.filter((e) => e.type === 'collection').length,
   news: entries.filter((e) => e.type === 'news').length,
+  templates: entries.filter((e) => e.type === 'template').length,
 };
 const demo = entries.filter((e) => (e.data?.status ?? 'live') === 'demo').length;
 
 console.log(
-  `validate: ${entries.length} entries - ${counts.plugins} plugins, ${counts['use-cases']} use cases, ${counts.collections} collections, ${counts.news} news (${demo} demo)`
+  `validate: ${entries.length} entries - ${counts.plugins} plugins, ${counts['use-cases']} use cases, ${counts.collections} collections, ${counts.news} news, ${counts.templates} templates (${demo} demo)`
 );
 
 if (errors.length) {

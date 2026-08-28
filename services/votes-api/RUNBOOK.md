@@ -47,6 +47,26 @@ USE_CASE_CONTENT_DIR=/nonexistent-force-fallback
 SLUGS_FILE=/opt/projects/user/grokbot/current/api-meta/use-case-slugs.json
 ```
 
+### Shareable Bots (templates) — repoint required
+
+Templates are votable too, and their slugs are NOT in `use-case-slugs.json`. The site emits
+`api-meta/votable-slugs.json` (use cases + templates, deduped). Point `SLUGS_FILE` at that file
+instead:
+
+```dotenv
+SLUGS_FILE=/opt/projects/user/grokbot/current/api-meta/votable-slugs.json
+```
+
+Promote the site FIRST, then repoint — `loadFallbacks()` silently falls through to the service
+checkout's own content dir if the path does not exist yet. Note also that `loadFromContentDir()`
+wins over `SLUGS_FILE`, which is why `USE_CASE_CONTENT_DIR` must stay pointed at a nonexistent
+path; a dev instance that forgets this knows use-case slugs only.
+
+Remember that `/api/v1/votes/counts` is fail-closed PER REQUEST: one unknown slug 400s the whole
+batch. The site's `vote-counts.ts` splits requests by kind and bisects rejected chunks so this
+degrades to "counts read 0" rather than breaking a page, but the feature is not live until the
+repoint lands.
+
 `current/api-meta/use-case-slugs.json` is updated atomically with each site promote. The API refreshes its slug registry on the default `SLUG_REFRESH_MS` cadence (10 minutes), so content publishes do not require a votes-api redeploy.
 
 ## Backups
