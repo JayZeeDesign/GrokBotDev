@@ -24,7 +24,8 @@ pricing_note: "Free credits at signup, then credit-based plans."
 setup_minutes: 10
 added_at: "2026-08-28T00:00:00Z"
 updated_at: "2026-08-28T00:00:00Z"
-status: proposed
+verified_at: "2026-08-28T09:00:00Z"
+status: live
 ---
 
 ## What it does
