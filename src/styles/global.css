@@ -11,6 +11,10 @@
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-sans);
+    /* Section jump-nav (Shareable Bots) and every in-page anchor animate instead of
+       jumping. Pure CSS, zero JS, CSP-safe. The §4.4 reduced-motion block below forces
+       scroll-behavior:auto for users who prefer reduced motion, so this is accessible. */
+    scroll-behavior: smooth;
   }
 
   body {
