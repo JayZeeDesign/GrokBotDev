@@ -194,6 +194,10 @@
       {
         "slug": "events",
         "label": "Events"
+      },
+      {
+        "slug": "food",
+        "label": "Food"
       }
     ]
   },
