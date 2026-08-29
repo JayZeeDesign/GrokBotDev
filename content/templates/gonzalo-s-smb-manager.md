@@ -2,7 +2,7 @@
 type: "template"
 name: "gonzalo's smb manager"
 slug: "gonzalo-s-smb-manager"
-tagline: "A virtual front desk for one local shop, owner approves everything"
+tagline: "Wins back customers and fills tomorrow, with the owner approving each step"
 description: "Covers the jobs a small business owner never gets round to: winning back customers who stopped coming in, chasing tabs that were left open, writing the day's social post and working on filling tomorrow's calendar. Nothing leaves without the owner saying yes."
 sharer:
   handle: "joshkim"

@@ -3,7 +3,7 @@ type: "template"
 name: "Yolk"
 slug: "yolk"
 tagline: "A Tamagotchi egg in your sidebar that wants feeding four times a day"
-description: "It hatches from what you type and then asks for food at four points in the day. Only a food emoji counts as a meal, and if you ignore it for long enough it leaves the sidebar for good. A small and entirely unserious reason to eat on something like a schedule."
+description: "It hatches from what you type and then asks to be fed at four points in the day, and nothing except a food emoji will do. Ignore it for long enough and it leaves the sidebar for good. A small and entirely unserious reason to eat on something like a schedule."
 sharer:
   handle: "jp_costa"
   url: "https://x.com/jp_costa"
@@ -26,7 +26,7 @@ status: "live"
 
 ## What it does
 
-It hatches from what you type and then asks for food at four points in the day. Only a food emoji counts as a meal, and if you ignore it for long enough it leaves the sidebar for good. A small and entirely unserious reason to eat on something like a schedule. It runs on a schedule rather than waiting to be asked.
+It hatches from what you type and then asks to be fed at four points in the day, and nothing except a food emoji will do. Ignore it for long enough and it leaves the sidebar for good. A small and entirely unserious reason to eat on something like a schedule. It runs on a schedule rather than waiting to be asked.
 
 ## Before you install
 

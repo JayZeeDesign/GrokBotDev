@@ -2,8 +2,8 @@
 type: "template"
 name: "remind bot"
 slug: "remind-bot"
-tagline: "Holds the reminders that never make it onto your calendar"
-description: "For errands, school things and one-off life admin that a calendar entry feels too heavy for. Send a screenshot with a time and a place in it, or paste the chat where the plan was made, and it keeps hold of the detail until you need it handed back."
+tagline: "Holds the small reminders that never make it onto your calendar"
+description: "For errands, school things and one-off life admin that a calendar entry feels too heavy for. Send it a screenshot that has the time and place on it, or paste the chat where the plan was made, and it keeps hold of the detail until you need it back."
 sharer:
   handle: "damonchen"
   url: "https://x.com/damonchen"
@@ -26,7 +26,7 @@ status: "live"
 
 ## What it does
 
-For errands, school things and one-off life admin that a calendar entry feels too heavy for. Send a screenshot with a time and a place in it, or paste the chat where the plan was made, and it keeps hold of the detail until you need it handed back. It runs when you ask it to, rather than on a timer.
+For errands, school things and one-off life admin that a calendar entry feels too heavy for. Send it a screenshot that has the time and place on it, or paste the chat where the plan was made, and it keeps hold of the detail until you need it back. It runs when you ask it to, rather than on a timer.
 
 ## Before you install
 
