@@ -189,6 +189,24 @@
     flex-direction: column;
     gap: 0.5rem;
   }
+
+  /* News / article bodies render raw markdown and can carry long bare URLs
+     (x.ai/bot links) and prompt code blocks. Without this they overflow the
+     viewport on a phone (F6: the page never scrolls sideways). Same
+     `overflow-wrap: anywhere` treatment the use-case prompt block already uses.
+     A prompt is prose, so `pre` WRAPS rather than scrolls. */
+  .prose-body {
+    overflow-wrap: break-word;
+  }
+  .prose-body a,
+  .prose-body code {
+    overflow-wrap: anywhere;
+  }
+  .prose-body pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-inline-size: 100%;
+  }
 }
 
 /* §4.4 rule 6 — the one global reduced-motion rule. */
