@@ -382,8 +382,9 @@ const collectionEntries = defineCollection({
       tagline,
       category: z.enum(categorySlugs), // collections ARE categorised (§6.2); not listed on category hubs
       subcategory: z.string(), // pair-validated below
-      // members = slugs of plugins and/or use cases (never other collections), each with a
-      // one-line rationale; array order = display order
+      // members = slugs of plugins, use cases and/or templates ("Shareable Bots") — never
+      // other collections, which is the one recursion the cross-file check in validate.mjs
+      // exists to prevent. Each carries a one-line rationale; array order = display order.
       members: z
         .array(z.object({ slug, reason: z.string().min(20).max(200) }).strict())
         .min(2)

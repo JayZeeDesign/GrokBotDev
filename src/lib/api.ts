@@ -277,19 +277,43 @@ export function toApiItem(doc: AnyDoc): Record<string, unknown> {
 /**
  * Collection members need the member's type/url/name resolved (§7.1.3), which the entry
  * itself cannot know — the page/endpoint passes the resolved pool in.
+ *
+ * TEMPLATES ARE MEMBERS TOO (2026-08-30). A collection curates whatever the site holds, and
+ * the site now holds Shareable Bots; the first template-only collection is the X desk. They
+ * arrive in a SECOND pool rather than in `pool` because `AnyDoc` deliberately excludes
+ * templates (see the long note in `src/content.config.ts`) — widening `AnyDoc` to carry them
+ * would drag `category`/`subcategory` onto a lane that has neither.
+ *
+ * The pool is typed structurally, not as `TemplateDoc`, ON PURPOSE: `lib/templates.ts` already
+ * imports `envelope`/`SITE_URL` from this file, so importing its types back here would close an
+ * import cycle. The template URL shape (`/marketplace/<slug>/`) is the one duplication that
+ * buys the acyclic graph, and it is asserted by `check-links` on every build.
  */
+type MemberTemplate = { data: { slug: string; name: string } };
+
 export function resolveMembers(
   item: Record<string, unknown>,
-  pool: AnyDoc[]
+  pool: AnyDoc[],
+  templates: MemberTemplate[] = []
 ): Record<string, unknown> {
   if (item.type !== 'collection') return item;
   const members = (item.members as Array<{ slug: string; reason: string }>).map((member) => {
     const doc = pool.find((candidate) => candidate.data.slug === member.slug);
+    if (doc) {
+      return {
+        type: kindOf(doc),
+        slug: member.slug,
+        url: `${SITE_URL}${urlOf(doc)}`,
+        name: doc.data.name,
+        reason: member.reason,
+      };
+    }
+    const template = templates.find((candidate) => candidate.data.slug === member.slug);
     return {
-      type: doc ? kindOf(doc) : null,
+      type: template ? 'template' : null,
       slug: member.slug,
-      url: doc ? `${SITE_URL}${urlOf(doc)}` : null,
-      name: doc ? doc.data.name : null,
+      url: template ? `${SITE_URL}/marketplace/${template.data.slug}/` : null,
+      name: template ? template.data.name : null,
       reason: member.reason,
     };
   });

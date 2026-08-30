@@ -671,14 +671,27 @@ for (const entry of entries) {
 }
 
 // ---------- cross-file: §5.6 rule 9, member resolution ----------
+// MEMBER CORPUS (2026-08-30): plugins, use cases AND templates. A collection is a curated
+// bundle of whatever the site holds, and the site now holds Shareable Bots — the X desk is a
+// collection made entirely of them. Collections still may not contain other collections: that
+// is the one recursion this rule exists to prevent, and it is the check that stayed.
+const COLLECTABLE = new Set(['plugin', 'use-case', 'template']);
 const byType = new Map(entries.map((e) => [e.data?.slug, e.type]));
 for (const entry of entries.filter((e) => e.type === 'collection')) {
   for (const member of entry.data?.members ?? []) {
     const memberType = byType.get(member?.slug);
     if (!memberType) {
-      fail(entry.file, '§5.6 #9', `dangling member "${member?.slug}" — no plugin or use case has that slug`);
-    } else if (memberType !== 'plugin' && memberType !== 'use-case') {
-      fail(entry.file, '§5.6 #9', `member "${member.slug}" is a ${memberType} - collections contain plugins and use cases only`);
+      fail(
+        entry.file,
+        '§5.6 #9',
+        `dangling member "${member?.slug}" — no plugin, use case or shareable bot has that slug`
+      );
+    } else if (!COLLECTABLE.has(memberType)) {
+      fail(
+        entry.file,
+        '§5.6 #9',
+        `member "${member.slug}" is a ${memberType} - collections contain plugins, use cases and shareable bots only`
+      );
     }
   }
 }

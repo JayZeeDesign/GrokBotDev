@@ -1,0 +1,252 @@
+---
+// A Shareable Bot rendered as a CARD. The card sibling of `TemplateRow`, and the second and
+// last presentation a template gets.
+//
+// ── WHY A CARD EXISTS AT ALL, GIVEN TemplateRow ─────────────────────────────────────────
+// `TemplateRow` is a SKIM row: fifty of them, stacked, divide-y, optimised for "which of these
+// do I open?". A collection is the opposite problem — four or five bots, hand-picked, each one
+// carrying a curator's sentence about why it is in the bundle. A row under a paragraph of
+// rationale reads as a list of leftovers; a card reads as a member of a set. So this is a new
+// PATTERN, defined once here (CLAUDE.md: componentize, no duplicate front-end), not a fork of
+// the row — the row keeps its own job and neither file grew a `variant` prop.
+//
+// ── THE ACTION HIERARCHY IS INVERTED FROM THE ROW, DELIBERATELY ─────────────────────────
+// On a row, "view details" is primary and there is NO install: nobody should install somebody
+// else's instructions off a one-line row (see TemplateRow's note). On a collection page the
+// reader has just read the collection's rationale AND this member's reason — they have been
+// told, in the site's own voice, why this specific bot is worth adding. That is the moment the
+// install belongs to, so here "add to grok bot" is the primary and "view details" is the quiet
+// second. The section still carries CP-179 underneath it, because the count is what changes:
+// five installs in a row deserve the caveat once, in the right place.
+//
+// ── AND IT IS INK, NOT AMBER ────────────────────────────────────────────────────────────
+// `TemplateInstallButton` is amber because it is THE single action on a detail page (§A1: one
+// accent per viewport). Five amber buttons in one grid would spend that budget five times
+// over, so the card's primary is the INK-FILLED treatment instead — unmistakably the strongest
+// control in the card, without touching the accent. The amber install still lives one click
+// away, on the bot's own page, exactly where §A1 put it.
+import Chip from './Chip.astro';
+import GrokBotGlyph from './GrokBotGlyph.astro';
+import TemplateVoteBlock from './TemplateVoteBlock.astro';
+import {
+  CP_149_TEMPLATE_ADD_LABEL,
+  CP_151_TEMPLATE_SHARED_BY,
+  CP_168_TEMPLATE_VIEW_DETAILS,
+  CP_172_TEMPLATE_ADD_ARIA,
+  fillCopy,
+} from '../lib/copy';
+import { tagLabel, templateUrlOf, type TemplateDoc } from '../lib/templates';
+
+interface Props {
+  doc: TemplateDoc;
+  /** §4.6 outline: h3 under a section h2 is the default (the collection page's usage). */
+  headingLevel?: 2 | 3;
+  class?: string;
+}
+
+const { doc, headingLevel = 3, class: className = '' } = Astro.props;
+const d = doc.data;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+const href = templateUrlOf(doc);
+
+// Primary tag first, then the rest, capped — same rule as the row, so a heavily-tagged bot
+// cannot make its card twice as tall as the one beside it.
+const orderedTags = [d.primary_category, ...d.tags.filter((t) => t !== d.primary_category)];
+const shownTags = orderedTags.slice(0, 3);
+const overflow = orderedTags.length - shownTags.length;
+
+// Votes hydrate from the registry, which is built from `included()` — a demo or proposed
+// template must never show a ▲ it could not fill.
+const votable = d.status === 'live' || d.status === 'needs-update';
+
+// No share link yet (legal on a live template): the card does NOT render a dead install. The
+// details link is promoted to the primary treatment instead, so the card still has exactly one
+// strongest control. §4.4 rule 7.
+const canInstall = Boolean(d.share_url);
+---
+
+<article class:list={['tplCard', className]} data-template-card>
+  <div class="tplCard__head">
+    {votable && <TemplateVoteBlock slug={d.slug} name={d.name} href={href} class="tplCard__vote" />}
+    <Heading class="tplCard__name">
+      <a href={href}>{d.name}</a>
+    </Heading>
+  </div>
+
+  <p class="tplCard__line clamp-2">{d.tagline}</p>
+
+  <div class="tplCard__tags">
+    {shownTags.map((tag) => <Chip variant="tag" label={tagLabel(tag)} />)}
+    {overflow > 0 && <span class="tplCard__more">+{overflow}</span>}
+  </div>
+
+  <a href={d.sharer.url} target="_blank" rel="noopener" class="tplCard__sharer">
+    {fillCopy(CP_151_TEMPLATE_SHARED_BY, { handle: d.sharer.handle })}
+  </a>
+
+  {/* One group per card, named by the bot, so a screen reader hears "add to grok bot" as
+      THIS card's action rather than as the fifth identical link on the page. */}
+  <div class="tplCard__actions" role="group" aria-label={d.name}>
+    {
+      canInstall && (
+        <a
+          href={d.share_url}
+          target="_blank"
+          rel="noopener"
+          class="tplCard__primary"
+          aria-label={fillCopy(CP_172_TEMPLATE_ADD_ARIA, { name: d.name })}
+        >
+          <GrokBotGlyph size={16} />
+          <span>{CP_149_TEMPLATE_ADD_LABEL}</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+      )
+    }
+    <a
+      href={href}
+      class:list={[canInstall ? 'tplCard__secondary' : 'tplCard__primary']}
+      aria-label={`view details: ${d.name}`}
+    >
+      {CP_168_TEMPLATE_VIEW_DETAILS}
+    </a>
+  </div>
+</article>
+
+<style>
+  .tplCard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    /* min-inline-size:0 on a flex/grid child is what actually stops a long unbroken tagline
+       widening the track past the viewport — the F6 trap TemplateRow documents. */
+    min-inline-size: 0;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+  }
+  .tplCard:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-raised);
+  }
+
+  .tplCard__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    min-inline-size: 0;
+  }
+  .tplCard__vote {
+    flex-shrink: 0;
+  }
+
+  .tplCard__name {
+    min-inline-size: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-text);
+    /* Bot names are short but arbitrary — a single long token must wrap, not push the grid. */
+    overflow-wrap: anywhere;
+  }
+  .tplCard__name a:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .tplCard__line {
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--color-text-muted);
+  }
+
+  .tplCard__tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .tplCard__more {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  /* NO text-transform: an X handle is the one label on this card that is a person's identity.
+     Same call TemplateRow made, and for the same reason (§4.1.3). */
+  .tplCard__sharer {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+  .tplCard__sharer:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* margin-block-start:auto pins the actions to the card floor, so cards in one row end their
+     controls on the same line however long the taglines run. */
+  .tplCard__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-start: auto;
+    padding-block-start: 0.375rem;
+  }
+
+  /* INK-FILLED, not amber — see the header note. The eyes are knocked out to the button's own
+     fill, which is what `--grokbot-eye` exists for. */
+  .tplCard__primary {
+    /* The eyes are knocked out to the BUTTON'S OWN FILL, never to the label colour — set it to
+       the text colour and the glyph renders as a solid blob with no face. Same contract
+       `.tplInstall` follows (`--grokbot-eye` = its amber background). */
+    --grokbot-eye: var(--color-text);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-block-size: 36px;
+    padding-inline: 0.75rem;
+    border: 1px solid var(--color-text);
+    border-radius: var(--radius-sm);
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    white-space: nowrap;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+  }
+  /* Hover INVERTS the fill rather than tinting it — the mirror of `.tplRow__primary`, and the
+     one hover that is correct in both themes without a per-theme override. */
+  .tplCard__primary:hover {
+    --grokbot-eye: var(--color-surface);
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .tplCard__secondary {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 36px;
+    padding-inline: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    white-space: nowrap;
+    color: var(--color-text-muted);
+  }
+  .tplCard__secondary:hover {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

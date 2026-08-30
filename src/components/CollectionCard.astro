@@ -1,0 +1,240 @@
+---
+// The collections INDEX card (operator, 2026-08-30: "an appealing set — it should feel
+// curated, not a bare list").
+//
+// ── WHY IT IS NOT `EntryCard variant="collection"` ──────────────────────────────────────
+// It was, and that is exactly what made `/collections/` read as a bare list. EntryCard's
+// collection branch shows a name, a tagline and the string "2 entries" — it cannot show the
+// one thing a collection IS, because members are stored as SLUGS (§5.2) and a card has no way
+// to resolve them. So every collection looked like a thin plugin card with a count where its
+// content should be.
+//
+// This card takes the resolved members as a prop. The page does the resolving (it already
+// holds the pools), and the card gets to lead with the bundle: what is inside it, by name.
+// That is the whole pitch of the lane — "whole setups, not single prompts" — and it is now
+// legible before the click.
+//
+// EntryCard keeps its collection branch: it is still what "appears in" renders on a plugin or
+// use-case page, where the members are NOT resolved and a count is the honest thing to show.
+//
+// ── THE MEMBER PILLS ARE INERT SPANS ────────────────────────────────────────────────────
+// Same link-budget call TemplateRow made. The card already carries a stretched title link and
+// a category chip; turning five member names into five more links would put seven tab stops on
+// a card whose job is "open this collection". The names are there to be READ.
+import Chip from './Chip.astro';
+import { CP_177_COLLECTION_OPEN, CP_178_COLLECTION_MEMBERS_LABEL } from '../lib/copy';
+import { isoToDate, memberSummary } from '../lib/format';
+
+interface Props {
+  name: string;
+  tagline: string;
+  url: string;
+  category: string;
+  categoryLabel: string;
+  status: string;
+  verifiedAt?: string;
+  /** Resolved by the page — members are slugs in frontmatter (§5.2). */
+  members: Array<{ name: string; kind: 'plugin' | 'use-case' | 'template' }>;
+  /** A9 density: the two-digit mono index of this card in the lane. */
+  index?: string;
+  headingLevel?: 2 | 3;
+  class?: string;
+}
+
+const {
+  name,
+  tagline,
+  url,
+  category,
+  categoryLabel,
+  status,
+  verifiedAt,
+  members,
+  index,
+  headingLevel = 2,
+  class: className = '',
+} = Astro.props;
+
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+
+const counts = {
+  plugins: members.filter((m) => m.kind === 'plugin').length,
+  useCases: members.filter((m) => m.kind === 'use-case').length,
+  templates: members.filter((m) => m.kind === 'template').length,
+};
+const summary = memberSummary(counts);
+
+// Cap the pills so a ten-member collection cannot render a card three times the height of a
+// two-member one — the same height discipline the clamped taglines enforce.
+const shown = members.slice(0, 5);
+const overflow = members.length - shown.length;
+---
+
+<article class:list={['collCard', className]} data-collection-card>
+  <div class="collCard__top">
+    {index && <span class="collCard__index">{index}</span>}
+    {summary && <span class="collCard__count">{summary}</span>}
+  </div>
+
+  <Heading class="collCard__name">
+    <a href={url} class="entry-card__link">{name}</a>
+  </Heading>
+
+  <p class="collCard__line clamp-2">{tagline}</p>
+
+  {
+    shown.length > 0 && (
+      <div class="collCard__members">
+        <span class="collCard__membersLabel">{CP_178_COLLECTION_MEMBERS_LABEL}</span>
+        <ul class="collCard__pills">
+          {shown.map((member) => (
+            <li class="collCard__pill">{member.name}</li>
+          ))}
+          {overflow > 0 && <li class="collCard__pill collCard__pill--more">+{overflow} more</li>}
+        </ul>
+      </div>
+    )
+  }
+
+  {/* z-10 keeps the chips clickable ON TOP of the stretched title link — the same escape
+      hatch EntryCard uses for its secondary chip links. */}
+  <div class="collCard__foot">
+    <div class="collCard__chips">
+      <Chip variant="category" label={categoryLabel} href={`/categories/${category}/`} />
+      {verifiedAt && status === 'live' && <Chip variant="verified" date={isoToDate(verifiedAt)} />}
+    </div>
+    <span class="collCard__cta" aria-hidden="true">{CP_177_COLLECTION_OPEN}</span>
+  </div>
+</article>
+
+<style>
+  .collCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    min-inline-size: 0;
+    padding: 1.125rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+  }
+  .collCard:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-raised);
+  }
+
+  .collCard__top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+  .collCard__index {
+    letter-spacing: 0.04em;
+  }
+  .collCard__count {
+    text-transform: lowercase;
+  }
+
+  .collCard__name {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: var(--tracking-display);
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+  }
+  .collCard__name a:hover {
+    color: var(--color-accent-text);
+  }
+
+  .collCard__line {
+    font-size: var(--text-base);
+    line-height: 1.45;
+    color: var(--color-text-muted);
+  }
+
+  /* The bundle preview. A hairline above it separates "what this is" from "what is in it"
+     without spending a second border-radius or a nested box. */
+  .collCard__members {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-block-start: auto;
+    padding-block-start: 0.75rem;
+    border-block-start: 1px solid var(--color-border);
+  }
+  .collCard__membersLabel {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+  }
+  .collCard__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    /* A list of pills is still a list; the marker is what has to go. */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .collCard__pill {
+    display: inline-flex;
+    align-items: center;
+    max-inline-size: 100%;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+  }
+  .collCard__pill--more {
+    background: transparent;
+    border-style: dashed;
+    color: var(--color-text-muted);
+  }
+
+  .collCard__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-block-start: 0.25rem;
+  }
+  /* Above the stretched link, so the category chip stays a real link. */
+  .collCard__chips {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  /* Affordance only — the whole card is already the link, so this must not be a second tab
+     stop with the same destination (§4.6: one link name per card). */
+  .collCard__cta {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .collCard:hover .collCard__cta {
+    color: var(--color-accent-text);
+  }
+</style>

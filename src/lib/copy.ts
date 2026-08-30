@@ -344,6 +344,20 @@ export const CP_175_HOME_TAB_TEMPLATES = 'shareable bots';
  *  accessible names in the tab order. */
 export const CP_176_TEMPLATE_SOURCE_ARIA = 'source post for {name}';
 
+/**
+ * CP-177 … CP-179 — the COLLECTIONS lane, rebuilt 2026-08-30 (operator: "visually appealing
+ * and fully in our design system"). A collection is a curated BUNDLE, so the index card sells
+ * the bundle (its members, previewed) and the detail page sells the crew.
+ *
+ * CP-179 is the safety line's collection-page framing. It is deliberately NOT a second copy of
+ * CP-162: CP-162 addresses one installer looking at one bot, this one addresses a reader about
+ * to add several in a row, and the asymmetry is the point — the risk compounds with the count.
+ */
+export const CP_177_COLLECTION_OPEN = 'open collection →';
+export const CP_178_COLLECTION_MEMBERS_LABEL = 'inside';
+export const CP_179_COLLECTION_SAFETY_NOTE =
+  "each of these is somebody else's bot, shared publicly. open one, read the instructions it carries, and add it only if you are happy with them - and never paste in a key or a password.";
+
 /** Interpolate `{token}` placeholders in a pack string without editorialising it. */
 export function fillCopy(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) =>

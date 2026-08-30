@@ -1,22 +1,41 @@
 ---
 // §4.3.7 — collection detail. [4] rationale body · [5] member cards, each followed by its
-// mono `members[].reason` line · [6] combined setup (ContributeSteps + the optional
-// collection `prompt` via PromptBlock + the FENCED CTA) · [7] related · [8] NewsletterRow.
+// mono `members[].reason` line · [6] combined setup (the optional collection `prompt` via
+// PromptBlock + the FENCED CTA) · [7] related · [8] NewsletterRow.
+//
+// ── TEMPLATES ARE MEMBERS (2026-08-30) ──────────────────────────────────────────────────
+// The member pool used to be `[...plugins, ...useCases]`, so a Shareable Bot named in a
+// collection resolved to NOTHING and was silently dropped from the page — a collection of
+// bots rendered as an empty grid. Templates are deliberately outside `AnyDoc` (see the note
+// in `src/content.config.ts`), so they cannot simply be concatenated: a member row now carries
+// its own `kind`, and the render, the URL and the JSON-LD all branch on it. Plugin and
+// use-case members render exactly as before.
+//
+// ── AND THE INSTALL MODAL IS CONDITIONAL NOW ────────────────────────────────────────────
+// The page rendered an amber "install in grok bot" trigger unconditionally, with
+// `installSteps={[]}`. `prompt` is OPTIONAL on a collection and neither live collection has
+// one — so on every real page that button opened a panel containing the collection's name and
+// an EMPTY list. That is §4.4 rule 7's dead control, shipped. It now renders only when there
+// is a combined prompt to give, which is also what frees the page's accent budget for the
+// member cards' own actions.
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Chip from '../../components/Chip.astro';
 import SectionHeading from '../../components/SectionHeading.astro';
 import EntryCard from '../../components/EntryCard.astro';
+import TemplateCard from '../../components/TemplateCard.astro';
 import PromptBlock from '../../components/PromptBlock.astro';
 import InstallModal from '../../components/InstallModal.astro';
 import RelatedList from '../../components/RelatedList.astro';
 import NewsletterRow from '../../components/NewsletterRow.astro';
 import PagefindMeta from '../../components/PagefindMeta.astro';
 import categories from '../../data/categories.json';
-import { allCollections, allPlugins, allUseCases, kindOf, relatedTo, toCardEntry } from '../../lib/entries';
-import { isoToDate } from '../../lib/format';
-import { CP_112_CTA_SENTENCE } from '../../lib/copy';
+import { allCollections, allPlugins, allUseCases, kindOf, relatedTo, toCardEntry, urlOf } from '../../lib/entries';
+import type { AnyDoc } from '../../lib/entries';
+import { allTemplates, templateUrlOf, type TemplateDoc } from '../../lib/templates';
+import { isoToDate, memberSummary } from '../../lib/format';
+import { CP_112_CTA_SENTENCE, CP_179_COLLECTION_SAFETY_NOTE } from '../../lib/copy';
 import { SITE, breadcrumbList, collectionPage, entryDescription, entryTitle, itemList } from '../../lib/seo';
 
 export async function getStaticPaths() {
@@ -28,14 +47,54 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 const d = entry.data;
 
-const [plugins, useCases, collections] = await Promise.all([allPlugins(), allUseCases(), allCollections()]);
-const memberPool = [...plugins, ...useCases];
-const members = d.members
-  .map((member) => ({
-    reason: member.reason,
-    doc: memberPool.find((candidate) => candidate.data.slug === member.slug),
-  }))
-  .filter((row): row is { reason: string; doc: (typeof memberPool)[number] } => Boolean(row.doc));
+const [plugins, useCases, collections, templates] = await Promise.all([
+  allPlugins(),
+  allUseCases(),
+  allCollections(),
+  allTemplates(),
+]);
+const entryPool = [...plugins, ...useCases];
+
+// One resolved row per member, in frontmatter order (array order = display order, §5.2).
+// A member that resolves to nothing is dropped here AND caught by validate.mjs's cross-file
+// check, so an unresolvable slug can never reach a build in the first place.
+type MemberRow =
+  | { reason: string; kind: 'plugin' | 'use-case'; url: string; name: string; doc: AnyDoc }
+  | { reason: string; kind: 'template'; url: string; name: string; template: TemplateDoc };
+
+const members: MemberRow[] = d.members
+  .map((member): MemberRow | null => {
+    const doc = entryPool.find((candidate) => candidate.data.slug === member.slug);
+    if (doc) {
+      return {
+        reason: member.reason,
+        kind: kindOf(doc) as 'plugin' | 'use-case',
+        url: urlOf(doc),
+        name: doc.data.name,
+        doc,
+      };
+    }
+    const template = templates.find((candidate) => candidate.data.slug === member.slug);
+    if (template) {
+      return {
+        reason: member.reason,
+        kind: 'template',
+        url: templateUrlOf(template),
+        name: template.data.name,
+        template,
+      };
+    }
+    return null;
+  })
+  .filter((row): row is MemberRow => row !== null);
+
+const counts = {
+  plugins: members.filter((m) => m.kind === 'plugin').length,
+  useCases: members.filter((m) => m.kind === 'use-case').length,
+  templates: members.filter((m) => m.kind === 'template').length,
+};
+const summary = memberSummary(counts);
+const hasTemplates = counts.templates > 0;
 
 const related = relatedTo(entry as never, collections as never);
 const category = categories.find((c) => c.slug === d.category);
@@ -54,7 +113,7 @@ const crumbs = [{ label: 'collections', href: '/collections/' }, { label: d.name
 
 const graph = [
   collectionPage(url, entryTitle(d.name, 'collection'), entryDescription(d.tagline, 'collection')),
-  itemList(members.map((m) => ({ url: `/${kindOf(m.doc) === 'plugin' ? 'plugins' : 'use-cases'}/${m.doc.data.slug}/`, name: m.doc.data.name }))),
+  itemList(members.map((m) => ({ url: m.url, name: m.name }))),
   breadcrumbList(crumbs),
 ];
 ---
@@ -71,7 +130,10 @@ const graph = [
 
     <PagefindMeta type="collection" status={d.status} verifiedAt={d.verified_at ?? null} url={url} />
 
-    <header class="flex flex-col gap-4">
+    {/* The hero reads as a BUNDLE: what it is, then what is in it, then its taxonomy. The
+        member summary sits directly under the tagline because it is the fact that makes a
+        collection a collection, and it was previously only discoverable by counting cards. */}
+    <header class="collHero">
       <h1
         class="display-track font-display text-3xl text-text md:text-4xl"
         data-pagefind-weight="10"
@@ -79,18 +141,18 @@ const graph = [
       >
         {d.name}
       </h1>
-      <p class="text-lg text-text-muted" data-pagefind-meta="tagline">{d.tagline}</p>
+      <p class="max-w-prose text-lg text-text-muted" data-pagefind-meta="tagline">{d.tagline}</p>
+      {summary && <p class="collHero__summary">{summary} in this collection</p>}
       <div class="flex flex-wrap items-center gap-2">
         {d.verified_at && d.status === 'live' && <Chip variant="verified" date={isoToDate(d.verified_at)} />}
         <span data-pagefind-filter="category">
           <Chip variant="category" label={category?.label ?? d.category} href={`/categories/${d.category}/`} />
         </span>
+        {/* The subcategory hub lives at `/categories/<cat>/<sub>/` — the `cat--sub` form is
+            the hub-INTRO file key only, and linking it would 404. */}
+        {sub && <Chip variant="category" label={sub.label} href={`/categories/${d.category}/${d.subcategory}/`} />}
       </div>
     </header>
-
-    <div class="flex flex-wrap items-center gap-4">
-      <InstallModal id={d.slug} variant="entry" prompt={d.prompt} entryName={d.name} installSteps={[]} />
-    </div>
 
     <section class="flex flex-col gap-4">
       <SectionHeading title="why these together" variant="sub" level={2} />
@@ -101,16 +163,25 @@ const graph = [
 
     <section class="flex flex-col gap-6">
       <SectionHeading title="in this collection" variant="sub" level={2} />
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+      {/* Each cell is card + the curator's reason. The reason is the thing the collection adds
+          on top of the entries it points at, so it is never allowed to become a caption inside
+          the card: it sits beneath, ruled, in mono, in the site's editorial voice. */}
+      <ol class="memberGrid">
         {
-          members.map((member) => (
-            <div class="flex flex-col gap-2">
-              <EntryCard entry={toCardEntry(member.doc)} variant={kindOf(member.doc)} />
-              <p class="font-mono text-xs text-text-muted">{member.reason}</p>
-            </div>
+          members.map((member, index) => (
+            <li class="memberGrid__item">
+              <span class="memberGrid__index">{String(index + 1).padStart(2, '0')}</span>
+              {member.kind === 'template' ? (
+                <TemplateCard doc={member.template} headingLevel={3} />
+              ) : (
+                <EntryCard entry={toCardEntry(member.doc)} variant={member.kind} />
+              )}
+              <p class="memberGrid__reason">{member.reason}</p>
+            </li>
           ))
         }
-      </div>
+      </ol>
+      {hasTemplates && <p class="memberGrid__safety">{CP_179_COLLECTION_SAFETY_NOTE}</p>}
     </section>
 
     {
@@ -119,6 +190,9 @@ const graph = [
           <SectionHeading title="combined setup" variant="sub" level={2} />
           <PromptBlock prompt={d.prompt} />
           <p class="text-base text-text">{CP_112_CTA_SENTENCE}.</p>
+          <div class="flex flex-wrap items-center gap-4">
+            <InstallModal id={d.slug} variant="entry" prompt={d.prompt} entryName={d.name} installSteps={[]} />
+          </div>
         </section>
       )
     }
@@ -128,3 +202,68 @@ const graph = [
     <NewsletterRow source="collection-detail" />
   </article>
 </BaseLayout>
+
+<style>
+  .collHero {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .collHero__summary {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+  }
+
+  /* An ORDERED list, because a collection's array order IS its reading order (§5.2) — and the
+     two-digit mono index makes that order visible (A9 density). `minmax(0, 1fr)` guards F6:
+     a bare `1fr` track has an `auto` minimum and one long unbroken word would widen the page. */
+  .memberGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 768px) {
+    .memberGrid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .memberGrid__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-inline-size: 0;
+  }
+  /* The card absorbs the row's leftover height, so two members in one row end their cards on
+     the same line even when one tagline wraps and the other does not. */
+  .memberGrid__item > :global(.tplCard),
+  .memberGrid__item > :global(.entry-card) {
+    flex: 1 1 auto;
+  }
+  .memberGrid__index {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+  }
+  /* Ruled, not boxed: a second border around the reason would fight the card above it. */
+  .memberGrid__reason {
+    border-inline-start: 1px solid var(--color-border-interactive);
+    padding-inline-start: 0.625rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.55;
+    color: var(--color-text-muted);
+  }
+  .memberGrid__safety {
+    max-inline-size: 65ch;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+</style>

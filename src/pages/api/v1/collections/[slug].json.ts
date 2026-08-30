@@ -2,6 +2,7 @@
 // type/url/name. Reached from feed.json's `detail_url`.
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { allCollections, allPlugins, allUseCases } from '../../../../lib/entries';
+import { allTemplates } from '../../../../lib/templates';
 import { included, jsonResponse, resolveMembers, toApiItem } from '../../../../lib/api';
 
 export const getStaticPaths = (async () => {
@@ -10,7 +11,11 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ props }) => {
-  const [plugins, useCases] = await Promise.all([allPlugins(), allUseCases()]);
+  const [plugins, useCases, templates] = await Promise.all([
+    allPlugins(),
+    allUseCases(),
+    allTemplates(),
+  ]);
   const pool = [...plugins, ...useCases];
-  return jsonResponse(resolveMembers(toApiItem((props as any).doc), pool));
+  return jsonResponse(resolveMembers(toApiItem((props as any).doc), pool, templates));
 };

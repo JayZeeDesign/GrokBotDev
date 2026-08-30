@@ -1,13 +1,33 @@
 ---
-// §4.3.6 `/collections/` + `/collections/<n>/`. Collection cards are wider — 2-col at lg
-// (§4.5); the shared lane grid handles the rest.
+// §4.3.6 `/collections/` + `/collections/<n>/`.
 // Copy: CP-036 h1 `Collections` (§6.3, C3.3) · CP-037 intro (A7 naming: "the Curator",
 // never "the bots").
+//
+// ── WHY THIS LANE LEFT `LaneIndexPage` (operator, 2026-08-30) ───────────────────────────
+// LaneIndexPage is the shared body for `/plugins/` and `/use-cases/`: search box, facet bar,
+// a grid of EntryCards. It is the right shape for a lane of HUNDREDS of comparable singles,
+// and the wrong shape for a lane of a handful of curated BUNDLES. Two concrete faults it
+// produced here:
+//   · the cards could not show what is in a collection. Members are slugs (§5.2); EntryCard
+//     resolves nothing, so every card said "N entries" where its content should be. The lane
+//     whose whole pitch is "whole setups" was the one lane you could not see inside.
+//   · the facet bar was a control over three items. §4.4 rule 7's spirit is that a control
+//     must earn its place; a category filter across a three-row lane does not.
+// So the page owns its own body — the same call `/marketplace/` already made — and the CARD
+// is the componentised part (`CollectionCard`), which is where the reuse actually matters.
+// Breadcrumbs, ConnectCallout, Pagination and NewsletterRow are unchanged, in the same order.
 import type { GetStaticPaths, Page } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import LaneIndexPage from '../../components/LaneIndexPage.astro';
-import { allCollections, sortForIndex, urlOf } from '../../lib/entries';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CollectionCard from '../../components/CollectionCard.astro';
+import ConnectCallout from '../../components/ConnectCallout.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import NewsletterRow from '../../components/NewsletterRow.astro';
+import Pagination from '../../components/Pagination.astro';
+import categories from '../../data/categories.json';
+import { allCollections, allPlugins, allUseCases, kindOf, sortForIndex, urlOf } from '../../lib/entries';
 import type { AnyDoc } from '../../lib/entries';
+import { allTemplates } from '../../lib/templates';
 import { META, breadcrumbList, collectionPage, itemList, paginate } from '../../lib/seo';
 
 export const getStaticPaths = (async ({ paginate: paginateFn }) => {
@@ -16,7 +36,55 @@ export const getStaticPaths = (async ({ paginate: paginateFn }) => {
 }) satisfies GetStaticPaths;
 
 const { page } = Astro.props as { page: Page<AnyDoc> };
-const pool = sortForIndex(await allCollections());
+
+// Member resolution happens ONCE for the page, against the same three corpora the detail page
+// uses. Templates are in the pool because a collection may be made entirely of Shareable Bots
+// (the X desk is), and a card that could not name them would be back to "5 entries".
+const [plugins, useCases, templates] = await Promise.all([
+  allPlugins(),
+  allUseCases(),
+  allTemplates(),
+]);
+const entryPool = [...plugins, ...useCases];
+
+type CardMember = { name: string; kind: 'plugin' | 'use-case' | 'template' };
+
+function resolveCardMembers(doc: AnyDoc): CardMember[] {
+  const members = (doc.data as { members?: Array<{ slug: string }> }).members ?? [];
+  return members
+    .map((member): CardMember | null => {
+      const entry = entryPool.find((candidate) => candidate.data.slug === member.slug);
+      if (entry) return { name: entry.data.name, kind: kindOf(entry) as 'plugin' | 'use-case' };
+      const template = templates.find((candidate) => candidate.data.slug === member.slug);
+      if (template) return { name: template.data.name, kind: 'template' };
+      return null;
+    })
+    .filter((member): member is CardMember => member !== null);
+}
+
+const categoryLabel = (slug: string) => categories.find((c) => c.slug === slug)?.label ?? slug;
+
+const cards = page.data.map((entry, index) => {
+  const d = entry.data as {
+    name: string;
+    tagline: string;
+    category: string;
+    status: string;
+    verified_at?: string;
+  };
+  return {
+    slug: entry.data.slug,
+    name: d.name,
+    tagline: d.tagline,
+    url: urlOf(entry),
+    category: d.category,
+    categoryLabel: categoryLabel(d.category),
+    status: d.status,
+    verifiedAt: d.verified_at,
+    members: resolveCardMembers(entry),
+    index: String((page.currentPage - 1) * 24 + index + 1).padStart(2, '0'),
+  };
+});
 
 const meta = paginate(META.collections, page.currentPage, page.lastPage);
 const url = page.currentPage === 1 ? '/collections/' : `/collections/${page.currentPage}/`;
@@ -29,16 +97,72 @@ const graph = [
 ---
 
 <BaseLayout title={meta.title} description={meta.description} graph={graph} ogImage="/og/hubs/collections.png">
-  <LaneIndexPage
-    h1="Collections"
-    intro="whole setups, not single prompts. the Curator pairs them up."
-    entries={page.data}
-    page={page}
-    baseUrl="/collections/"
-    variant="collection"
-    facets={['category']}
-    source="collections-index"
-    pool={pool}
-    laneLabel="collections"
-  />
+  <div class="container-page flex flex-col gap-12 py-12 md:py-16">
+    <header class="flex flex-col gap-4">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display-track font-display text-3xl text-text md:text-4xl">Collections</h1>
+      <p class="max-w-prose text-base text-text-muted">
+        whole setups, not single prompts. the Curator pairs them up.
+      </p>
+    </header>
+
+    <ConnectCallout context="hub" />
+
+    {
+      cards.length === 0 ? (
+        <EmptyState variant="hub" />
+      ) : (
+        <div class="collGrid">
+          {cards.map((card) => (
+            <CollectionCard
+              name={card.name}
+              tagline={card.tagline}
+              url={card.url}
+              category={card.category}
+              categoryLabel={card.categoryLabel}
+              status={card.status}
+              verifiedAt={card.verifiedAt}
+              members={card.members}
+              index={card.index}
+              headingLevel={2}
+            />
+          ))}
+        </div>
+      )
+    }
+
+    {
+      page.lastPage > 1 && (
+        <Pagination
+          page={{
+            current: page.currentPage,
+            total: page.lastPage,
+            prevUrl: page.url.prev,
+            nextUrl: page.url.next,
+            baseUrl: '/collections/',
+          }}
+        />
+      )
+    }
+
+    <NewsletterRow source="collections-index" />
+  </div>
 </BaseLayout>
+
+<style>
+  /* §4.5 gives collections their OWN grid row — "collections are wider cards" (§4.3.6): one
+     column on a phone, two from md. `minmax(0, 1fr)` rather than a bare `1fr` is the F6 guard:
+     a bare 1fr track has an `auto` minimum, so one long unbroken member name would widen the
+     column and take the page sideways. */
+  .collGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  @media (min-width: 768px) {
+    .collGrid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+</style>

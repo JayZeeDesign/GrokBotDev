@@ -46,10 +46,16 @@ export function splitNamedCharacter(name: string | undefined | null): { characte
 }
 
 /** `3 plugins · 1 use case` member summary for collection cards (§4.2.10). */
-export function memberSummary(counts: { plugins: number; useCases: number }): string {
+export function memberSummary(counts: {
+  plugins: number;
+  useCases: number;
+  /** Shareable Bots. "bot" is the human word for a template everywhere it is COUNTED. */
+  templates?: number;
+}): string {
   const parts: string[] = [];
   if (counts.plugins) parts.push(`${counts.plugins} plugin${counts.plugins === 1 ? '' : 's'}`);
   if (counts.useCases) parts.push(`${counts.useCases} use case${counts.useCases === 1 ? '' : 's'}`);
+  if (counts.templates) parts.push(`${counts.templates} bot${counts.templates === 1 ? '' : 's'}`);
   return parts.join(' · ');
 }
 

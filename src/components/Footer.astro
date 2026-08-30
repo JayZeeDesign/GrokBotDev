@@ -21,12 +21,18 @@ const builtStamp = stats.generatedAt.replace(/\.\d{3}Z$/, 'Z');
 const columns = [
   // Direct round, operator: counts column REMOVED, collections links REMOVED,
   // "use cases" renamed "awesome use cases". Three groups now.
+  //
+  // 2026-08-30, operator: `collections` is BACK in browse ("in footer clickable for now").
+  // The lane was rebuilt around curated bundles of Shareable Bots and needs a way in — the
+  // header stays untouched (F11), so the footer is the one entry point besides the
+  // breadcrumb trail every collection detail page already carries.
   {
     title: 'browse',
     links: [
       { href: '/plugins/', label: 'plugins' },
       { href: '/use-cases/', label: 'awesome use cases' },
       { href: '/marketplace/', label: 'shareable bots' },
+      { href: '/collections/', label: 'collections' },
       { href: '/wall/', label: 'wall' },
       { href: '/news/', label: 'news' },
       { href: '/categories/', label: 'categories' },
