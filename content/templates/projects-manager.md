@@ -18,9 +18,9 @@ primary_category: "business"
 includes: ["instructions", "agent-team", "workflow"]
 related_use_cases: ["role-based-agent-team", "one-prompt-agent-team"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T16:54:22.000Z"
+updated_at: "2026-08-28T16:54:22.000Z"
+verified_at: "2026-08-28T16:54:22.000Z"
 status: "live"
 ---
 

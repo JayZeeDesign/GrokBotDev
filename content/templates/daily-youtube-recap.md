@@ -18,9 +18,9 @@ primary_category: "personal"
 includes: ["instructions", "schedule", "workflow"]
 related_use_cases: ["daily-youtube-summary", "podcast-summarizer"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T17:56:20.000Z"
+updated_at: "2026-08-28T17:56:20.000Z"
+verified_at: "2026-08-28T17:56:20.000Z"
 status: "live"
 ---
 

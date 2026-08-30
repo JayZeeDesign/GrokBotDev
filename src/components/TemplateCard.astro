@@ -67,7 +67,11 @@ const canInstall = Boolean(d.share_url);
 
 <article class:list={['tplCard', className]} data-template-card>
   <div class="tplCard__head">
-    {votable && <TemplateVoteBlock slug={d.slug} name={d.name} href={href} class="tplCard__vote" />}
+    {votable && (
+      <div class="tplCard__vote">
+        <TemplateVoteBlock slug={d.slug} name={d.name} href={href} />
+      </div>
+    )}
     <Heading class="tplCard__name">
       <a href={href}>{d.name}</a>
     </Heading>

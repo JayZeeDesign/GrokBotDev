@@ -18,9 +18,9 @@ primary_category: "student"
 includes: ["instructions", "workflow"]
 related_use_cases: ["math-explainer-video"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T18:37:34.000Z"
+updated_at: "2026-08-28T18:37:34.000Z"
+verified_at: "2026-08-28T18:37:34.000Z"
 status: "live"
 ---
 

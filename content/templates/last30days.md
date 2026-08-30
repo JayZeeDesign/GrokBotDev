@@ -18,9 +18,9 @@ primary_category: "marketer"
 includes: ["instructions", "workflow"]
 related_use_cases: ["find-customers-complaining-about-competitors"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T22:31:51.000Z"
+updated_at: "2026-08-28T22:31:51.000Z"
+verified_at: "2026-08-28T22:31:51.000Z"
 status: "live"
 ---
 

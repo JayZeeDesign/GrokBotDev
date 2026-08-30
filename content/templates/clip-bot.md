@@ -18,9 +18,9 @@ primary_category: "creator"
 includes: ["instructions", "workflow"]
 related_use_cases: ["clip-youtube-podcasts-with-grok-bot", "podcast-summarizer"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T22:27:01.000Z"
+updated_at: "2026-08-28T22:27:01.000Z"
+verified_at: "2026-08-28T22:27:01.000Z"
 status: "live"
 ---
 

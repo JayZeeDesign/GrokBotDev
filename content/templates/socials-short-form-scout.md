@@ -18,9 +18,9 @@ primary_category: "creator"
 includes: ["instructions", "schedule", "workflow"]
 related_use_cases: ["x-content-engine"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T19:11:11.000Z"
+updated_at: "2026-08-28T19:11:11.000Z"
+verified_at: "2026-08-28T19:11:11.000Z"
 status: "live"
 ---
 

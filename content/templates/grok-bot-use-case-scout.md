@@ -18,9 +18,9 @@ primary_category: "personal"
 includes: ["instructions", "schedule", "workflow"]
 related_use_cases: ["track-the-grok-bot-team"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T17:59:09.000Z"
+updated_at: "2026-08-28T17:59:09.000Z"
+verified_at: "2026-08-28T17:59:09.000Z"
 status: "live"
 ---
 

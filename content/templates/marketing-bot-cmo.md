@@ -18,9 +18,9 @@ primary_category: "business"
 includes: ["instructions", "workflow"]
 related_use_cases: ["marketing-os"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T21:18:24.000Z"
+updated_at: "2026-08-28T21:18:24.000Z"
+verified_at: "2026-08-28T21:18:24.000Z"
 status: "live"
 ---
 

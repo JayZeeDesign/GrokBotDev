@@ -18,9 +18,9 @@ primary_category: "marketer"
 includes: ["instructions", "workflow"]
 related_use_cases: ["aeo-content-autopilot"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T17:16:32.000Z"
+updated_at: "2026-08-28T17:16:32.000Z"
+verified_at: "2026-08-28T17:16:32.000Z"
 status: "live"
 ---
 

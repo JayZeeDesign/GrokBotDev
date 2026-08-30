@@ -18,9 +18,9 @@ primary_category: "developer"
 includes: ["instructions", "workflow"]
 related_use_cases: ["team-in-10-minutes"]
 featured: false
-added_at: "2026-08-28T09:00:00Z"
-updated_at: "2026-08-28T09:00:00Z"
-verified_at: "2026-08-28T09:00:00Z"
+added_at: "2026-08-28T19:42:16.000Z"
+updated_at: "2026-08-28T19:42:16.000Z"
+verified_at: "2026-08-28T19:42:16.000Z"
 status: "live"
 ---
 
