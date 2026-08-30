@@ -1,6 +1,6 @@
 ---
 type: "template"
-name: "Pulse"
+name: "Pulse \u2014 Your X Concierge"
 slug: "pulse"
 tagline: "A read-only X concierge that turns a day of feed into one skimmable 7am brief"
 description: "Quiet collectors sample your timeline, mentions and watched topics five times a day, inbox only. Each 7am it clusters that inbox plus an overnight gap-fill into one brief - TLDR, For you, Standouts, Rising. It only reads, never posts or DMs, and stays quiet when nothing moved."
