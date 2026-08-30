@@ -6,6 +6,7 @@ import SiteHeader from '../components/SiteHeader.astro';
 import Footer from '../components/Footer.astro';
 import SponsorRail from '../components/SponsorRail.astro';
 import SponsorBar from '../components/SponsorBar.astro';
+import SideRailStyles from '../components/SideRailStyles.astro';
 import InstallModal from '../components/InstallModal.astro';
 import ConnectNudge from '../components/ConnectNudge.astro';
 import { ENABLE_RAILS, ENABLE_SPONSORS } from '../lib/buildFlags';
@@ -90,6 +91,12 @@ const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...
   </head>
   <body>
     <a class="skip-link" href="#main">skip to content</a>
+    {/* The generated rail stylesheet. Deliberately the first thing in <body>: it must come
+        AFTER the bundled stylesheets in <head> so its equal-specificity rules (`:root`
+        narrowing --container-max, `.wallMasonry`) win on source order, and BEFORE any page
+        content so the narrowed container applies on the first paint. Emits nothing at all
+        when sponsors are off or when there are too few sponsors for rails. */}
+    {ENABLE_SPONSORS && <SideRailStyles />}
     <SiteHeader currentPath={currentPath} />
     {ENABLE_SPONSORS && <SponsorBar />}
     {ENABLE_SPONSORS && (

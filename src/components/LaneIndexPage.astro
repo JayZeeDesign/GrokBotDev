@@ -152,11 +152,11 @@ const upvoteSortEnabled = sort?.current === 'upvotes';
               <th scope="col" class="hubTable__catcol">category</th>
             </tr>
           </thead>
-          <tbody data-sponsor-shuffle-group>
+          <tbody data-rot-group>
             {entries.map((entry) => {
               const p = entry.data as { slug: string; name: string; tagline: string; category: string; sponsor?: boolean };
               return (
-              <tr data-sponsor-item={p.sponsor ? 'true' : undefined}>
+              <tr data-rot-pin={p.sponsor ? 'true' : undefined}>
                 <td>
                   <span class="flex items-center gap-3">
                     {variant === 'plugin' && (
@@ -165,7 +165,7 @@ const upvoteSortEnabled = sort?.current === 'upvotes';
                     <a href={`${baseUrl}${p.slug}/`} class="hubTable__name">
                       {p.name}
                     </a>
-                    {p.sponsor && <span class="hubTable__sponsor">sponsor</span>}
+                    {p.sponsor && <span class="hubTable__flag">sponsor</span>}
                   </span>
                 </td>
                 <td class="hubTable__desc">{p.tagline}</td>
@@ -360,7 +360,7 @@ const upvoteSortEnabled = sort?.current === 'upvotes';
   .hubTable__catcol {
     white-space: nowrap;
   }
-  .hubTable__sponsor {
+  .hubTable__flag {
     flex-shrink: 0;
     font-family: var(--font-mono);
     font-size: 10px;
@@ -376,8 +376,8 @@ const upvoteSortEnabled = sort?.current === 'upvotes';
   // Operator: sponsors sit on top in RANDOM order per page load; the rest stay alphabetical.
   // The server renders sponsors first (alphabetical, for no-JS/SEO); this shuffles only the
   // sponsor block. Bundled module — CSP-clean.
-  document.querySelectorAll<HTMLElement>('[data-sponsor-shuffle-group]').forEach((group) => {
-    const items = Array.from(group.querySelectorAll<HTMLElement>(':scope > [data-sponsor-item]'));
+  document.querySelectorAll<HTMLElement>('[data-rot-group]').forEach((group) => {
+    const items = Array.from(group.querySelectorAll<HTMLElement>(':scope > [data-rot-pin]'));
     if (items.length < 2) return;
     const anchor = items[items.length - 1].nextElementSibling; // first non-sponsor (or null)
     for (let i = items.length - 1; i > 0; i--) {

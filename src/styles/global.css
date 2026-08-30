@@ -113,9 +113,16 @@
     gap: 24px;
   }
 
-  /* Operator: at the rail breakpoint (≥1600px, where sponsors move to the side gutters), the
-     header is constrained to the container so its bar/border no longer spans the gutters —
-     that clears the top of both gutters, so the side rails run the full height of the page. */
+  /* Constrain the header to the container so its bar/border no longer spans the gutters —
+     that clears the top of both gutters, so side rails can run the full height of the page.
+
+     NOTE: with sponsors ON this rule is redundant — the generated rail stylesheet
+     (src/lib/sponsorLayout.ts) applies the same constraint from the DERIVED breakpoint
+     (1276px, far below 1600) and, being unlayered, outranks this @layer rule everywhere it
+     applies. This is kept as the sponsors-OFF behaviour, so flipping ENABLE_SPONSORS off
+     restores exactly what the site did before the rails existed. Do not "sync" the 1600 to
+     the rail breakpoint: it is not a rail constant, and hardcoding the derived value here
+     is precisely the mistake the derivation exists to prevent. */
   @media (min-width: 1600px) {
     .siteHeader {
       max-inline-size: var(--container-max);

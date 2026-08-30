@@ -35,11 +35,11 @@
   --color-danger: #DC2626;
   --color-focus: #8C7A5C;
 
-  --color-sponsor-sage-tint: #E8F0E6;
-  --color-sponsor-sand-tint: #F3EBDC;
-  --color-sponsor-lilac-tint: #EBE8F5;
-  --color-sponsor-sky-tint: #E5EDF4;
-  --color-sponsor-blush-tint: #F5E9E7;
+  --color-partner-sage-tint: #E8F0E6;
+  --color-partner-sand-tint: #F3EBDC;
+  --color-partner-lilac-tint: #EBE8F5;
+  --color-partner-sky-tint: #E5EDF4;
+  --color-partner-blush-tint: #F5E9E7;
 
   --color-cat-bg: #ECEFF4;
   --color-cat-text: #546D8A;
@@ -126,11 +126,11 @@
   --color-danger: #EF4444;
   --color-focus: #C6AE85;
 
-  --color-sponsor-sage-tint: #101512;
-  --color-sponsor-sand-tint: #151310;
-  --color-sponsor-lilac-tint: #121118;
-  --color-sponsor-sky-tint: #0F1317;
-  --color-sponsor-blush-tint: #161110;
+  --color-partner-sage-tint: #101512;
+  --color-partner-sand-tint: #151310;
+  --color-partner-lilac-tint: #121118;
+  --color-partner-sky-tint: #0F1317;
+  --color-partner-blush-tint: #161110;
 
   --color-cat-bg: #14191F;
   --color-cat-text: #738BA5;

@@ -205,14 +205,18 @@ const SUBLINE =
   line-height:1rem; color:var(--muted);
 }
 .stage .content .hero-search{ max-width:520px; margin:0 auto; text-align:left; }
+/* `--sr-hero-inset` is set ONLY by the generated sponsor-rail stylesheet, above the derived
+   rail breakpoint. The stage is full-bleed, so without it this label sits in the gutter and
+   the fixed rails (z-index 20) paint straight over it. The 16px fallback is today's value, so
+   with sponsors off this rule is byte-for-byte equivalent to what it replaced. */
 .stage .hero-seed{
-  position:absolute; z-index:4; right:16px; top:16px;
+  position:absolute; z-index:4; right:var(--sr-hero-inset, 16px); top:16px;
   font:500 11px/1 var(--mono); letter-spacing:.06em; color:var(--muted); opacity:.75;
 }
 @media(max-width:640px){ .stage .hero-seed{display:none} }
 /* Operator: "drop more bots" — barely-visible mono link, top-left, out of the pile's way. */
 .stage .drop-bots{
-  position:absolute; z-index:4; left:16px; top:16px;
+  position:absolute; z-index:4; left:var(--sr-hero-inset, 16px); top:16px;
   background:none; border:0; padding:2px 4px; cursor:pointer;
   font:500 11px/1 var(--mono); letter-spacing:.04em;
   color:var(--muted); opacity:.4; transition:opacity .15s;

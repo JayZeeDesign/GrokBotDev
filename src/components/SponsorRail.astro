@@ -1,233 +1,74 @@
 ---
-// SponsorRail — the desktop sponsorship rail (operator). Fixed in the side gutter so it never
-// squishes the centred content (the reference sites float their rails the same way). Shows
-// only on wide screens where the gutter is real. When a rail holds more cards than fit, it
-// becomes a seamless vertical "tape" (duplicated list + CSS marquee) — the "rotating slots"
-// behaviour; with few sponsors it sits static. A5 hue law: sponsor tint = paid, and it is the
-// ONLY place a sponsor tint renders. Links are rel="sponsored noopener" with attribution.
+// The desktop side rail (operator). Fixed in the side gutter so it never squishes content —
+// but unlike the first cut, the gutter is MADE rather than waited for: `sponsorLayout.railCss`
+// narrows the content column so both rails fit from a DERIVED breakpoint (CONTENT_MIN +
+// SIDE_COST) instead of a typed 1600px that almost no real laptop ever reached.
+//
+// Everything visual lives in the generated stylesheet (SideRailStyles.astro) because the
+// layout depends on that derived breakpoint and a CSS `@media` cannot read a custom property.
+// This file is markup only.
+//
+// A static grid of exactly `plan.slots` cards — no desktop marquee. Sponsors beyond the slot
+// count stay in the DOM but are clipped by the track and marked inert; the shuffle module
+// reshuffles per pageview, so the spare rotates into view instead of never being seen.
+//
+// A5 hue law: sponsor tint = paid, and this is the ONLY place a sponsor tint renders.
+// Links keep rel="sponsored noopener" — that is disclosure, not a display hook, so it stays
+// even though the class names are deliberately generic (adblock neutrality).
 import { splitRails, sponsorHref, sponsorIconPath, type Sponsor } from '../lib/sponsors';
+import { railPlan } from '../lib/sponsorLayout';
 
 interface Props {
   side: 'left' | 'right';
 }
 const { side } = Astro.props;
+
+const plan = railPlan();
 const { left, right } = splitRails();
 const items: Sponsor[] = side === 'left' ? left : right;
-// Only tape-scroll when the rail would overflow (> 4 cards a side); otherwise static.
-const scroll = items.length > 4;
-const cards = scroll ? [...items, ...items] : items; // duplicate for a seamless loop
+// Cards actually shown. The rest are clipped by .railTrack and inert until the shuffle
+// promotes them on a later pageview.
+const shown = plan.slots;
 ---
 
 {
-  items.length > 0 && (
-    <aside class:list={['sponsorRail', `sponsorRail--${side}`]} aria-label={`${side} sponsors`}>
-      <div class="sponsorRail__viewport">
-        <ul
-          class:list={['sponsorRail__tape', scroll && 'sponsorRail__tape--scroll']}
-          data-sponsor-shuffle
-          data-sponsor-unit={items.length}
-        >
-          {cards.map((s, i) => (
-            <li>
-              <a
-                href={sponsorHref(s)}
-                target="_blank"
-                rel="sponsored noopener"
-                class="sponsorCard"
-                style={`--tint: var(--color-sponsor-${s.tint}-tint)`}
-                aria-hidden={scroll && i >= items.length ? 'true' : undefined}
-                tabindex={scroll && i >= items.length ? -1 : undefined}
-              >
-                {sponsorIconPath(s) ? (
-                  <img src={sponsorIconPath(s)!} alt="" width="28" height="28" class="sponsorCard__icon" loading="lazy" />
-                ) : (
-                  <span class="sponsorCard__tile" aria-hidden="true">{s.name.charAt(0)}</span>
-                )}
-                <span class="sponsorCard__name">{s.name}</span>
-                <span class="sponsorCard__tag">{s.tagline}</span>
-                <span class="sponsorCard__badge">sponsored</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+  plan.railsMode && items.length > 0 && (
+    <aside
+      class:list={['sideRail', side === 'left' ? 'sideRail--l' : 'sideRail--r']}
+      aria-label="partners"
+      data-pagefind-ignore
+    >
+      <ul class="railTrack" data-rot data-rot-unit={items.length} data-rot-show={shown}>
+        {items.map((s, i) => (
+          <li>
+            <a
+              href={sponsorHref(s)}
+              target="_blank"
+              rel="sponsored noopener"
+              class="railCard"
+              style={`--tint: var(--color-partner-${s.tint}-tint)`}
+              aria-hidden={i >= shown ? 'true' : undefined}
+              tabindex={i >= shown ? -1 : undefined}
+            >
+              {sponsorIconPath(s) ? (
+                <img src={sponsorIconPath(s)!} alt="" width="28" height="28" class="railCard__icon" loading="lazy" />
+              ) : (
+                <span class="railCard__tile" aria-hidden="true">{s.name.charAt(0)}</span>
+              )}
+              <span class="railCard__name">{s.name}</span>
+              <span class="railCard__tag">{s.tagline}</span>
+              <span class="railCard__badge">sponsored</span>
+            </a>
+          </li>
+        ))}
+      </ul>
       {side === 'right' && (
-        <a href="/sponsors/" class="sponsorRail__cta">
-          <span class="sponsorRail__ctaPlus" aria-hidden="true">+</span>
-          <span class="sponsorRail__ctaTitle">Become a sponsor</span>
-          <span class="sponsorRail__ctaText">Get your tool in front of Grok Bot builders.</span>
+        <a href="/sponsors/" class="railCta">
+          <span class="railCta__plus" aria-hidden="true">+</span>
+          <span class="railCta__title">Become a sponsor</span>
+          <span class="railCta__text">Get your tool in front of Grok Bot builders.</span>
         </a>
       )}
     </aside>
   )
 }
-
-<style>
-  .sponsorRail {
-    display: none;
-    position: fixed;
-    /* Operator: the rails run the full height of the side gutters. The header is constrained
-       to the container at this breakpoint (see .siteHeader in global.css), so the gutters are
-       clear from the very top — the rails start near the top instead of below the header. */
-    inset-block-start: 16px;
-    inline-size: 160px;
-    max-block-size: calc(100vh - 32px);
-    z-index: 20;
-  }
-  /* Only when the viewport is wide enough to have a REAL gutter beside the content.
-     Geometry: container-max is 1200px and each rail needs 172px (160 card + 12 gap), so the
-     gutter first exceeds 172px at 100vw > 1544px — below that the `max(12px, …)` clamp pinned
-     the rail at 12px and it sat ON TOP of the h1/cards (seen at 1440/1536, both common laptop
-     widths). 1600px leaves a clean 12px gap; narrower screens get the SponsorBar instead. */
-  @media (min-width: 1600px) {
-    .sponsorRail {
-      /* flex column so the rotating sponsor cards sit at the top and the "become a sponsor"
-         box (right rail only) follows as the last slot. */
-      display: flex;
-      flex-direction: column;
-    }
-  }
-  .sponsorRail--left {
-    inset-inline-start: max(12px, calc((100vw - var(--container-max)) / 2 - 172px));
-  }
-  .sponsorRail--right {
-    inset-inline-end: max(12px, calc((100vw - var(--container-max)) / 2 - 172px));
-  }
-  .sponsorRail__viewport {
-    /* Takes its natural height when the cards fit, but can shrink (min-block-size:0) so a
-       longer, marquee-scrolling tape stays inside the fixed rail with the CTA still visible
-       below it. */
-    flex: 0 1 auto;
-    min-block-size: 0;
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);
-    mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);
-  }
-  /* Right rail only: the "become a sponsor" invitation as the last slot — a dashed, empty-slot
-     card that reads as "your spot here" and links to the /sponsors/ offer page. */
-  .sponsorRail__cta {
-    flex: 0 0 auto;
-    display: block;
-    margin-block-start: 12px;
-    padding: 12px;
-    border: 1px dashed var(--color-border-strong);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    text-decoration: none;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .sponsorRail__cta:hover {
-    border-color: var(--color-text);
-    background: var(--color-surface);
-  }
-  .sponsorRail__ctaPlus {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 28px;
-    block-size: 28px;
-    margin-block-end: 8px;
-    border-radius: 6px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    font-family: var(--font-mono);
-    font-size: 16px;
-    line-height: 1;
-    color: var(--color-text);
-  }
-  .sponsorRail__ctaTitle {
-    display: block;
-    font-family: var(--font-sans);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: var(--color-text);
-  }
-  .sponsorRail__ctaText {
-    display: block;
-    margin-block-start: 3px;
-    font-size: var(--text-xs);
-    line-height: 1.4;
-    color: var(--color-text-muted);
-  }
-  .sponsorRail__tape {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .sponsorRail__tape--scroll {
-    animation: sponsorTape 36s linear infinite;
-  }
-  .sponsorRail__viewport:hover .sponsorRail__tape--scroll {
-    animation-play-state: paused;
-  }
-  @keyframes sponsorTape {
-    from { transform: translateY(0); }
-    to { transform: translateY(-50%); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .sponsorRail__tape--scroll {
-      animation: none;
-    }
-  }
-
-  .sponsorCard {
-    position: relative;
-    display: block;
-    padding: 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--tint);
-    text-decoration: none;
-    transition: border-color 0.15s;
-  }
-  .sponsorCard:hover {
-    border-color: var(--color-border-strong);
-  }
-  .sponsorCard__icon,
-  .sponsorCard__tile {
-    display: block;
-    inline-size: 28px;
-    block-size: 28px;
-    margin-block-end: 8px;
-    border-radius: 6px;
-    object-fit: cover;
-  }
-  .sponsorCard__tile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 15px;
-    color: var(--color-text);
-  }
-  .sponsorCard__name {
-    display: block;
-    font-family: var(--font-sans);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: var(--color-text);
-  }
-  .sponsorCard__tag {
-    display: block;
-    margin-block-start: 3px;
-    font-size: var(--text-xs);
-    line-height: 1.4;
-    color: var(--color-text-muted);
-  }
-  .sponsorCard__badge {
-    display: block;
-    margin-block-start: 8px;
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    opacity: 0.7;
-  }
-</style>

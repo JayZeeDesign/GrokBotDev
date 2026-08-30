@@ -1,0 +1,24 @@
+---
+// The generated side-rail stylesheet, emitted ONCE per page.
+//
+// Why generated and inline rather than a static .css file:
+//   · A CSS `@media` condition cannot read a custom property — `@media (min-width: var(--x))`
+//     is invalid — so the derived breakpoint has to be materialised as a literal SOMEWHERE.
+//     Generating it from src/lib/sponsorLayout.ts keeps the arithmetic as the source of truth
+//     and leaves exactly one place in the codebase where that pixel exists.
+//   · YTT caution ②: shipping the CSS inside the SAME server-side conditional as the markup is
+//     what makes a sponsors-off page carry no dormant site-narrowing rules. `railCss()` also
+//     returns '' when there are too few sponsors for rails, so the fallback case emits nothing.
+//
+// CSP: §10.7 is `style-src 'self' 'unsafe-inline'` — inline CSS is permitted (inline JS is not),
+// so this adds nothing for audit-scripts to flag.
+//
+// Rendered near the TOP OF <body>, deliberately: it must come after the bundled stylesheets in
+// <head> so that equal-specificity rules (`:root` redefining --container-max, `.wallMasonry`)
+// win on source order, and early enough that the narrowing applies before content is painted.
+import { railCss, railPlan } from '../lib/sponsorLayout';
+
+const css = railCss(railPlan());
+---
+
+{css && <style is:inline set:html={css} />}

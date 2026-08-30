@@ -27,7 +27,7 @@ export function sponsorHref(s: Sponsor): string {
 }
 
 export const sponsorIconPath = (s: Sponsor): string | null =>
-  s.icon ? `/icons/sponsors/${s.icon}` : null;
+  s.icon ? `/icons/partners/${s.icon}` : null;
 
 /** Split across the two desktop rails: left gets even indices, right gets odd. */
 export function splitRails(list: Sponsor[] = SPONSORS): { left: Sponsor[]; right: Sponsor[] } {

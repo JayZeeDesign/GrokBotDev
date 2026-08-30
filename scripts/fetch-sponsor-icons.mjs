@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // fetch-sponsor-icons.mjs — pull a REAL favicon for every sponsor and host it locally as a
-// normalized PNG under public/icons/sponsors/<slug>.png, then rewrite sponsors.json's `icon`.
+// normalized PNG under public/icons/partners/<slug>.png, then rewrite sponsors.json's `icon`.
 //
 // Why self-host our OWN sponsors' marks (vs. hotlinking): a hotlinked favicon breaks the
 // moment the source path 404s or moves, and a runtime third-party favicon service would need
@@ -18,7 +18,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const OUT = join(ROOT, 'public/icons/sponsors');
+const OUT = join(ROOT, 'public/icons/partners');
 const SPONSORS = JSON.parse(readFileSync(join(ROOT, 'src/data/sponsors.json'), 'utf8'));
 const UA = 'Mozilla/5.0 (compatible; grokbot.dev-iconbot/1.0)';
 
