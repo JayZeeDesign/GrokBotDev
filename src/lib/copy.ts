@@ -358,6 +358,24 @@ export const CP_178_COLLECTION_MEMBERS_LABEL = 'inside';
 export const CP_179_COLLECTION_SAFETY_NOTE =
   "each of these is somebody else's bot, shared publicly. open one, read the instructions it carries, and add it only if you are happy with them - and never paste in a key or a password.";
 
+/**
+ * CP-180 … CP-185 — the HOME "Fresh drops" strip (operator, 2026-08-30: "a returning visitor
+ * should instantly see what's new — just a row of the freshest bots you can swipe through").
+ *
+ * "Fresh drops" rather than "Latest" because the strip is the only surface on the site that
+ * orders by when a bot was actually SHARED, and the age chips beside each name make the
+ * meaning unambiguous. CP-181 is deliberately not CP-165's "filter and search them all →":
+ * that link is the directory's exit into the filterable hub, this one is a glance-strip's exit
+ * into the same hub, and one string doing both jobs would have to be vague about both.
+ */
+export const CP_180_LATEST_HEADING = 'Fresh drops';
+export const CP_181_LATEST_ALL = 'browse all →';
+export const CP_182_LATEST_REGION_ARIA = 'latest shareable bots';
+/** CP-183 / CP-184 — the desktop arrows. Named by WHAT MOVES, not by which way the glyph
+ *  points: "left" is meaningless to a screen-reader user and wrong in RTL. */
+export const CP_183_LATEST_PREV = 'show newer bots';
+export const CP_184_LATEST_NEXT = 'show older bots';
+
 /** Interpolate `{token}` placeholders in a pack string without editorialising it. */
 export function fillCopy(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) =>

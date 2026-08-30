@@ -1,0 +1,424 @@
+---
+// §4.3.1 HOME — "Fresh drops": one short, swipeable row of the newest Shareable Bots.
+//
+// Operator (2026-08-30): "a returning visitor should instantly see what's new — just a row of
+// the freshest bots you can swipe through", and it must not eat vertical space. So this is a
+// GLANCE STRIP, not a section: it sits directly under the hero, above the directory, and its
+// whole job is answering "anything new since last time?" in one look.
+//
+// ── WHY IT IS NOT `TemplateCard` ────────────────────────────────────────────────────────
+// `TemplateCard` is the COLLECTION card — name, clamped tagline, three tag chips, sharer, an
+// ink-filled "add to grok bot" and a "view details". It is exactly right for four hand-picked
+// bots under a curator's paragraph, and it measures ~210px tall. Twelve of those in a row is a
+// section, which is the one thing this must not be. So the strip defines a third and
+// deliberately minimal presentation — vote ▲ · name · one clamped line · handle · age — at
+// roughly 88px. That is a new PATTERN with a different job (CLAUDE.md: componentize, define
+// once), not a `variant` bolted onto a card whose whole design is "sell one bot properly".
+//
+// It DOES reuse `TemplateVoteBlock` unchanged, so the ▲ and its live count come for free and
+// hydrate through the existing `vote-counts` path with no special case.
+//
+// ── THE SCROLLING IS PURE CSS, AND THAT IS THE POINT ────────────────────────────────────
+// `overflow-x: auto` + `scroll-snap-type: x mandatory` on the track, `scroll-snap-align: start`
+// on each card. Native touch scrolling IS the mobile swipe — there is no gesture library, no
+// island, and nothing to fail. The arrows (desktop only) are an ENHANCEMENT layered on top:
+// they ship `hidden` and `latest-strip.ts` un-hides them, so a reader without the module never
+// meets a control that does nothing.
+//
+// ── F6: THE STRIP SCROLLS, THE PAGE NEVER DOES ──────────────────────────────────────────
+// The C4 rule the plugin table and the section quick-nav already follow. Two properties are
+// load-bearing and both are easy to lose:
+//   · `min-inline-size: 0` / `max-inline-size: 100%` on the track — without it the flex track
+//     refuses to shrink below its content, `overflow-x` never engages and the row simply
+//     widens the document.
+//   · `min-inline-size: 0` inside each card — a long unbroken tagline or bot name would
+//     otherwise push its own fixed-width card wider. Same trap `TemplateCard` documents.
+//
+// ── RECENCY ─────────────────────────────────────────────────────────────────────────────
+// `latestTemplates` sorts on `source.posted_at`, NOT `added_at`. See the long note there: the
+// harvester stamps one constant into `added_at`, so `sortTemplates` is alphabetical in
+// practice and carries no recency at all. This strip is the site's only true newest-first
+// surface, which is exactly why it is worth having.
+import SectionHeading from './SectionHeading.astro';
+import TemplateVoteBlock from './TemplateVoteBlock.astro';
+import {
+  CP_180_LATEST_HEADING,
+  CP_181_LATEST_ALL,
+  CP_182_LATEST_REGION_ARIA,
+  CP_183_LATEST_PREV,
+  CP_184_LATEST_NEXT,
+} from '../lib/copy';
+import { isFresh, parseTimestamp, relativeAge } from '../lib/relative-time';
+import { latestTemplates, templateUrlOf, type TemplateDoc } from '../lib/templates';
+
+interface Props {
+  templates: TemplateDoc[];
+  /** How many cards the strip holds. ~12 is two comfortable desktop pages of scroll. */
+  limit?: number;
+  class?: string;
+}
+
+const { templates, limit = 12, class: className = '' } = Astro.props;
+
+/**
+ * THE THIN-CORPUS FLOOR. Below this the strip renders NOTHING — no header, no half-row.
+ *
+ * Four is where the row stops being a row: with three cards a desktop viewport shows them all
+ * with dead space beside them, the mask fades an edge with nothing behind it, and "swipe for
+ * more" is a lie. A preview built off a handful of fixtures hits this, and so would the site
+ * on day one, and in both cases the honest answer is that there is no "what's new" to show.
+ */
+const MIN_ITEMS = 4;
+
+const items = latestTemplates(templates, limit);
+
+// Build-time clock. The chips are re-labelled from the READER's clock on load (see
+// latest-strip.ts) — this is the JS-off fallback, not a placeholder.
+const builtAt = Date.now();
+
+const cards = items.map((doc) => {
+  const d = doc.data;
+  const posted = parseTimestamp(d.source?.posted_at);
+  return {
+    doc,
+    d,
+    href: templateUrlOf(doc),
+    posted: d.source?.posted_at,
+    age: posted === null ? null : relativeAge(posted, builtAt),
+    fresh: posted !== null && isFresh(posted, builtAt),
+    // Votes hydrate from the registry, which is built from `included()` — a demo or proposed
+    // template must never show a ▲ it could not fill. Same guard TemplateCard applies.
+    votable: d.status === 'live' || d.status === 'needs-update',
+  };
+});
+---
+
+{
+  cards.length >= MIN_ITEMS && (
+    <section
+      class:list={['latest container-page', className]}
+      aria-label={CP_182_LATEST_REGION_ARIA}
+      data-latest
+      data-pagefind-ignore
+    >
+      <div class="latest__head">
+        <div class="latest__headingWrap">
+          <SectionHeading
+            title={CP_180_LATEST_HEADING}
+            level={2}
+            action={{ label: CP_181_LATEST_ALL, href: '/marketplace/' }}
+          />
+        </div>
+
+        {/* Ships `hidden`; latest-strip.ts un-hides it and re-hides it when the track does not
+            overflow. CSS keeps it off narrow viewports entirely — a phone swipes. */}
+        <div class="latest__nav" hidden data-latest-nav>
+          <button type="button" class="latest__arrow" data-latest-scroll="-1" aria-label={CP_183_LATEST_PREV}>
+            <span aria-hidden="true">◀</span>
+          </button>
+          <button type="button" class="latest__arrow" data-latest-scroll="1" aria-label={CP_184_LATEST_NEXT}>
+            <span aria-hidden="true">▶</span>
+          </button>
+        </div>
+      </div>
+
+      <ul class="latest__track" data-latest-track>
+        {cards.map(({ d, href, posted, age, fresh, votable }) => (
+          <li class="latest__item">
+            <article class="freshCard">
+              <div class="freshCard__top">
+                {/* THE WRAPPER IS LOAD-BEARING, and it took `elementFromPoint` to see why.
+                    The ▲ has to sit ABOVE the stretched link's `::after`, and the obvious way
+                    to do that — pass `class="freshCard__vote"` and style it here — SILENTLY
+                    DOES NOTHING: Astro scopes this file's CSS with `data-astro-cid-<hash>`
+                    and only stamps that attribute onto elements in THIS template, so a class
+                    handed to a child component's root never matches the rule written for it.
+                    Measured, not assumed: the block came back `position: static`, and the
+                    whole 248px card — ▲ included — resolved to the details link.
+                    A wrapper is an element this file owns, so the rule lands. */}
+                {votable && (
+                  <div class="freshCard__voteWrap">
+                    <TemplateVoteBlock slug={d.slug} name={d.name} href={href} />
+                  </div>
+                )}
+                <div class="freshCard__body">
+                  {/* The card's ONE link, stretched over the whole card by `::after` — so the
+                      accessible name stays "the bot's name" while the tap target is 248px
+                      wide. The ▲ is lifted above it; the handle is plain text rather than a
+                      second link, because a nested link inside a stretched one is exactly the
+                      trap §4.2.10 exists to avoid. */}
+                  <h3 class="freshCard__name">
+                    <a href={href} class="freshCard__link">{d.name}</a>
+                  </h3>
+                  <p class="freshCard__line">{d.tagline}</p>
+                </div>
+              </div>
+
+              <div class="freshCard__foot">
+                <span class="freshCard__sharer">@{d.sharer.handle}</span>
+                {age && (
+                  <time
+                    class="freshCard__age"
+                    datetime={posted}
+                    data-latest-age
+                    data-fresh={fresh ? 'true' : undefined}
+                  >
+                    {age}
+                  </time>
+                )}
+              </div>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .latest {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding-block: 1.25rem 0;
+  }
+  @media (min-width: 768px) {
+    .latest {
+      gap: 0.75rem;
+      padding-block: 1.75rem 0;
+    }
+  }
+
+  /* ---------- header row ---------- */
+  .latest__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  /* SectionHeading is `justify-between` internally, so giving its wrapper the free space is
+     what pushes "browse all →" to the right of the title and leaves the arrows on the end. */
+  .latest__headingWrap {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
+  /* The `[hidden]` rule needs the class too: a bare `[hidden]` from the UA sheet loses to
+     `.latest__nav { display: flex }` and the buttons would show before the module ran. */
+  .latest__nav {
+    display: none;
+    flex: none;
+    gap: 0.25rem;
+  }
+  .latest__nav[hidden] {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .latest__nav:not([hidden]) {
+      display: flex;
+    }
+  }
+  .latest__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    border: 1px solid var(--color-border-interactive);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    font-size: 10px;
+    line-height: 1;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      opacity 0.15s;
+  }
+  .latest__arrow:hover:not(:disabled) {
+    border-color: var(--color-text);
+    color: var(--color-text);
+  }
+  /* An end-stop is DISABLED, not removed — the row keeps the same width at both ends, so
+     pressing ▶ eleven times never makes the header jump. */
+  .latest__arrow:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  /* ---------- the track ---------- */
+  /* THIS is the F6 boundary. `max-inline-size: 100%` + `min-inline-size: 0` keep the flex
+     track inside the content column; `overflow-x: auto` gives the OVERFLOW its own scroller.
+     The page's own scrollWidth is untouched — the same contract `.homeTableWrap` and
+     `.tplJump__list` already hold. */
+  .latest__track {
+    display: flex;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0 0 0.5rem;
+    list-style: none;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* The swipe. `mandatory` is safe here because no card is ever wider than the viewport
+       (the clamp caps it at 15.5rem), so a snap point is always reachable. */
+    scroll-snap-type: x mandatory;
+    /* Stops a phone swipe that runs past the end from turning into a back-navigation. */
+    overscroll-behavior-x: contain;
+    /* C4 custom scrollbar — thin, in our own tokens, never the platform's fat default. Same
+       treatment as the mobile nav drawer. It doubles as the "there is more" affordance on the
+       platforms that show a persistent bar. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+    /* The right-edge fade that says "keep going" — SponsorBar's mask, one-sided. It sits on
+       the scroller's own box, so it stays pinned to the edge as the content moves under it. */
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent);
+    mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent);
+  }
+  .latest__track::-webkit-scrollbar {
+    block-size: 6px;
+  }
+  .latest__track::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: var(--radius-sm);
+  }
+  .latest__track::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .latest__item {
+    flex: 0 0 auto;
+    /* The PEEK is the clamp's job: at 390px the card lands at 248px inside a 358px column, so
+       ~98px of the next one is always visible and the row reads as swipeable before anyone
+       touches it. */
+    inline-size: clamp(13.5rem, 68vw, 15.5rem);
+    min-inline-size: 0;
+    scroll-snap-align: start;
+  }
+
+  /* ---------- the compact card ---------- */
+  .freshCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    block-size: 100%;
+    min-inline-size: 0;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+  }
+  /* Hover AND keyboard focus get the same lift, so a card reached by Tab is as obvious as one
+     under the pointer. The link keeps its own §4.6 focus ring on top of this. */
+  .freshCard:hover,
+  .freshCard:has(:focus-visible) {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-raised);
+  }
+
+  .freshCard__top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    min-inline-size: 0;
+  }
+  /* Above the stretched link, or the ▲ would be unclickable. See the template note on why
+     this sits on a wrapper rather than on the vote block itself. */
+  .freshCard__voteWrap {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: none;
+  }
+  .freshCard__body {
+    min-inline-size: 0;
+  }
+
+  .freshCard__name {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text);
+    /* One line, always: two-line names are what turn a glance strip into a section. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .freshCard__link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .freshCard__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .freshCard:hover .freshCard__link {
+    color: var(--color-accent-text);
+  }
+
+  .freshCard__line {
+    margin-block-start: 1px;
+    font-size: var(--text-xs);
+    line-height: 1.35;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .freshCard__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-block-start: auto;
+    min-inline-size: 0;
+  }
+  /* NO text-transform: a handle is a person's identity (§4.1.3), the same call TemplateRow and
+     TemplateCard both made. Plain text, not a link — see the stretched-link note above. */
+  .freshCard__sharer {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .freshCard__age {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+  /* The "just landed" dot. A NON-TEXT accent use — the token's own docs name exactly this
+     shape (the live dot, the mark's accent dot), so it costs nothing against §A1's one-accent
+     budget. Decoration only: the chip beside it already carries the fact in words. */
+  .freshCard__age[data-fresh]::before {
+    content: '';
+    inline-size: 5px;
+    block-size: 5px;
+    border-radius: 999px;
+    background: var(--color-accent);
+  }
+  /* Full-strength ink rather than amber TEXT: the dot is the accent, and recolouring the label
+     too would have made twelve chips compete with the one thing the accent is for. */
+  .freshCard__age[data-fresh] {
+    color: var(--color-text);
+  }
+</style>
+
+<script>
+  // Bundled module — /_astro/*.js, same-origin, `audit-scripts` still sees 0 inline blocks.
+  import { initLatestStrip } from '../scripts/latest-strip';
+  initLatestStrip();
+</script>

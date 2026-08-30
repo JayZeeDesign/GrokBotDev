@@ -13,6 +13,7 @@
 //     lives in the hero subline, so `check-keyword-placements` is unaffected — verified.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroStage from '../components/HeroStage.astro';
+import LatestBots from '../components/LatestBots.astro';
 import HomeDirectory from '../components/HomeDirectory.astro';
 import NewsletterRow from '../components/NewsletterRow.astro';
 import { allPlugins, allUseCases, sortForIndex, urlOf } from '../lib/entries';
@@ -38,6 +39,16 @@ const graph = [
 
 <BaseLayout title={META.home.title} description={META.home.description} graph={graph}>
   <HeroStage />
+
+  {/* Operator (2026-08-30): a returning visitor should see WHAT'S NEW before anything else, so
+      the freshest bots get one short swipeable row directly under the hero — above the
+      directory, which is a browse surface rather than a recency one.
+
+      It reuses the `templates` already loaded above (no second getCollection), and it is the
+      only surface on the site ordered by `source.posted_at`: `sortTemplates` keys off
+      `added_at`, which the harvester stamps with one constant, so the directory's sections are
+      NOT newest-first and cannot answer this question. See lib/templates `latestTemplates`. */}
+  <LatestBots templates={templates} />
 
   {/* Direct round: StatBar (counts row) REMOVED from home + dead space tightened —
       the directory itself is the proof of size now. */}

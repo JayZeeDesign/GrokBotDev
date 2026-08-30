@@ -73,6 +73,48 @@ export function sortTemplates(docs: TemplateDoc[]): TemplateDoc[] {
   );
 }
 
+/**
+ * TRUE RECENCY — `source.posted_at` desc. The key for "what's new", and it is NOT `added_at`.
+ *
+ * ── WHY `sortTemplates` CANNOT ANSWER THIS ──────────────────────────────────────────────
+ * The harvester stamps every template it publishes with the SAME `added_at` constant, so
+ * `sortTemplates`' primary key is a tie across the entire corpus and its `slug.localeCompare`
+ * tiebreaker decides everything. It is, in practice, alphabetical — a perfectly stable order
+ * for a sectioned skim (which is all it was ever asked for) and completely empty of recency.
+ * A "latest" strip built on it would have shipped 12 bots starting with a digit.
+ *
+ * `source.posted_at` is the timestamp of the X post the bot was actually shared in, which is
+ * the only real event in the record, so it is what "newest" means here.
+ *
+ * ── THE MISSING-TIMESTAMP CASE IS REAL ──────────────────────────────────────────────────
+ * `source` is optional in the schema and `posted_at` is optional within it, so an entry can
+ * legitimately carry neither. Those sort to the END, keeping their incoming relative order,
+ * and a malformed date is treated identically to a missing one — this function never throws
+ * and never lets one bad frontmatter field reorder the ones around it.
+ *
+ * Ties (two bots shared in the same second — the harvester does produce these) fall back to
+ * the incoming index rather than to a second field, so the order is stable across builds
+ * without inventing a ranking the data does not support.
+ */
+export function latestTemplates(docs: TemplateDoc[], limit = 12): TemplateDoc[] {
+  const at = (doc: TemplateDoc): number | null => {
+    const raw = doc.data.source?.posted_at;
+    if (!raw) return null;
+    const ms = Date.parse(raw);
+    return Number.isNaN(ms) ? null : ms;
+  };
+  return docs
+    .map((doc, index) => ({ doc, index, ms: at(doc) }))
+    .sort((a, b) => {
+      if (a.ms === null && b.ms === null) return a.index - b.index;
+      if (a.ms === null) return 1;
+      if (b.ms === null) return -1;
+      return b.ms - a.ms || a.index - b.index;
+    })
+    .slice(0, Math.max(0, limit))
+    .map((row) => row.doc);
+}
+
 // `sortTemplatesFeatured` and the `/marketplace/featured/` route are GONE (operator,
 // 2026-08-28: "no featured for now, just pure list and upvoting"). Ordering inside a section is
 // `sortTemplates` — newest first.
