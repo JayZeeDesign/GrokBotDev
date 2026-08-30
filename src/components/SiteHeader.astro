@@ -2,61 +2,104 @@
 // §4.2.2 SiteHeader — global header. Sticky is OFF (static, scrolls away), 1px bottom
 // border, background --color-bg (not surface). NO Stats link in the header: Stats lives
 // in the footer only (§4.2.4, §9.9).
-// Nav: plugins · use cases · collections · builder bot · wall — B2 adds /wall/ to the
-// header nav (mono, lowercase). Right cluster: SearchInput link-mode, the /agent door
-// (leading ▪ at 8px — the one place "agent" appears in the UI), and the one solid
-// Button → /submit/.
 //
 // ── F1/F2 (operator, Stage 5B) — SUPERSEDES §4.5's "no JS, no hamburger" nav collapse.
 // The wrap-everything header stacked into THREE rows on a phone and ate the fold; the
-// operator's verdict was "much less busy". So: below the breakpoint the whole menu lives in
-// a slide-in drawer behind one `menu` toggle, and above it the full inline row shows.
+// operator's verdict was "much less busy". So: in the narrow mode the whole menu lives in a
+// slide-in drawer behind one `menu` toggle, and in the wide mode the full inline row shows.
 //
-// ── THE BOUNDARY IS `lg` (1024), NOT `md` (768) — moved 2026-08-30. ─────────────────────
-// F1 originally drew that line at `md`, and that was correct for a THREE-link nav. The nav
-// has since grown to five (shareable bots · use cases · collections · wall · news) and the
-// right cluster grew too (/agent · theme · submit · `connect your bot`). Measured: those
-// eight items plus their gutters do not fit one row until ~1024px, so the 768–1023 band was
-// wrapping the header into three and four cramped rows — the exact failure F1 was written to
-// kill, returning through the back door as the nav grew.
+// ══ THE FIT BUDGET (operator, 2026-08-30) — read this before touching the nav ═══════════
 //
-// The fix is deliberately the FUTURE-PROOF one rather than a per-item squeeze (shorter
-// labels, tighter gaps, dropping a link at tablet): the boundary moves to `lg`, so
+// THE HEADER IS NOT AS WIDE AS THE VIEWPORT. It lives inside the sponsor-rails "dissolving
+// wrapper": from the DERIVED rail breakpoint (src/lib/sponsorLayout.ts — CONTENT_MIN 900 +
+// SIDE_COST 376 = 1276px) the rails narrow `--container-max` to make their own gutters, and
+// `.container-page` narrows with it. So the header's usable content box is NOT `100vw`:
 //
-//   < lg (<1024) : ONE row — brand lockup left, then theme · `connect` · `menu` at the right
-//                  edge. The ENTIRE nav plus /agent, submit and connect live in the drawer.
-//   ≥ lg (1024)  : the full inline row — brand + all nav + /agent + theme + submit + connect
-//                  — on a single line, with the roomy gap-x-8 / min-h-16 / py-4 treatment.
+//     vw <  1276 : content box = min(1200, vw) − 2×24 page gutter
+//     vw >= 1276 : content box = 0.6·vw + 134.4 − 48       (rail arithmetic, measured)
+//
+// which BOTTOMS OUT at CONTENT_MIN − 48 = **852px**, at vw ≈ 1276–1280 — i.e. at exactly the
+// laptop widths the rails exist to serve. Measured on the built page at 1280: 854px.
+//
+// That is the number every header decision has to answer to, and the previous cut did not:
+// the inline row's intrinsic width was 1015px (brand 154 + nav 432 + right cluster 365 +
+// 2 × 32px group gutters), so at 1280 and 1440 the nav was squeezed and WRAPPED to a second
+// row, and a 1024–1078 sliver wrapped from the page gutters alone. The boundary being `lg`
+// (1024) was never the bug — a viewport number cannot see a container that is narrowed
+// underneath it.
+//
+// THREE CHANGES, in the order they matter:
+//
+//   1. SHORTER LABEL. `shareable bots` → `bots` (CP-148). −80px. The hub is still called
+//      Shareable Bots everywhere it is introduced; only its chrome label shrank.
+//
+//   2. A `more ▾` DROPDOWN for the utility links. The PRIMARY content nav stays inline and
+//      visible — bots · use cases · collections · wall · news — and the two utility doors,
+//      `/agent` and `submit`, move into a compact CSS-only disclosure in the right cluster.
+//      −60px, and it is the place the NEXT utility link goes for free.
+//
+//   3. TIGHTER GUTTERS. Group gutter 32 → 24, in-group gutter 24 → 20. −32px. The hierarchy
+//      (groups further apart than the items inside them) survives; the roomy 32/24 pair was
+//      sized for a header that had 1152px to spend, which it only ever has above 1776px.
+//
+//   Together, measured on the built page at 1280: 1015 → **808px** (brand 154 + nav 336 +
+//   cluster 270 + 2 × 24px group gutters) against an 852px floor — 46px of slack at the
+//   tightest width the site can ever hand this header. `connect` remains the ONE amber
+//   element (§A1) and it stays last, in the position of prominence.
+//
+// ══ THE GUARANTEE — a CONTAINER query, not a viewport query ═════════════════════════════
+//
+// Because the header's width is not the viewport's, the inline-row-vs-drawer decision is
+// driven off the header's OWN container box: `.siteHeader__bar` is `container-type:
+// inline-size` and the inline row is switched on by `@container siteheader (min-width:
+// INLINE_MIN)`. The row is shown only where it genuinely fits, and everywhere else — a
+// phone, a tablet, an extreme squeeze, or a future sixth nav link — it falls back to the
+// drawer instead of wrapping. There is no `lg` breakpoint in this file any more, and no
+// number here that has to be kept in sync with the rails.
+//
+//   ► INLINE_MIN is 840px = the measured 808 plus 32px of tolerance (a mono-fallback flash
+//     while the webfont loads renders the nav a few percent wider). It appears in exactly
+//     TWO places, adjacent, both marked: the `@container` condition and the
+//     `--header-inline-min` custom property the island reads. IF YOU ADD A NAV LINK:
+//     re-measure the row's intrinsic width at 1280 and raise both. While INLINE_MIN stays
+//     under 852 the inline row is guaranteed across the ENTIRE rails band; push it over and
+//     the site simply serves the drawer at 1276–1300 — degraded, never broken, never wrapped.
+//
+//   ► CONSEQUENCE, and it is the point rather than a side effect: the collapse point is no
+//     longer 1024. The row now needs 808px, so it fits from a ~888px viewport, and that is
+//     where the drawer takes over. The old `lg` boundary was never a design choice — the
+//     previous cut's own note says "those eight items plus their gutters do not fit one row
+//     until ~1024px". They fit at 888 now, so that is the line. Note also that you CANNOT
+//     have both "collapse at 1024" and "inline row inside the rails" from one threshold:
+//     1024 implies a 976px requirement, which is wider than the 852px the rails leave. That
+//     contradiction is exactly why this decision moved off the viewport axis.
 //
 // The drawer is the deliberate home for a growing nav: its panel is `overflow-y: auto` with
 // `overscroll-behavior: contain`, so link six, ten and twenty cost nothing but scroll — the
-// inline row is the fragile surface, the drawer is the elastic one. When the nav next grows,
-// nothing here needs to change; only the ≥lg row needs re-measuring. Tablet users lose
-// nothing: ONE `nav` array feeds both surfaces, so the drawer always has every link the
-// inline row has.
+// inline row is the fragile surface, the drawer is the elastic one. ONE `nav` array feeds
+// both surfaces, so a link cannot arrive in one and not the other.
 //
-// §4.5 pins breakpoints to the Tailwind defaults "used exclusively", so this is `lg` (1024)
-// — a sanctioned breakpoint — and not an arbitrary measured value like 990px, which the
-// §8.5 check-13 arbitrary-value grep would reject anyway. Every md→lg swap in this file is
-// ONE decision: nav, right cluster, mobile ThemeToggle, `.headerConnect`, `.navDrawer` (both
-// the utility and its scoped media query), the brand's `flex-none`, the container's
-// gap/height/padding step-up, and the island's resize threshold all move together. Changing
-// one without the others reintroduces the wrap.
+// Baseline note: container queries and `:has()` are both below Tailwind v4's own floor
+// (Safari 16.4 / Chrome 111 / Firefox 128), so this adds no browser requirement the
+// stylesheet did not already impose. There is no viewport-media fallback ON PURPOSE — a
+// second mechanism could disagree with the first and show two menus or none.
 //
 // The drawer is a native `<details>`: it opens, closes and is keyboard-operable with ZERO
-// JS. The island below is ENHANCEMENT ONLY (scroll lock, focus trap, scrim tap, Escape),
-// exactly the shape §4.2.9 already sanctions for FilterBar, so §4.4 rule 7 holds — no
-// JS-dependent interaction is load-bearing.
+// JS. The island below is ENHANCEMENT ONLY (scroll lock, focus trap, scrim tap, Escape, and
+// the same four-way close for the `more` dropdown), exactly the shape §4.2.9 already
+// sanctions for FilterBar, so §4.4 rule 7 holds — no JS-dependent interaction is
+// load-bearing. Zero inline JS: §10.7's CSP is `script-src 'self'`.
+//
 // ── Surface 1 of the "connect to THE FEED" system (operator, 2026-08-22) ────────────────
-// The header now carries the persistent entry point to `#install-site` — the ONE feed panel
+// The header carries the persistent entry point to `#install-site` — the ONE feed panel
 // BaseLayout renders sitewide. It is a real anchor with `data-install-trigger`, so it opens
 // the panel through the island with JS and through `:target` without it.
 //
 // §A1 ACCENT SWAP, not an accent ADDITION. The header's one amber element used to be
 // `submit`; it is now `connect your bot`, and `submit` drops to the muted NavLink treatment
 // the /agent door already uses. Net amber count per viewport is unchanged at exactly one, in
-// all three header contexts (≥md cluster · <md bar · drawer). If you are tempted to give
-// `submit` its fill back, that is a §A1 decision, not a styling one.
+// all three header contexts (inline cluster · narrow bar · drawer). If you are tempted to
+// give `submit` its fill back, that is a §A1 decision, not a styling one.
 import MarkGlyph from './MarkGlyph.astro';
 import NavLink from './NavLink.astro';
 import Button from './Button.astro';
@@ -71,17 +114,14 @@ const { currentPath } = Astro.props;
 const isCurrent = (href: string) =>
   href === '/' ? currentPath === '/' : currentPath.startsWith(href);
 
-// F11 — operator: "Just keep the wall." plugins / use cases / collections / builder bot and
-// the header SEARCH are all removed from chrome at every viewport. Those routes still BUILD
-// and stay in the sitemap; they are unlinked from the header only.
 // SEO note (BUILD-NOTES): every hub keeps at least one internal link path — entry
 // breadcrumbs link `/plugins/`, `/use-cases/` and `/collections/` (F14), the footer's browse
 // column links all of them plus `/categories/` and `/integrations/`, and the home table's
 // category chips link the category hubs. Nothing is orphaned.
-// Operator (2026-08-28): Shareable Bots joins the nav. One array feeds BOTH the >=md row and
-// the mobile drawer, so a third item cannot arrive in one and not the other.
-// Operator (2026-08-28): `use cases` joins the nav because the home page no longer carries an
-// Awesome Use Cases tab. /use-cases/ is untouched; only its route INTO the site moved.
+//
+// PRIMARY nav — content destinations. One array feeds BOTH the inline row and the drawer, so
+// a link cannot arrive in one and not the other. Adding to this array costs ~95px of the
+// inline row's budget; see THE FIT BUDGET above before you do.
 const nav = [
   { href: '/marketplace/', label: CP_148_MARKETPLACE_NAV },
   { href: '/use-cases/', label: 'use cases' },
@@ -89,165 +129,244 @@ const nav = [
   { href: '/wall/', label: 'wall' },
   { href: '/news/', label: 'news' },
 ];
+
+// UTILITY nav — doors, not destinations. Inline these live behind `more ▾`; in the drawer
+// they sit below the rule. This is where the next utility link goes: the dropdown grows
+// downwards for free, the inline row does not grow sideways for free.
+const utility = [
+  { href: '/agent/', label: '/agent', glyph: true },
+  { href: '/submit/', label: 'submit', glyph: false },
+];
 ---
 
 <header class="siteHeader border-b border-border bg-bg" data-pagefind-ignore>
-  {/* `gap-x-2` below lg, the original `gap-x-8` from lg up. The <lg bar carries FOUR controls
-      (brand · theme · connect · menu) and the numbers are genuinely tight: measured at 390px
-      the four intrinsic widths total 315px against 358px of content box, so a 32px gutter
-      between them wrapped `menu` onto a second row — the exact three-row failure F1 was
-      written to kill. 8px holds the row at 360px and up. See `.headerConnect` and the
-      narrow-phone block below for the other two thirds of the fit.
-      The min-h/gap/py step-up rides the SAME boundary as the inline nav (md→lg, 2026-08-30):
-      the roomy 64px row is sized for the full desktop cluster, so it belongs only where that
-      cluster shows. The 768–1023 band now renders the same compact four-control bar as a
-      phone and gets the compact 48px treatment with it — one bar, one set of numbers. */}
-  <div class="container-page flex min-h-12 flex-wrap items-center gap-x-2 gap-y-4 py-2 lg:min-h-16 lg:gap-x-8 lg:py-4">
-    {/* `flex-1` only below lg, where it is what pushes the drawer toggle to the right edge.
-        From lg up the brand must shrink to its content or it steals width from the nav and
-        forces a second row — measured at F1 QA. This tracks the nav's boundary exactly: if it
-        stayed at md the brand would stop growing at 768 while the drawer still owned that
-        band, leaving a gap between the lockup and the right-edge controls. */}
-    <a href="/" class="brand flex flex-1 items-center gap-3 lg:flex-none" aria-label="grokbot.dev home">
-      {/* Direct round: mark is INK (grid) + the amber accent dot from grid() itself.
-          `text-accent` here painted the WHOLE grid amber — part of "logo icon is off". */}
-      <MarkGlyph size={30} class="brand-mark text-text" />
-      <span class="brand-word display-track font-display font-semibold lowercase text-text">
-        grokbot.dev
-      </span>
-    </a>
+  {/* THE QUERY CONTAINER. `.container-page` gives it the (rail-narrowed) max-width and the
+      page gutters; `container-type: inline-size` below makes its CONTENT BOX the thing every
+      mode decision in this file is asked about. It carries no flex of its own — the row
+      inside does — because a container query may not style its own container, and the row's
+      gap/height/padding are part of the mode. */}
+  <div class="siteHeader__bar container-page">
+    {/* `gap-x-2` in the narrow mode, `gap-x-6` inline (set in the container query). The
+        narrow bar carries FOUR controls (brand · theme · connect · menu) and the numbers are
+        genuinely tight: measured at 390px the four intrinsic widths total 315px against
+        358px of content box, so a 32px gutter between them wrapped `menu` onto a second row
+        — the exact three-row failure F1 was written to kill. 8px holds the row at 360px and
+        up. See `.headerConnect` and the narrow-phone block below for the other two thirds of
+        the fit. `flex-wrap` stays ON as the F6 safety valve: if anything ever did overflow,
+        a second header row is a far smaller failure than a page that scrolls sideways. */}
+    <div class="siteHeader__row flex min-h-12 flex-wrap items-center gap-x-2 gap-y-4 py-2">
+      {/* `flex-1` in the narrow mode, where it is what pushes the drawer toggle to the right
+          edge. Inline it must shrink to its content or it steals width from the nav and
+          forces a second row — measured at F1 QA. Both states are set in the scoped CSS so
+          the mode lives in ONE place. */}
+      <a href="/" class="brand flex items-center gap-3" aria-label="grokbot.dev home">
+        {/* Direct round: mark is INK (grid) + the amber accent dot from grid() itself.
+            `text-accent` here painted the WHOLE grid amber — part of "logo icon is off". */}
+        <MarkGlyph size={30} class="brand-mark text-text" />
+        <span class="brand-word display-track font-display font-semibold lowercase text-text">
+          grokbot.dev
+        </span>
+      </a>
 
-    <nav class="hidden flex-1 flex-wrap items-center gap-x-6 gap-y-2 lg:flex" aria-label="main">
-      {nav.map((item) => <NavLink href={item.href} label={item.label} current={isCurrent(item.href)} />)}
-    </nav>
+      {/* `flex-wrap: nowrap` is load-bearing, not decoration: the OLD failure was not the bar
+          wrapping, it was this nav being handed less width than it needed (it was `flex-1`,
+          so it shrank) and wrapping its own links onto a second line. It no longer shrinks
+          and no longer wraps — if it does not fit, the container query hands the whole menu
+          to the drawer instead. */}
+      <nav class="siteHeader__nav" aria-label="main">
+        {nav.map((item) => <NavLink href={item.href} label={item.label} current={isCurrent(item.href)} />)}
+      </nav>
 
-    <div class="hidden flex-wrap items-center gap-x-6 gap-y-2 lg:flex">
-      <span class="inline-flex items-center gap-1">
-        <span aria-hidden="true" class="agent-glyph text-accent">▪</span>
-        <NavLink href="/agent/" label="/agent" current={isCurrent('/agent/')} />
-      </span>
+      <div class="siteHeader__cluster">
+        {/* ── `more ▾` — the compact utility dropdown (operator, 2026-08-30) ───────────────
+            A native `<details>`, like the drawer: it opens, closes and is keyboard-operable
+            with ZERO JS and ZERO inline script, so it is CSP-clean by construction. The
+            island only adds what markup cannot do — click-outside, Escape, focus-out and
+            close-on-navigate. It is styled as a muted nav item rather than a bordered
+            control on purpose: it IS nav, and a second bordered control beside the theme
+            toggle would have cost another ~18px of a budget that has none to give. */}
+        <details class="navMore" data-nav-more>
+          <summary class="navMore__toggle" aria-label="more links">
+            <span>more</span><span class="navMore__caret" aria-hidden="true">▾</span>
+          </summary>
+          <div class="navMore__panel" role="group" aria-label="more links">
+            {utility.map((item) => (
+              <a
+                href={item.href}
+                class:list={['navMore__link', isCurrent(item.href) && 'navMore__link--current']}
+                aria-current={isCurrent(item.href) ? 'page' : undefined}
+              >
+                {item.glyph && <span aria-hidden="true" class="agent-glyph text-accent">▪</span>}
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </details>
 
-      {/* F9 — sits with the other chrome, left of the one amber element, which keeps
-          A1's "one accent per viewport" position of prominence at the end of the row. */}
-      <ThemeToggle variant="inline" />
+        {/* F9 — sits with the other chrome, left of the one amber element, which keeps
+            A1's "one accent per viewport" position of prominence at the end of the row. */}
+        <ThemeToggle variant="inline" />
 
-      {/* Demoted from `Button variant="solid"` — same link treatment as /agent above. */}
-      <NavLink href="/submit/" label="submit" current={isCurrent('/submit/')} />
-
-      <Button
-        href="#install-site"
-        variant="solid"
-        size="sm"
-        label={CP_126_CONNECT_HEADER}
-        attrs={{ 'data-install-trigger': 'install-site' }}
-      />
-    </div>
-
-    {/* ── the slide-in drawer (below lg). Native <details>; the island only enhances it. ──
-        F7: spacing is expressed as Tailwind utilities, NOT as `var(--spacing-N)` in the
-        scoped CSS. Tailwind v4 defines a single `--spacing` multiplier and computes
-        `calc(var(--spacing) * n)` inside each utility — it never emits `--spacing-6`, so my
-        first cut's `padding: var(--spacing-6)` resolved to nothing and the drawer shipped
-        with no padding at all. That is exactly what the operator saw. Utilities can't
-        silently evaluate to nothing. */}
-    {/* Direct round: light/dark is VISIBLE in the drawer-band header now, not inside the
-        drawer — moved, not duplicated. The wrapper (not the button) carries `lg:hidden`,
-        because the button's scoped `.themeToggle{display:inline-flex}` outranks the utility
-        and would keep it visible at desktop otherwise. `lg`, not `md`: it must disappear
-        exactly where the ≥lg cluster's own ThemeToggle appears, or the 768–1023 band would
-        show two of them. */}
-    <span class="lg:hidden inline-flex"><ThemeToggle variant="inline" /></span>
-
-    {/* The <lg CTA rides in the BAR, not only in the drawer: an action worth putting in
-        every header is worth reaching without opening a menu first. It carries CP-127
-        (`connect`) rather than CP-126 — measured at 360/375px, the long label is wider than
-        the row can give it beside the brand, the theme toggle and `menu`, and F1's whole
-        point was that this header stays ONE row on a phone. Display is switched in the
-        scoped CSS below, the way `.navDrawer` does it: a scoped `display: inline-flex`
-        outranks a `lg:hidden` utility, which is the trap the ThemeToggle note above
-        describes. */}
-    <a href="#install-site" data-install-trigger="install-site" class="headerConnect">
-      {CP_127_CONNECT_SHORT}
-    </a>
-
-    <details class="navDrawer lg:hidden" data-nav-drawer>
-      <summary class="navDrawer__toggle" aria-label="menu">
-        <span class="navDrawer__word navDrawer__word--closed">menu</span>
-        <span class="navDrawer__word navDrawer__word--open" aria-hidden="true">✕</span>
-      </summary>
-
-      {/* Tap-outside target. Enhancement only — without JS you close with the same control. */}
-      <span class="navDrawer__scrim" data-nav-scrim aria-hidden="true"></span>
-
-      <div
-        class="navDrawer__panel flex flex-col gap-8 p-6 pt-20"
-        data-nav-panel
-        tabindex="-1"
-        role="group"
-        aria-label="site menu"
-      >
-        <nav class="navDrawer__nav flex flex-col gap-1" aria-label="mobile">
-          {nav.map((item) => (
-            <a
-              href={item.href}
-              class:list={[
-                'navDrawer__link',
-                isCurrent(item.href) && 'navDrawer__link--current',
-              ]}
-              aria-current={isCurrent(item.href) ? 'page' : undefined}
-            >
-              {item.label}
-            </a>
-          ))}
-
-          <span class="navDrawer__rule my-3" aria-hidden="true"></span>
-
-          <a
-            href="/agent/"
-            class:list={['navDrawer__link', isCurrent('/agent/') && 'navDrawer__link--current']}
-            aria-current={isCurrent('/agent/') ? 'page' : undefined}
-          >
-            <span aria-hidden="true" class="agent-glyph text-accent">▪</span> /agent
-          </a>
-
-          {/* Demoted here too, for the same reason and by the same rule. */}
-          <a
-            href="/submit/"
-            class:list={['navDrawer__link', isCurrent('/submit/') && 'navDrawer__link--current']}
-            aria-current={isCurrent('/submit/') ? 'page' : undefined}
-          >
-            submit
-          </a>
-        </nav>
-
-        {/* A1 accent law: connect is the ONE amber element in the drawer. */}
-        <a href="#install-site" data-install-trigger="install-site" class="navDrawer__cta">
-          {CP_126_CONNECT_HEADER}
-        </a>
+        <Button
+          href="#install-site"
+          variant="solid"
+          size="sm"
+          label={CP_126_CONNECT_HEADER}
+          attrs={{ 'data-install-trigger': 'install-site' }}
+        />
       </div>
-    </details>
+
+      {/* ── the slide-in drawer (narrow mode). Native <details>; the island only enhances it.
+          F7: spacing is expressed as Tailwind utilities, NOT as `var(--spacing-N)` in the
+          scoped CSS. Tailwind v4 defines a single `--spacing` multiplier and computes
+          `calc(var(--spacing) * n)` inside each utility — it never emits `--spacing-6`, so my
+          first cut's `padding: var(--spacing-6)` resolved to nothing and the drawer shipped
+          with no padding at all. That is exactly what the operator saw. Utilities can't
+          silently evaluate to nothing. */}
+      {/* Direct round: light/dark is VISIBLE in the drawer-band header now, not inside the
+          drawer — moved, not duplicated. The wrapper (not the button) carries the display
+          switch, because the button's scoped `.themeToggle{display:inline-flex}` outranks a
+          utility and would keep it visible in the inline mode otherwise. It must disappear
+          exactly where the inline cluster's own ThemeToggle appears, which is why BOTH are
+          switched by the same container query and nothing else. */}
+      <span class="siteHeader__themeMobile"><ThemeToggle variant="inline" /></span>
+
+      {/* The narrow-mode CTA rides in the BAR, not only in the drawer: an action worth putting
+          in every header is worth reaching without opening a menu first. It carries CP-127
+          (`connect`) rather than CP-126 — measured at 360/375px, the long label is wider than
+          the row can give it beside the brand, the theme toggle and `menu`, and F1's whole
+          point was that this header stays ONE row on a phone. */}
+      <a href="#install-site" data-install-trigger="install-site" class="headerConnect">
+        {CP_127_CONNECT_SHORT}
+      </a>
+
+      <details class="navDrawer" data-nav-drawer>
+        <summary class="navDrawer__toggle" aria-label="menu">
+          <span class="navDrawer__word navDrawer__word--closed">menu</span>
+          <span class="navDrawer__word navDrawer__word--open" aria-hidden="true">✕</span>
+        </summary>
+
+        {/* Tap-outside target. Enhancement only — without JS you close with the same control. */}
+        <span class="navDrawer__scrim" data-nav-scrim aria-hidden="true"></span>
+
+        <div
+          class="navDrawer__panel flex flex-col gap-8 p-6 pt-20"
+          data-nav-panel
+          tabindex="-1"
+          role="group"
+          aria-label="site menu"
+        >
+          <nav class="navDrawer__nav flex flex-col gap-1" aria-label="mobile">
+            {nav.map((item) => (
+              <a
+                href={item.href}
+                class:list={[
+                  'navDrawer__link',
+                  isCurrent(item.href) && 'navDrawer__link--current',
+                ]}
+                aria-current={isCurrent(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            ))}
+
+            <span class="navDrawer__rule my-3" aria-hidden="true"></span>
+
+            {/* The SAME utility array the `more ▾` dropdown renders — the drawer can never be
+                missing a door the inline row has. */}
+            {utility.map((item) => (
+              <a
+                href={item.href}
+                class:list={['navDrawer__link', isCurrent(item.href) && 'navDrawer__link--current']}
+                aria-current={isCurrent(item.href) ? 'page' : undefined}
+              >
+                {item.glyph && <span aria-hidden="true" class="agent-glyph text-accent">▪</span>}
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          {/* A1 accent law: connect is the ONE amber element in the drawer. */}
+          <a href="#install-site" data-install-trigger="install-site" class="navDrawer__cta">
+            {CP_126_CONNECT_HEADER}
+          </a>
+        </div>
+      </details>
+    </div>
   </div>
 </header>
 
 <style>
+  /* ══ THE MODE SWITCH — one container, one threshold, no viewport numbers ════════════════
+     Everything that differs between the inline row and the narrow bar is decided HERE, by
+     the header's own content-box width. See the frontmatter's FIT BUDGET block for why a
+     viewport media query cannot do this job (the rails narrow the container underneath it).
+
+     ► INLINE_MIN = 840px. It appears twice — the `@container` condition at the BOTTOM of
+       this stylesheet and the custom property right here, which exists so the island can
+       read the number instead of carrying a third copy. Measured requirement of the inline
+       row is 808px (at 1280, fonts loaded); 840 carries 32px of webfont-swap tolerance; the
+       tightest content box the site ever hands this header is 852px, at vw ≈ 1276-1280.
+       Re-measure and raise BOTH if you add a nav link. */
+  .siteHeader__bar {
+    container-type: inline-size;
+    container-name: siteheader;
+    --header-inline-min: 840;
+  }
+
+  /* Belt and braces for the drawer's `position: fixed` panel. Chrome 145 was measured NOT to
+     make a `container-type` element a containing block for fixed descendants (a synthetic
+     `position:fixed; inset:0` probe stayed viewport-sized, where `contain: layout` shrank it
+     to the bar) — but that is an implementation detail of one engine, and the drawer's panel
+     / scrim / X depend on it in every engine. So: while the drawer is OPEN the container is
+     switched off entirely. The `@container` rules below then stop matching, the base (narrow)
+     mode applies, and the panel is viewport-positioned no matter how an engine reads the
+     spec. This is safe by construction — the drawer can only be opened from the narrow mode,
+     so "force narrow mode while it is open" changes nothing a user can see. */
+  .siteHeader__bar:has([data-nav-drawer][open]) {
+    container-type: normal;
+  }
+
+  /* ── NARROW MODE (the base — a phone, a tablet, any squeezed container) ───────────────
+     The INLINE-mode half of this switch is the LAST block in this stylesheet, on purpose:
+     `@container` adds no specificity, so it can only override these by coming after them.
+     Do not move it up. */
+  .brand {
+    /* what pushes the drawer toggle to the right edge */
+    flex: 1 1 auto;
+  }
+  /* Both groups are `nowrap` in every mode: the header may hand the whole menu to the
+     drawer, but it may never wrap a group onto a second line. This is the half of the fix
+     the OLD failure needed — the nav was `flex-1`, so it shrank below its intrinsic width
+     and wrapped its own links. It no longer shrinks. 1.25rem = gap-x-5. */
+  .siteHeader__nav,
+  .siteHeader__cluster {
+    display: none;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    column-gap: 1.25rem;
+  }
+  .siteHeader__themeMobile {
+    display: inline-flex;
+  }
+
   /* §4.2.2 — the machine door is marked with an 8px ▪ glyph. */
   .agent-glyph {
     font-size: 8px;
     line-height: 1;
   }
 
-  /* F2 — the phone lockup was too small next to the nav type. The mark ships at 26px and
-     steps back to the desktop 18px at lg; the wordmark rides with it (--text-lg → --text-sm).
-     `!important` is load-bearing here and nowhere else: §4.2.1 MarkGlyph writes its size as
-     an INLINE style, which no class can outrank. Changing that documented prop API for one
-     caller would be the bigger change. */
+  /* F2 — the phone lockup was too small next to the nav type. `!important` is load-bearing
+     here and nowhere else: §4.2.1 MarkGlyph writes its size as an INLINE style, which no
+     class can outrank. Changing that documented prop API for one caller would be the bigger
+     change. */
   /* `:global()` is required, not stylistic: the mark is rendered by the MarkGlyph CHILD
      component, so it never receives this component's scope attribute and a plain
      `.brand-mark` selector silently matches nothing. `.brand-word` is in this template and
-     scopes normally. Caught at F2 QA — the lg step-down was a no-op without it. */
+     scopes normally. Caught at F2 QA — the step was a no-op without it. */
   /* Direct round — operator: "it needs to be much larger in the header." One size at every
-     width now: 30px mark, --text-xl wordmark from lg (mobile keeps --text-lg for fit). The
-     F15 lg step-DOWN is gone — it was the wrong direction. */
+     width now: 30px mark, --text-xl wordmark inline (narrow keeps --text-lg for fit). */
   :global(.brand-mark) {
     inline-size: 30px !important;
     block-size: 30px !important;
@@ -255,19 +374,102 @@ const nav = [
   .brand-word {
     font-size: var(--text-lg);
   }
-  @media (min-width: 1024px) {
-    .brand-word {
-      font-size: var(--text-xl);
+
+  /* ---------- `more ▾` — the utility dropdown (inline mode only) ---------- */
+  .navMore {
+    position: relative;
+  }
+  /* Muted nav voice, not a bordered control: it is a nav item that reveals nav items, and
+     the budget could not afford a second bordered box beside the theme toggle. */
+  .navMore__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    /* the §4.6 24px target floor, without the padding a bordered control would need */
+    min-block-size: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    list-style: none;
+    transition: color 0.15s;
+  }
+  .navMore__toggle::-webkit-details-marker {
+    display: none;
+  }
+  .navMore__toggle:hover,
+  .navMore[open] .navMore__toggle {
+    color: var(--color-text);
+  }
+  .navMore__caret {
+    font-size: 10px;
+    line-height: 1;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .navMore__caret {
+      transition: transform 0.15s;
     }
   }
+  .navMore[open] .navMore__caret {
+    transform: rotate(180deg);
+  }
 
-  /* ---------- the <lg connect pill (Surface 1) ---------- */
+  /* Anchored to the toggle, not to the bar: `.navMore` is the positioned ancestor, so this
+     is unaffected by whether the query container is a containing block in any given engine.
+     z-index 30 clears the sticky section headers (20) and the rails (20) it opens over, and
+     stays under the install modal (60) and the drawer (40/41). */
+  .navMore__panel {
+    position: absolute;
+    inset-block-start: calc(100% + 0.75rem);
+    inset-inline-end: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 9rem;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    /* the one place the header floats over content — it needs to read as a layer */
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  }
+  .navMore__link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* §4.6 target size — the same 44px rows the drawer uses, minus its full-bleed width */
+    min-block-size: 2.25rem;
+    padding-inline: 0.5rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    white-space: nowrap;
+    color: var(--color-text-muted);
+    transition: color 0.15s, background 0.15s;
+  }
+  .navMore__link:hover {
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
+  .navMore__link--current {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  /* ---------- the narrow-mode connect pill (Surface 1) ---------- */
   /* Sized to sit level with the `menu` toggle — same 36px block size, same radius, same mono
      — so the bar reads as two controls of one family rather than a CTA bolted onto a header.
      36px is the height the operator already settled on for `menu` (down from 44) and it
      clears SC 2.5.8's 24px floor with room; matching it beats re-litigating that decision on
      the button next to it. `margin-inline-start: auto` is deliberately NOT set here — the
-     drawer carries it, so the pill sits immediately left of `menu` at the right edge. */
+     drawer carries it, so the pill sits immediately left of `menu` at the right edge.
+     It is hidden in the inline mode, where the cluster owns the CTA with the long CP-126
+     label; that hand-off is in the container query above, with everything else. */
   .headerConnect {
     display: inline-flex;
     align-items: center;
@@ -298,15 +500,6 @@ const nav = [
       transform: none;
     }
   }
-  /* From lg the ≥lg cluster owns the CTA (with the long CP-126 label), so this one goes.
-     1024, not 768 (2026-08-30): this pill is the bar's ONE amber element, and the bar now
-     runs to 1023. Handing the CTA over at 768 would leave the 768–1023 band with no accent
-     at all and no connect entry point outside the drawer. */
-  @media (min-width: 1024px) {
-    .headerConnect {
-      display: none;
-    }
-  }
 
   /* ---------- narrow-phone fit (≤389px: 360, 375, 384 …) ----------
      The last 8px. Below 390 the four controls plus their gutters run past the content box
@@ -315,13 +508,36 @@ const nav = [
      the mark, and it is untouched) and only the wordmark steps --text-lg → --text-base with
      a tighter mark/word gap. Measured 360px: 127 + 50 + 68 + 55 + 24 = 324 against 328.
      This is a FIT rule with a reason, not a taste rule — if the bar ever loses a control,
-     delete it rather than keeping a smaller wordmark for no cause. */
+     delete it rather than keeping a smaller wordmark for no cause.
+     A VIEWPORT query is correct here and a container query is not: below 390 the container
+     IS the viewport minus the gutters, and this rule is about the phone, not about a box. */
   @media (max-width: 389px) {
     .brand {
       gap: 0.5rem;
     }
     .brand-word {
       font-size: var(--text-base);
+    }
+
+    /* ── THE DARK-MODE 8px (found at the 2026-08-30 QA sweep, PRE-DATING it) ─────────────
+       The measurement above was taken in LIGHT, and the theme toggle names the mode you
+       would switch TO — so it reads `dark` (4 chars) in light and `light` (5 chars) in dark.
+       One character of Geist Mono at --text-sm is ~8px, and the 360px bar had exactly ZERO
+       slack (304 + 3×8 = 328 against a 328px content box), so in DARK the bar was 8px over
+       and `menu` dropped to a second row. Verified on live production at 360px with
+       `gb-theme=dark`: header 105px tall, toggle at y=60. It was never a light-mode bug,
+       which is why five rounds of QA never saw it.
+       The 8px comes back out of the two chrome controls' horizontal padding rather than out
+       of the gutters (8px between four controls is already the documented floor) or the
+       lockup (the operator's "much larger in the header"). Both keep their 36px block size,
+       so §4.6 / SC 2.5.8 target sizes are untouched — only the side padding moves.
+       `:global()` is required for the toggle: it is rendered by the ThemeToggle CHILD
+       component and never carries this file's scope attribute (same trap as `.brand-mark`). */
+    .siteHeader__themeMobile :global(.themeToggle) {
+      padding-inline: 0.25rem;
+    }
+    .navDrawer__toggle {
+      padding-inline: 0.5rem;
     }
   }
 
@@ -491,11 +707,41 @@ const nav = [
     filter: brightness(0.9);
   }
 
-  /* The drawer is a below-lg affordance only; nothing of it may leak onto desktop. This
-     scoped rule is what actually hides it — a bare `lg:hidden` utility cannot outrank the
-     `.navDrawer { margin-inline-start: auto }` block's specificity on the element — so it
-     MUST stay in lockstep with the utility on the element. 768 → 1024 (2026-08-30). */
-  @media (min-width: 1024px) {
+  /* ══ INLINE MODE — the other half of the mode switch declared at the top ════════════════
+     LAST IN THE FILE ON PURPOSE. A container query adds no specificity of its own, so every
+     property it flips (`display` on the two groups, the mobile theme, `.headerConnect` and
+     `.navDrawer`; `flex` and `font-size` on the brand; the row's gap/height/padding) can
+     only be overridden from here by SOURCE ORDER. Move this block up and the base rules
+     below it silently win — the nav disappears on desktop and nothing errors.
+     The one rule allowed to come after it is the ≤389px narrow-phone block above, which is
+     unreachable from here: a 389px viewport is a 357px container, and this needs 840. */
+  @container siteheader (min-width: 840px) {
+    /* The roomy row: 4rem = min-h-16, 1rem = py-4, 1.5rem = gap-x-6 on the Tailwind scale.
+       Expressed here rather than as `lg:` utilities because the mode is ONE decision and it
+       lives in ONE place; scoped CSS is unlayered, so it outranks the utilities on the row. */
+    .siteHeader__row {
+      min-block-size: 4rem;
+      column-gap: 1.5rem;
+      padding-block: 1rem;
+    }
+    .brand {
+      /* must shrink to its content here or it steals width from the nav */
+      flex: 0 0 auto;
+    }
+    .brand-word {
+      font-size: var(--text-xl);
+    }
+    .siteHeader__nav {
+      display: flex;
+    }
+    .siteHeader__cluster {
+      display: flex;
+      /* the leftover width sits here, so the cluster is pinned to the right edge and no
+         group is ever asked to shrink */
+      margin-inline-start: auto;
+    }
+    .siteHeader__themeMobile,
+    .headerConnect,
     .navDrawer {
       display: none;
     }
@@ -503,11 +749,12 @@ const nav = [
 </style>
 
 <script>
-  // SANCTIONED ISLAND (operator directive, Stage 5B F1) — the mobile nav drawer.
-  // ENHANCEMENT ONLY, in the shape §4.2.9 already sanctions for FilterBar: the <details>
-  // opens, closes and is keyboard-operable natively. This adds the four things markup
-  // cannot do — background scroll lock, focus trap, scrim tap, and Escape-to-close with
-  // focus returned to the toggle. With JS off, everything still works via `menu`/`close`.
+  // SANCTIONED ISLAND (operator directive, Stage 5B F1) — the mobile nav drawer, plus the
+  // `more ▾` dropdown added 2026-08-30. ENHANCEMENT ONLY, in the shape §4.2.9 already
+  // sanctions for FilterBar: both are native <details> that open, close and are
+  // keyboard-operable with no JS at all. This adds the things markup cannot do — background
+  // scroll lock, focus trap, scrim tap, Escape-to-close, and click-outside for the dropdown.
+  // With JS off, everything still works via `menu` / `more`.
   const drawer = document.querySelector<HTMLDetailsElement>('[data-nav-drawer]');
   if (drawer) {
     const panel = drawer.querySelector<HTMLElement>('[data-nav-panel]');
@@ -610,13 +857,64 @@ const nav = [
       }
     });
 
-    // A resize past the breakpoint must not strand a locked scroll behind a hidden drawer.
-    // 1024 must match the `lg` boundary the CSS hides `.navDrawer` at (2026-08-30, moved
-    // from 768 with the rest). If this number and that media query ever disagree, a resize
-    // into the gap leaves `documentElement.style.overflow = 'hidden'` set on a page whose
-    // drawer is already display:none — an unscrollable page with no visible way out.
+    // Widening past the fit threshold must not strand a locked scroll behind a hidden drawer.
+    // THIS NO LONGER CARRIES A BREAKPOINT. The old code compared `innerWidth` to a hardcoded
+    // 1024 that had to be kept in lockstep with the CSS, and the header's width is not the
+    // viewport's anyway (the rails narrow it). It now asks the header's OWN container the
+    // same question the container query asks — content-box width vs `--header-inline-min`,
+    // read from the CSS so there is no second copy of the number. If they could ever
+    // disagree, this is the one that yields: the CSS decides what is visible.
+    const bar = document.querySelector<HTMLElement>('.siteHeader__bar');
+    const fitsInline = () => {
+      if (!bar) return false;
+      const styles = getComputedStyle(bar);
+      const min = Number.parseFloat(styles.getPropertyValue('--header-inline-min'));
+      if (!Number.isFinite(min)) return false;
+      const content =
+        bar.getBoundingClientRect().width -
+        Number.parseFloat(styles.paddingInlineStart) -
+        Number.parseFloat(styles.paddingInlineEnd);
+      return content >= min;
+    };
     window.addEventListener('resize', () => {
-      if (drawer.open && window.innerWidth >= 1024) close(false);
+      if (drawer.open && fitsInline()) close(false);
+    });
+  }
+
+  // ── `more ▾` — the utility dropdown. Native <details> does open/close/keyboard on its own;
+  // this adds the three things a disclosure used as a MENU needs and markup cannot give it:
+  // close on click-outside, close on Escape (focus returned to the toggle), and close when
+  // focus leaves entirely. Without JS it is still a working disclosure — you close it with
+  // the same control you opened it with.
+  const more = document.querySelector<HTMLDetailsElement>('[data-nav-more]');
+  if (more) {
+    const moreToggle = more.querySelector<HTMLElement>('summary');
+    const closeMore = (returnFocus: boolean) => {
+      if (!more.open) return;
+      more.open = false;
+      if (returnFocus) moreToggle?.focus();
+    };
+
+    document.addEventListener('click', (event) => {
+      if (!more.open) return;
+      const target = event.target;
+      if (target instanceof Node && more.contains(target)) return;
+      closeMore(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && more.open) {
+        event.preventDefault();
+        closeMore(true);
+      }
+    });
+
+    // Tabbing off the last link closes it, so a keyboard user is never left with an open
+    // panel floating behind the rest of the page.
+    more.addEventListener('focusout', (event) => {
+      const next = event.relatedTarget;
+      if (next instanceof Node && more.contains(next)) return;
+      closeMore(false);
     });
   }
 </script>

@@ -290,7 +290,14 @@ export const CP_145_NEWS_OPEN_LABEL = 'open';
 export const CP_146_MARKETPLACE_H1 = 'Shareable Bots';
 export const CP_147_MARKETPLACE_INTRO =
   'ready-made Grok Bot setups people have shared on X. one link installs the whole thing - instructions, memories and workflow - into your own Bot.';
-export const CP_148_MARKETPLACE_NAV = 'shareable bots';
+/* NAV LABEL, not the page's name. The hub is still "Shareable Bots" everywhere it is
+   introduced (H1 CP-146, OG eyebrow, intro CP-147, filter placeholder CP-154); this constant
+   is only ever rendered as a chrome nav item, where the long form cost 112px of a header that
+   has 854px to spend at the rails-squeezed width. Shortened to `bots` 2026-08-30 as one of
+   the two levers that got the inline row under that budget - see SiteHeader.astro's FIT
+   BUDGET block. No build gate reads this string (check-keyword-placements guards
+   "ready-to-use Grok Bot prompts"; gen-og-hubs carries its own eyebrow literal). */
+export const CP_148_MARKETPLACE_NAV = 'bots';
 export const CP_149_TEMPLATE_ADD_LABEL = 'add to grok bot';
 export const CP_150_TEMPLATE_SOURCE_LABEL = 'source';
 export const CP_151_TEMPLATE_SHARED_BY = 'shared by @{handle}';
