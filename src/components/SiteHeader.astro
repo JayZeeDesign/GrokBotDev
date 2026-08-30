@@ -9,17 +9,39 @@
 //
 // ── F1/F2 (operator, Stage 5B) — SUPERSEDES §4.5's "no JS, no hamburger" nav collapse.
 // The wrap-everything header stacked into THREE rows on a phone and ate the fold; the
-// operator's verdict was "much less busy". Three bands now:
+// operator's verdict was "much less busy". So: below the breakpoint the whole menu lives in
+// a slide-in drawer behind one `menu` toggle, and above it the full inline row shows.
 //
-//   < md  (<768) : ONE row — enlarged brand lockup left, `menu` toggle right. Nav, search,
-//                  /agent and submit live in a slide-in drawer.
-//   md–lg        : one row — brand + full nav + `search` LINK + /agent + submit. The search
-//                  INPUT moves up to lg so this band stays a single clean row.
-//   ≥ lg (1024)  : UNCHANGED from the shipped desktop header, exactly as the brief requires.
+// ── THE BOUNDARY IS `lg` (1024), NOT `md` (768) — moved 2026-08-30. ─────────────────────
+// F1 originally drew that line at `md`, and that was correct for a THREE-link nav. The nav
+// has since grown to five (shareable bots · use cases · collections · wall · news) and the
+// right cluster grew too (/agent · theme · submit · `connect your bot`). Measured: those
+// eight items plus their gutters do not fit one row until ~1024px, so the 768–1023 band was
+// wrapping the header into three and four cramped rows — the exact failure F1 was written to
+// kill, returning through the back door as the nav grew.
 //
-// §4.5 pins breakpoints to the Tailwind defaults "used exclusively", so the drawer boundary
-// is `md` (768) — the sanctioned breakpoint nearest the operator's ~720 — rather than an
-// arbitrary 720px value, which the §8.5 check-13 arbitrary-value grep would reject anyway.
+// The fix is deliberately the FUTURE-PROOF one rather than a per-item squeeze (shorter
+// labels, tighter gaps, dropping a link at tablet): the boundary moves to `lg`, so
+//
+//   < lg (<1024) : ONE row — brand lockup left, then theme · `connect` · `menu` at the right
+//                  edge. The ENTIRE nav plus /agent, submit and connect live in the drawer.
+//   ≥ lg (1024)  : the full inline row — brand + all nav + /agent + theme + submit + connect
+//                  — on a single line, with the roomy gap-x-8 / min-h-16 / py-4 treatment.
+//
+// The drawer is the deliberate home for a growing nav: its panel is `overflow-y: auto` with
+// `overscroll-behavior: contain`, so link six, ten and twenty cost nothing but scroll — the
+// inline row is the fragile surface, the drawer is the elastic one. When the nav next grows,
+// nothing here needs to change; only the ≥lg row needs re-measuring. Tablet users lose
+// nothing: ONE `nav` array feeds both surfaces, so the drawer always has every link the
+// inline row has.
+//
+// §4.5 pins breakpoints to the Tailwind defaults "used exclusively", so this is `lg` (1024)
+// — a sanctioned breakpoint — and not an arbitrary measured value like 990px, which the
+// §8.5 check-13 arbitrary-value grep would reject anyway. Every md→lg swap in this file is
+// ONE decision: nav, right cluster, mobile ThemeToggle, `.headerConnect`, `.navDrawer` (both
+// the utility and its scoped media query), the brand's `flex-none`, the container's
+// gap/height/padding step-up, and the island's resize threshold all move together. Changing
+// one without the others reintroduces the wrap.
 //
 // The drawer is a native `<details>`: it opens, closes and is keyboard-operable with ZERO
 // JS. The island below is ENHANCEMENT ONLY (scroll lock, focus trap, scrim tap, Escape),
@@ -70,17 +92,23 @@ const nav = [
 ---
 
 <header class="siteHeader border-b border-border bg-bg" data-pagefind-ignore>
-  {/* `gap-x-2` below md, the original `gap-x-8` from md up. The phone bar now carries FOUR
-      controls (brand · theme · connect · menu) and the numbers are genuinely tight: measured
-      at 390px the four intrinsic widths total 315px against 358px of content box, so a 32px
-      gutter between them wrapped `menu` onto a second row — the exact three-row failure F1
-      was written to kill. 8px holds the row at 360px and up. See `.headerConnect` and the
-      narrow-phone block below for the other two thirds of the fit. */}
-  <div class="container-page flex min-h-12 flex-wrap items-center gap-x-2 gap-y-4 py-2 md:min-h-16 md:gap-x-8 md:py-4">
-    {/* `flex-1` only below md, where it is what pushes the drawer toggle to the right edge.
-        From md up the brand must shrink to its content or it steals width from the nav and
-        forces a second row at 768 — measured at F1 QA. */}
-    <a href="/" class="brand flex flex-1 items-center gap-3 md:flex-none" aria-label="grokbot.dev home">
+  {/* `gap-x-2` below lg, the original `gap-x-8` from lg up. The <lg bar carries FOUR controls
+      (brand · theme · connect · menu) and the numbers are genuinely tight: measured at 390px
+      the four intrinsic widths total 315px against 358px of content box, so a 32px gutter
+      between them wrapped `menu` onto a second row — the exact three-row failure F1 was
+      written to kill. 8px holds the row at 360px and up. See `.headerConnect` and the
+      narrow-phone block below for the other two thirds of the fit.
+      The min-h/gap/py step-up rides the SAME boundary as the inline nav (md→lg, 2026-08-30):
+      the roomy 64px row is sized for the full desktop cluster, so it belongs only where that
+      cluster shows. The 768–1023 band now renders the same compact four-control bar as a
+      phone and gets the compact 48px treatment with it — one bar, one set of numbers. */}
+  <div class="container-page flex min-h-12 flex-wrap items-center gap-x-2 gap-y-4 py-2 lg:min-h-16 lg:gap-x-8 lg:py-4">
+    {/* `flex-1` only below lg, where it is what pushes the drawer toggle to the right edge.
+        From lg up the brand must shrink to its content or it steals width from the nav and
+        forces a second row — measured at F1 QA. This tracks the nav's boundary exactly: if it
+        stayed at md the brand would stop growing at 768 while the drawer still owned that
+        band, leaving a gap between the lockup and the right-edge controls. */}
+    <a href="/" class="brand flex flex-1 items-center gap-3 lg:flex-none" aria-label="grokbot.dev home">
       {/* Direct round: mark is INK (grid) + the amber accent dot from grid() itself.
           `text-accent` here painted the WHOLE grid amber — part of "logo icon is off". */}
       <MarkGlyph size={30} class="brand-mark text-text" />
@@ -89,11 +117,11 @@ const nav = [
       </span>
     </a>
 
-    <nav class="hidden flex-1 flex-wrap items-center gap-x-6 gap-y-2 md:flex" aria-label="main">
+    <nav class="hidden flex-1 flex-wrap items-center gap-x-6 gap-y-2 lg:flex" aria-label="main">
       {nav.map((item) => <NavLink href={item.href} label={item.label} current={isCurrent(item.href)} />)}
     </nav>
 
-    <div class="hidden flex-wrap items-center gap-x-6 gap-y-2 md:flex">
+    <div class="hidden flex-wrap items-center gap-x-6 gap-y-2 lg:flex">
       <span class="inline-flex items-center gap-1">
         <span aria-hidden="true" class="agent-glyph text-accent">▪</span>
         <NavLink href="/agent/" label="/agent" current={isCurrent('/agent/')} />
@@ -115,32 +143,34 @@ const nav = [
       />
     </div>
 
-    {/* ── the mobile drawer (below md). Native <details>; the island only enhances it. ──
+    {/* ── the slide-in drawer (below lg). Native <details>; the island only enhances it. ──
         F7: spacing is expressed as Tailwind utilities, NOT as `var(--spacing-N)` in the
         scoped CSS. Tailwind v4 defines a single `--spacing` multiplier and computes
         `calc(var(--spacing) * n)` inside each utility — it never emits `--spacing-6`, so my
         first cut's `padding: var(--spacing-6)` resolved to nothing and the drawer shipped
         with no padding at all. That is exactly what the operator saw. Utilities can't
         silently evaluate to nothing. */}
-    {/* Direct round: light/dark is VISIBLE in the mobile header now, not inside the
-        drawer — moved, not duplicated. The wrapper (not the button) carries `md:hidden`,
+    {/* Direct round: light/dark is VISIBLE in the drawer-band header now, not inside the
+        drawer — moved, not duplicated. The wrapper (not the button) carries `lg:hidden`,
         because the button's scoped `.themeToggle{display:inline-flex}` outranks the utility
-        and would keep it visible at desktop otherwise. */}
-    <span class="md:hidden inline-flex"><ThemeToggle variant="inline" /></span>
+        and would keep it visible at desktop otherwise. `lg`, not `md`: it must disappear
+        exactly where the ≥lg cluster's own ThemeToggle appears, or the 768–1023 band would
+        show two of them. */}
+    <span class="lg:hidden inline-flex"><ThemeToggle variant="inline" /></span>
 
-    {/* The <md CTA rides in the BAR, not only in the drawer: an action worth putting in
+    {/* The <lg CTA rides in the BAR, not only in the drawer: an action worth putting in
         every header is worth reaching without opening a menu first. It carries CP-127
         (`connect`) rather than CP-126 — measured at 360/375px, the long label is wider than
         the row can give it beside the brand, the theme toggle and `menu`, and F1's whole
         point was that this header stays ONE row on a phone. Display is switched in the
         scoped CSS below, the way `.navDrawer` does it: a scoped `display: inline-flex`
-        outranks a `md:hidden` utility, which is the trap the ThemeToggle note above
+        outranks a `lg:hidden` utility, which is the trap the ThemeToggle note above
         describes. */}
     <a href="#install-site" data-install-trigger="install-site" class="headerConnect">
       {CP_127_CONNECT_SHORT}
     </a>
 
-    <details class="navDrawer md:hidden" data-nav-drawer>
+    <details class="navDrawer lg:hidden" data-nav-drawer>
       <summary class="navDrawer__toggle" aria-label="menu">
         <span class="navDrawer__word navDrawer__word--closed">menu</span>
         <span class="navDrawer__word navDrawer__word--open" aria-hidden="true">✕</span>
@@ -231,7 +261,7 @@ const nav = [
     }
   }
 
-  /* ---------- the <md connect pill (Surface 1) ---------- */
+  /* ---------- the <lg connect pill (Surface 1) ---------- */
   /* Sized to sit level with the `menu` toggle — same 36px block size, same radius, same mono
      — so the bar reads as two controls of one family rather than a CTA bolted onto a header.
      36px is the height the operator already settled on for `menu` (down from 44) and it
@@ -268,8 +298,11 @@ const nav = [
       transform: none;
     }
   }
-  /* From md the ≥md cluster owns the CTA (with the long CP-126 label), so this one goes. */
-  @media (min-width: 768px) {
+  /* From lg the ≥lg cluster owns the CTA (with the long CP-126 label), so this one goes.
+     1024, not 768 (2026-08-30): this pill is the bar's ONE amber element, and the bar now
+     runs to 1023. Handing the CTA over at 768 would leave the 768–1023 band with no accent
+     at all and no connect entry point outside the drawer. */
+  @media (min-width: 1024px) {
     .headerConnect {
       display: none;
     }
@@ -458,8 +491,11 @@ const nav = [
     filter: brightness(0.9);
   }
 
-  /* The drawer is a below-md affordance only; nothing of it may leak onto desktop. */
-  @media (min-width: 768px) {
+  /* The drawer is a below-lg affordance only; nothing of it may leak onto desktop. This
+     scoped rule is what actually hides it — a bare `lg:hidden` utility cannot outrank the
+     `.navDrawer { margin-inline-start: auto }` block's specificity on the element — so it
+     MUST stay in lockstep with the utility on the element. 768 → 1024 (2026-08-30). */
+  @media (min-width: 1024px) {
     .navDrawer {
       display: none;
     }
@@ -575,8 +611,12 @@ const nav = [
     });
 
     // A resize past the breakpoint must not strand a locked scroll behind a hidden drawer.
+    // 1024 must match the `lg` boundary the CSS hides `.navDrawer` at (2026-08-30, moved
+    // from 768 with the rest). If this number and that media query ever disagree, a resize
+    // into the gap leaves `documentElement.style.overflow = 'hidden'` set on a page whose
+    // drawer is already display:none — an unscrollable page with no visible way out.
     window.addEventListener('resize', () => {
-      if (drawer.open && window.innerWidth >= 768) close(false);
+      if (drawer.open && window.innerWidth >= 1024) close(false);
     });
   }
 </script>
