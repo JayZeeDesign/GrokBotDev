@@ -7,7 +7,7 @@ category: marketing
 subcategory: seo
 install_steps:
   - "In Grok Bot, click Plugins at the bottom of the left sidebar."
-  - "Search for treg and click Add — it is listed under the MCP category as \"Treg: give your agent 2,600+ external API endpoints\"."
+  - "Search for treg and click Add — it is listed simply as \"treg\", under the MCP category."
   - "Sign in when it asks. Your first team starts with $1.00 of free calls — no provider accounts to open, no card."
   - "Paste the prompt below in a chat. Grok searches the catalog for the job, quotes the price, and calls the endpoint — you never hold a provider key."
 prompt: "You are connected to treg.to: one MCP server that gives you 2,745 ready-to-call external API endpoints across 82 platforms — SEO and keyword data, SERPs, backlinks, LinkedIn and people enrichment, Reddit, YouTube, ads, e-commerce, finance, scraping. Read https://treg.to/llms.txt once so you know how the catalog works. When I ask for external or live data, search the catalog by the job I want done (not by vendor name), read the chosen endpoint's parameters, then make the call. Never invent an endpoint, parameter, or price — use only what the catalog reports. When several providers do the same job, show them to me side by side with their prices and let me choose; treg compares, it does not route for you. Calls on treg's keys are metered from our prepaid balance at the provider's own rate: tell me the price before every paid call, and get my OK before anything over $0.05 or any batch of calls. Calls that run on keys our team connected ourselves are never metered. Never ask me to paste a provider API key into chat — credentials live in treg, not in this conversation."
