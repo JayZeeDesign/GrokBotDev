@@ -15,6 +15,9 @@ works_with: [X, GitHub]
 project_url: https://treg.to/agents/grok-bot
 repo_url: https://github.com/superdesigndev/treg
 x_handle: "treg_ai"
+founder:
+  name: "Jason Zhou"
+  x_handle: "jasonzhou1993"
 pricing_note: "$1.00 free on every new team, then the provider's own rate with $0.000 markup, metered from a prepaid balance. Calls on your own connected keys are never metered."
 setup_minutes: 5
 author:
